@@ -1,0 +1,13 @@
+[project]
+org-name = "ballerina"
+version = "@toml.version@"
+
+[platform]
+target = "java8"
+
+    [[platform.libraries]]
+    artifactId = "log"
+    version = "@project.version@"
+    path = "../log-native/build/libs/log-native-@project.version@.jar"
+    groupId = "ballerina"
+    modules = ["log"]
