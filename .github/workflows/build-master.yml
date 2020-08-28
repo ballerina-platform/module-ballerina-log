@@ -24,4 +24,5 @@ jobs:
           packageUser: ${{ github.actor }}
           packagePAT: ${{ secrets.BALLERINA_STDLIB_TOKEN }}
         run: |
+          unset JAVA_TOOL_OPTIONS
           ./gradlew publish

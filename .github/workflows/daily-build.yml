@@ -20,7 +20,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.BALLERINA_STDLIB_TOKEN }}
           packageUser: ${{ github.actor }}
           packagePAT: ${{ secrets.BALLERINA_STDLIB_TOKEN }}
-        run: ./gradlew build
+        run: |
+          unset JAVA_TOOL_OPTIONS
+          ./gradlew build
 
   windows-build:
 
