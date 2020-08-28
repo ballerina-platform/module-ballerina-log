@@ -19,3 +19,4 @@ target = "java8"
     groupId = "org.ballerinalang.stdlib.log"
     modules = ["log"]
     scope = "testOnly"
+    
