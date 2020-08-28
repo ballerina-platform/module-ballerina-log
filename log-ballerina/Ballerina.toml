@@ -11,3 +11,11 @@ target = "java8"
     path = "../log-native/build/libs/log-native-@project.version@.jar"
     groupId = "ballerina"
     modules = ["log"]
+
+    [[platform.libraries]]
+    artifactId = "log"
+    version = "@project.version@"
+    path = "../log-test-utils/build/libs/log-test-utils-@project.version@.jar"
+    groupId = "org.ballerinalang.stdlib.log"
+    modules = ["log"]
+    scope = "testOnly"

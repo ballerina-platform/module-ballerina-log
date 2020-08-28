@@ -66,8 +66,16 @@ task ballerinaIntegrationTests {
     dependsOn unpackJballerinaTools
     inputs.dir file(project.projectDir)
     doLast {
+        def originalConfig = ballerinaConfigFile.text
+        def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
+        newConfig = newConfig.replace("@toml.version@", tomlVersion)
+        ballerinaConfigFile.text = newConfig
+
         def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
 
+        if (project.hasProperty("skipBallerinaTests")) {
+            additionalBuildParams = "--skip-tests"
+        }
         exec {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
@@ -200,4 +208,5 @@ publishing {
 }
 
 ballerinaBuild.dependsOn ":log-native:build"
+ballerinaBuild.dependsOn ":log-test-utils:build"
 build.dependsOn ballerinaBuild
