@@ -126,31 +126,6 @@ task revertTomlFile {
     }
 }
 
-//task ballerinaIntegrationTests {
-//    dependsOn unpackJballerinaTools
-//    inputs.dir file(project.projectDir)
-//    doLast {
-//        def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
-//        newConfig = newConfig.replace("@toml.version@", tomlVersion)
-//        ballerinaConfigFile.text = newConfig
-//
-//        def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
-//
-//        if (project.hasProperty("skipBallerinaTests")) {
-//            additionalBuildParams = "--skip-tests"
-//        }
-//        exec {
-//            workingDir project.projectDir
-//            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-//            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-//                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat test ${testModuleName} --bal_exec_path=${distributionBinPath}/ballerina"
-//            } else {
-//                commandLine 'sh', '-c', "$distributionBinPath/ballerina test ${testModuleName} --bal_exec_path=${distributionBinPath}/ballerina"
-//            }
-//        }
-//    }
-//}
-
 task ballerinaBuild {
     inputs.dir file(project.projectDir)
     doLast {
@@ -268,10 +243,51 @@ publishing {
     }
 }
 
+task ballerinaIntegrationTests {
+    inputs.dir file(project.projectDir)
+    doLast {
+        def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
+        newConfig = newConfig.replace("@toml.version@", tomlVersion)
+        ballerinaConfigFile.text = newConfig
+
+        def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
+        def distributionLibPath
+        copy {
+            from file("$project.projectDir/build/lib_parent/libs/log-native-${project.version}.jar")
+            into file(project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bre/lib")
+        }
+        copy {
+            from file("$project.projectDir/build/lib_parent/libs/ballerina-log-${tomlVersion}.jar")
+            into file(project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bre/lib")
+        }
+        copy {
+            from file("$project.projectDir/build/cache_parent/caches/bir/ballerina/log/${tomlVersion}/log.bir")
+            into file(project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bir-cache/ballerina/log/${tomlVersion}")
+        }
+        copy {
+            from file("$project.projectDir/build/cache_parent/caches/bir/ballerina/log/${tomlVersion}/Ballerina.toml")
+            into file(project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bir-cache/ballerina/log/${tomlVersion}")
+        }
+        if (project.hasProperty("skipBallerinaTests")) {
+            additionalBuildParams = "--skip-tests"
+        }
+        exec {
+            workingDir project.projectDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat test ${testModuleName} --bal_exec_path=${distributionBinPath}/ballerina"
+            } else {
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina test ${testModuleName} --bal_exec_path=${distributionBinPath}/ballerina"
+            }
+        }
+    }
+}
+
 ballerinaBuild.dependsOn ":log-native:build"
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlVerions.dependsOn copyStdlibs
 ballerinaBuild.dependsOn updateTomlVerions
 ballerinaBuild.dependsOn ":log-test-utils:build"
-build.dependsOn ballerinaBuild
+ballerinaIntegrationTests.dependsOn ballerinaBuild
+build.dependsOn ballerinaIntegrationTests
