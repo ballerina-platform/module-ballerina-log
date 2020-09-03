@@ -3,10 +3,10 @@ org-name = "ballerina"
 version = "@toml.version@"
 
 [dependencies]
-"ballerina/io" = "0.5.0"
-"ballerina/stringutils" = "0.5.0"
-"ballerina/config" = "1.0.0"
-"ballerina/system" = "0.6.0"
+"ballerina/io" = "@stdlib.io.version@"
+"ballerina/stringutils" = "@stdlib.stringutils.version@"
+"ballerina/config" = "@stdlib.config.version@"
+"ballerina/system" = "@stdlib.system.version@"
 
 [platform]
 target = "java8"
