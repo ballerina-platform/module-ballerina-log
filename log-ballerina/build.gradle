@@ -135,17 +135,14 @@ task ballerinaBuild {
 
         def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
 
-        if (project.hasProperty("skipBallerinaTests")) {
-            additionalBuildParams = "--skip-tests"
-        }
         // Build and populate caches
         exec {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat build -c ${moduleName}"
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat build --skip-tests -c ${moduleName}"
             } else {
-                commandLine 'sh', '-c', "$distributionBinPath/ballerina build -c ${moduleName}"
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina build --skip-tests -c ${moduleName}"
             }
         }
         copy {
@@ -219,25 +216,26 @@ task ballerinaBuild {
     outputs.dir artifactLibParent
 }
 
-task createArtifactZip(type: Zip) {
-    destinationDirectory = file("$buildDir/distributions")
-    from ballerinaBuild
-}
+task ballerinaTest {
+    dependsOn(":log-native:build")
+    dependsOn(unpackJballerinaTools)
+    dependsOn(updateTomlVerions)
+    finalizedBy(revertTomlFile)
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            artifact source: createArtifactZip, extension: 'zip'
-        }
+    def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
+    def debugParams = ""
+    if (project.hasProperty("debug")) {
+        debugParams = "--debug ${project.findProperty("debug")}"
     }
 
-    repositories {
-        maven {
-            name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/ballerina-platform/module-ballerina-log")
-            credentials {
-                username = System.getenv("GITHUB_ACTOR")
-                password = System.getenv("GITHUB_TOKEN")
+    doLast {
+        exec {
+            workingDir project.projectDir
+            environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "$distributionBinPath/ballerina.bat test ${moduleName} ${debugParams}"
+            } else {
+                commandLine 'sh', '-c', "$distributionBinPath/ballerina test ${moduleName} ${debugParams}"
             }
         }
     }
@@ -245,6 +243,8 @@ publishing {
 
 task ballerinaIntegrationTests {
     inputs.dir file(project.projectDir)
+    dependsOn(ballerinaBuild)
+    finalizedBy(revertTomlFile)
     doLast {
         def stdlibDependentIoVersion = project.stdlibIoVersion.split("-")[0]
         def stdlibDependentStringutilsVersion = project.stdlibStringUtilsVersion.split("-")[0]
@@ -275,9 +275,6 @@ task ballerinaIntegrationTests {
             from file("$project.projectDir/build/cache_parent/caches/bir/ballerina/log/${tomlVersion}/Ballerina.toml")
             into file(project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bir-cache/ballerina/log/${tomlVersion}")
         }
-        if (project.hasProperty("skipBallerinaTests")) {
-            additionalBuildParams = "--skip-tests"
-        }
         exec {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
@@ -290,11 +287,39 @@ task ballerinaIntegrationTests {
     }
 }
 
+test {
+    dependsOn(ballerinaTest)
+    dependsOn(ballerinaIntegrationTests)
+}
+
+task createArtifactZip(type: Zip) {
+    destinationDirectory = file("$buildDir/distributions")
+    from ballerinaBuild
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            artifact source: createArtifactZip, extension: 'zip'
+        }
+    }
+
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/ballerina-platform/module-ballerina-log")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR")
+                password = System.getenv("GITHUB_TOKEN")
+            }
+        }
+    }
+}
+
 ballerinaBuild.dependsOn ":log-native:build"
 unpackStdLibs.dependsOn unpackJballerinaTools
 copyStdlibs.dependsOn unpackStdLibs
 updateTomlVerions.dependsOn copyStdlibs
 ballerinaBuild.dependsOn updateTomlVerions
 ballerinaBuild.dependsOn ":log-test-utils:build"
-ballerinaIntegrationTests.dependsOn ballerinaBuild
-build.dependsOn ballerinaIntegrationTests
+build.dependsOn ballerinaBuild
