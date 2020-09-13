@@ -29,7 +29,7 @@ public function main() {
         });
 }
 
-public type Fruit object {
+public class Fruit {
     string name;
     public function init(string name) {
         self.name = name;
@@ -37,4 +37,4 @@ public type Fruit object {
     function getName() returns string {
         return self.name;
     }
-};
+}

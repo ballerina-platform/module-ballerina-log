@@ -68,22 +68,22 @@ function testGetTail() {
 }
 
 public function format(string logMessage) returns string = @java:Method {
-    class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
+    'class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
 } external;
 
 public function formatNull() returns boolean = @java:Method {
-    class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
+    'class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
 } external;
 
 public function formatWithCustomValues(string logMessage, string logger, string resourceBundleName, string className,
 string methodName, int param, int threadId, int sequenceNumber, int millis, int calMillis) returns string = @java:Method {
-    class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
+    'class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
 } external;
 
 public function getHead() returns string = @java:Method {
-    class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
+    'class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
 } external;
 
 public function getTail() returns string = @java:Method {
-    class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
+    'class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
 } external;
