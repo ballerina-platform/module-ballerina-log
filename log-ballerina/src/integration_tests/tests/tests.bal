@@ -12,7 +12,7 @@ const LOG_LEVEL_TEST_FILE = "src/integration_tests/tests/resources/log_level_tes
 const LOG_MESSAGE_TEST_FILE_LOCATION = "src/integration_tests/tests/resources/log-messages";
 const LOG_LEVEL_PROPERTY = "b7a.log.level";
 const ERROR_LOG = "ERROR level log";
-const ERROR_LOG_WITH_ERROR = "ERROR level log with error : error B7aError foo=bar";
+const ERROR_LOG_WITH_ERROR = "ERROR level log with error : error(\"B7aError\",foo=\"bar\")";
 const WARN_LOG = "WARN level log";
 const INFO_LOG = "INFO level log";
 const DEBUG_LOG = "DEBUG level log";
@@ -21,7 +21,7 @@ const INTEGER_OUTPUT = "123456";
 const FLOAT_OUTPUT = "123456.789";
 const BOOLEAN_OUTPUT = "true";
 const FUNCTION_OUTPUT = "Name of the fruit is is Apple";
-const ERROR_WITH_CAUSE_OUTPUT = "error log with cause : error error occurred";
+const ERROR_WITH_CAUSE_OUTPUT = "error log with cause : error(\"error occurred\")";
 
 @test:Config {}
 public function testBasicLogFunctionality() {
