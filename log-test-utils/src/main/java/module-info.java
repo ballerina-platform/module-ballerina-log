@@ -17,7 +17,7 @@
  */
 
 module io.ballerina.stdlib.log.testutils {
-    requires io.ballerina.jvm;
+    requires io.ballerina.runtime;
     requires io.ballerina.logging;
     requires java.logging;
     exports org.ballerinalang.stdlib.log.testutils;
