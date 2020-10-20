@@ -18,8 +18,8 @@
 
 package org.ballerinalang.stdlib.log.testutils;
 
-import org.ballerinalang.jvm.api.BStringUtils;
-import org.ballerinalang.jvm.api.values.BString;
+import io.ballerina.runtime.api.StringUtils;
+import io.ballerina.runtime.api.values.BString;
 import org.ballerinalang.logging.formatters.JsonLogFormatter;
 
 import java.util.Calendar;
@@ -34,7 +34,7 @@ public class JsonLogFormatterTestUtils {
     public static BString format(BString logMessage) {
         JsonLogFormatter jsonLogFormatter = new JsonLogFormatter();
         LogRecord logRecord = new LogRecord(Level.FINEST, logMessage.toString());
-        return org.ballerinalang.jvm.api.BStringUtils.fromString(jsonLogFormatter.format(logRecord));
+        return io.ballerina.runtime.api.StringUtils.fromString(jsonLogFormatter.format(logRecord));
     }
 
     public static boolean formatNull() {
@@ -70,16 +70,16 @@ public class JsonLogFormatterTestUtils {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(calMillis);
 
-        return org.ballerinalang.jvm.api.BStringUtils.fromString(str);
+        return io.ballerina.runtime.api.StringUtils.fromString(str);
     }
 
     public static BString getHead() {
         JsonLogFormatter jsonLogFormatter = new JsonLogFormatter();
-        return org.ballerinalang.jvm.api.BStringUtils.fromString(jsonLogFormatter.getHead(null));
+        return io.ballerina.runtime.api.StringUtils.fromString(jsonLogFormatter.getHead(null));
     }
 
     public static BString getTail() {
         JsonLogFormatter jsonLogFormatter = new JsonLogFormatter();
-        return org.ballerinalang.jvm.api.BStringUtils.fromString(jsonLogFormatter.getTail(null));
+        return io.ballerina.runtime.api.StringUtils.fromString(jsonLogFormatter.getTail(null));
     }
 }
