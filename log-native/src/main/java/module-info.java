@@ -18,7 +18,6 @@
 
 module io.ballerina.stdlib.log {
     requires io.ballerina.runtime;
-    requires io.ballerina.logging;
     requires org.slf4j;
     requires java.logging;
     exports org.ballerinalang.stdlib.log;
