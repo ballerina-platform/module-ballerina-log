@@ -19,8 +19,6 @@
 package org.ballerinalang.stdlib.log;
 
 import io.ballerina.runtime.observability.ObserveUtils;
-import io.ballerina.runtime.scheduling.Strand;
-import io.ballerina.runtime.values.FPValue;
 import org.ballerinalang.logging.BLogManager;
 import org.ballerinalang.logging.util.BLogLevel;
 import org.slf4j.Logger;
@@ -53,13 +51,12 @@ public abstract class AbstractLogFunction {
     /**
      * Execute logging provided message.
      *
-     * @param strand strand
      * @param message  log message
      * @param logLevel log level
      * @param pckg package
      * @param consumer log message consumer
      */
-    static void logMessage(Strand strand, Object message, BLogLevel logLevel, String pckg,
+    static void logMessage(Object message, BLogLevel logLevel, String pckg,
                            BiConsumer<String, String> consumer) {
         // Create a new log message supplier
         Supplier<String> logMessage = new Supplier<String>() {
@@ -70,8 +67,6 @@ public abstract class AbstractLogFunction {
                 // We should invoke the lambda only once, thus caching return value
                 if (msg == null) {
                     Object arg = message;
-                    // If it is a lambda; invoke it to get the log message
-                    arg = (arg instanceof FPValue) ? ((FPValue) arg).getFunction().apply(new Object[]{strand}) : arg;
                     msg = arg.toString();
                 }
                 return msg;
@@ -82,7 +77,7 @@ public abstract class AbstractLogFunction {
     }
 
     static String getPackagePath() {
-        String className = Thread.currentThread().getStackTrace()[4].getClassName();
+        String className = Thread.currentThread().getStackTrace()[5].getClassName();
         String[] pkgData = className.split("\\.");
         if (pkgData.length > 1) {
             return pkgData[0] + "/" + pkgData[1];
