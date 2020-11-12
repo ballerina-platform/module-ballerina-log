@@ -33,9 +33,15 @@ public enum LogLevel {
 # ```
 #
 # + msg - The message to be logged
-public isolated function printDebug(anydata|(function () returns (anydata)) msg) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
+public function printDebug(anydata|(function () returns (anydata)) msg) {
+    if (isLogLevelEnabled(DEBUG)) {
+        if (msg is function () returns (anydata)) {
+            logMessage(DEBUG, msg());
+        } else {
+            logMessage(DEBUG, msg);
+        }
+    }
+}
 
 # Logs the specified message at ERROR level.
 # ```ballerina
@@ -45,9 +51,15 @@ public isolated function printDebug(anydata|(function () returns (anydata)) msg)
 # 
 # + msg - The message to be logged
 # + err - The error struct to be logged
-public isolated function printError(anydata|(function () returns (anydata)) msg, error? err = ()) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
+public function printError(anydata|(function () returns (anydata)) msg, error? err = ()) {
+    if (isLogLevelEnabled(ERROR)) {
+        if (msg is function () returns (anydata)) {
+            logMessageWithError(ERROR, msg(), err);
+        } else {
+            logMessageWithError(ERROR, msg, err);
+        }
+    }
+}
 
 # Logs the specified message at INFO level.
 # ```ballerina
@@ -55,9 +67,15 @@ public isolated function printError(anydata|(function () returns (anydata)) msg,
 # ```
 # 
 # + msg - The message to be logged
-public isolated function printInfo(anydata|(function () returns (anydata)) msg) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
+public function printInfo(anydata|(function () returns (anydata)) msg) {
+    if (isLogLevelEnabled(INFO)) {
+        if (msg is function () returns (anydata)) {
+            logMessage(INFO, msg());
+        } else {
+            logMessage(INFO, msg);
+        }
+    }
+}
 
 # Logs the specified message at TRACE level.
 # ```ballerina
@@ -65,9 +83,15 @@ public isolated function printInfo(anydata|(function () returns (anydata)) msg) 
 # ```
 # 
 # + msg - The message to be logged
-public isolated function printTrace(anydata|(function () returns (anydata)) msg) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
+public function printTrace(anydata|(function () returns (anydata)) msg) {
+    if (isLogLevelEnabled(TRACE)) {
+        if (msg is function () returns (anydata)) {
+            logMessage(TRACE, msg());
+        } else {
+            logMessage(TRACE, msg);
+        }
+    }
+}
 
 # Logs the specified message at WARN level.
 # ```ballerina
@@ -75,9 +99,15 @@ public isolated function printTrace(anydata|(function () returns (anydata)) msg)
 # ```
 # 
 # + msg - The message to be logged
-public isolated function printWarn(anydata|(function () returns (anydata)) msg) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
+public function printWarn(anydata|(function () returns (anydata)) msg) {
+    if (isLogLevelEnabled(WARN)) {
+        if (msg is function () returns (anydata)) {
+            logMessage(WARN, msg());
+        } else {
+            logMessage(WARN, msg);
+        }
+    }
+}
 
 # Sets the module log level. If a module name is not specified, the log level will be set to the current module.
 # Following log levels are allowed.
@@ -104,5 +134,17 @@ public isolated function printWarn(anydata|(function () returns (anydata)) msg) 
 # + logLevel - Log level to be set
 # + moduleName - Name of the module
 public isolated function setModuleLogLevel(LogLevel logLevel, string? moduleName = ()) = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+function isLogLevelEnabled(LogLevel logLevel) returns boolean = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+function logMessage(LogLevel logLevel, anydata msg) = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+function logMessageWithError(LogLevel logLevel, anydata msg, error? err = ()) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;

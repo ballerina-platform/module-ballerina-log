@@ -19,7 +19,6 @@
 package org.ballerinalang.stdlib.log;
 
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.runtime.scheduling.Scheduler;
 import org.ballerinalang.logging.util.BLogLevel;
 
 /**
@@ -29,86 +28,63 @@ import org.ballerinalang.logging.util.BLogLevel;
  */
 public class Utils extends AbstractLogFunction {
 
-    public static void printDebug(Object msg) {
-        boolean logLevelEnabled;
+    public static boolean isLogLevelEnabled(BString logLevel) {
         if (LOG_MANAGER.isModuleLogLevelEnabled()) {
-            logLevelEnabled = LOG_MANAGER.getPackageLogLevel(getPackagePath()).value() <= BLogLevel.DEBUG.value();
+            return LOG_MANAGER.getPackageLogLevel(getPackagePath()).value() <= BLogLevel.toBLogLevel(logLevel.getValue()).value();
         } else {
-            logLevelEnabled = LOG_MANAGER.getPackageLogLevel(".").value() <= BLogLevel.DEBUG.value();
-        }
-        if (logLevelEnabled) {
-            logMessage(Scheduler.getStrand(), msg, BLogLevel.DEBUG, getPackagePath(),
-                    (pkg, message) -> {
-                        getLogger(pkg).debug(message);
-                    });
+            return LOG_MANAGER.getPackageLogLevel(".").value() <= BLogLevel.toBLogLevel(logLevel.getValue()).value();
         }
     }
 
-    public static void printError(Object msg, Object err) {
-        boolean logLevelEnabled;
-        if (LOG_MANAGER.isModuleLogLevelEnabled()) {
-            logLevelEnabled = LOG_MANAGER.getPackageLogLevel(getPackagePath()).value() <= BLogLevel.ERROR.value();
-        } else {
-            logLevelEnabled = LOG_MANAGER.getPackageLogLevel(".").value() <= BLogLevel.ERROR.value();
-        }
-        if (logLevelEnabled) {
-            logMessage(Scheduler.getStrand(), msg, BLogLevel.ERROR, getPackagePath(),
-                    (pkg, message) -> {
-                        String errorMsg = (err == null) ? "" : " : " + err.toString();
-                        getLogger(pkg).error(message + errorMsg);
-                    });
-        }
-    }
-
-    public static void printInfo(Object msg) {
-        boolean logLevelEnabled;
-        if (LOG_MANAGER.isModuleLogLevelEnabled()) {
-            logLevelEnabled = LOG_MANAGER.getPackageLogLevel(getPackagePath()).value() <= BLogLevel.INFO.value();
-        } else {
-            logLevelEnabled = LOG_MANAGER.getPackageLogLevel(".").value() <= BLogLevel.INFO.value();
-        }
-        if (logLevelEnabled) {
-            logMessage(Scheduler.getStrand(), msg, BLogLevel.INFO, getPackagePath(),
-                    (pkg, message) -> {
-                        getLogger(pkg).info(message);
-                    });
-        }
-    }
-
-    public static void printTrace(Object msg) {
-        boolean logLevelEnabled;
-        if (LOG_MANAGER.isModuleLogLevelEnabled()) {
-            logLevelEnabled = LOG_MANAGER.getPackageLogLevel(getPackagePath()).value() <= BLogLevel.TRACE.value();
-        } else {
-            logLevelEnabled = LOG_MANAGER.getPackageLogLevel(".").value() <= BLogLevel.TRACE.value();
-        }
-        if (logLevelEnabled) {
-            logMessage(Scheduler.getStrand(), msg, BLogLevel.TRACE, getPackagePath(),
-                    (pkg, message) -> {
-                        getLogger(pkg).trace(message);
-                    });
+    public static void logMessage(BString logLevel, Object msg) {
+        switch (BLogLevel.toBLogLevel(logLevel.getValue())) {
+            case WARN:
+                logMessage(msg, BLogLevel.toBLogLevel(logLevel.getValue()), getPackagePath(),
+                        (pkg, message) -> {
+                            getLogger(pkg).warn(message);
+                        });
+                break;
+            case INFO:
+                logMessage(msg, BLogLevel.toBLogLevel(logLevel.getValue()), getPackagePath(),
+                        (pkg, message) -> {
+                            getLogger(pkg).info(message);
+                        });
+                break;
+            case DEBUG:
+                logMessage(msg, BLogLevel.toBLogLevel(logLevel.getValue()), getPackagePath(),
+                        (pkg, message) -> {
+                            getLogger(pkg).debug(message);
+                        });
+                break;
+            case TRACE:
+                logMessage(msg, BLogLevel.toBLogLevel(logLevel.getValue()), getPackagePath(),
+                        (pkg, message) -> {
+                            getLogger(pkg).trace(message);
+                        });
+                break;
+            default:
+                break;
         }
     }
 
-    public static void printWarn(Object msg) {
-        boolean logLevelEnabled;
-        if (LOG_MANAGER.isModuleLogLevelEnabled()) {
-            logLevelEnabled = LOG_MANAGER.getPackageLogLevel(getPackagePath()).value() <= BLogLevel.WARN.value();
-        } else {
-            logLevelEnabled = LOG_MANAGER.getPackageLogLevel(".").value() <= BLogLevel.WARN.value();
-        }
-        if (logLevelEnabled) {
-            logMessage(Scheduler.getStrand(), msg, BLogLevel.WARN, getPackagePath(),
-                    (pkg, message) -> {
-                        getLogger(pkg).warn(message);
-                    });
-        }
+    public static void logMessageWithError(BString logLevel, Object msg, Object err) {
+        logMessage(msg, BLogLevel.ERROR, getPackagePath(),
+                (pkg, message) -> {
+                    String errorMsg = (err == null) ? "" : " : " + err.toString();
+                    getLogger(pkg).error(message + errorMsg);
+                });
     }
 
     public static void setModuleLogLevel(BString logLevel, Object moduleName) {
         String module;
         if (moduleName == null) {
-            module = getPackagePath();
+            String className = Thread.currentThread().getStackTrace()[3].getClassName();
+            String[] pkgData = className.split("\\.");
+            if (pkgData.length > 1) {
+                module = pkgData[0] + "/" + pkgData[1];
+            } else {
+                module =".";
+            }
         } else {
             module = moduleName.toString();
         }
