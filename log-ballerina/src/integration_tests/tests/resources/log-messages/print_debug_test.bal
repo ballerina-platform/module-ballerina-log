@@ -14,26 +14,27 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/log;
 
 public function main() {
-    Fruit apple = new ("Apple");
+    final Fruit apple = new ("Apple");
 
     log:printDebug("DEBUG level log");
     log:printDebug(123456);
     log:printDebug(123456.789);
     log:printDebug(true);
     log:printDebug(isolated function() returns string {
-        return "Name of the fruit is is Apple";
+        return io:sprintf("Name of the fruit is is %s", apple.getName());
         });
 }
 
-public class Fruit {
+public readonly class Fruit {
     string name;
-    public function init(string name) {
+    public isolated function init(string name) {
         self.name = name;
     }
-    function getName() returns string {
+    isolated function getName() returns string {
         return self.name;
     }
 }
