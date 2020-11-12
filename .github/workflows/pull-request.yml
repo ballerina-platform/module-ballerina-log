@@ -19,7 +19,7 @@ jobs:
           packagePAT: ${{ secrets.GITHUB_TOKEN }}
         run: |
           unset JAVA_TOOL_OPTIONS
-          ./gradlew build -x test
+          ./gradlew build
 
   windows-build:
 
@@ -35,4 +35,4 @@ jobs:
         env:
           packageUser: ${{ github.actor }}
           packagePAT: ${{ secrets.GITHUB_TOKEN }}
-        run: ./gradlew.bat build -x test
+        run: ./gradlew.bat build
