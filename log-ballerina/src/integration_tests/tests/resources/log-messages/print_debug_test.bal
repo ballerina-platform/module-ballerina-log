@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/io;
 import ballerina/log;
 
 public function main() {
@@ -24,8 +23,8 @@ public function main() {
     log:printDebug(123456);
     log:printDebug(123456.789);
     log:printDebug(true);
-    log:printDebug(function() returns string {
-        return io:sprintf("Name of the fruit is is %s", apple.getName());
+    log:printDebug(isolated function() returns string {
+        return "Name of the fruit is is Apple";
         });
 }
 

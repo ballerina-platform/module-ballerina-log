@@ -33,9 +33,9 @@ public enum LogLevel {
 # ```
 #
 # + msg - The message to be logged
-public function printDebug(anydata|(function () returns (anydata)) msg) {
+public isolated function printDebug(anydata|(isolated function () returns (anydata)) msg) {
     if (isLogLevelEnabled(DEBUG)) {
-        if (msg is function () returns (anydata)) {
+        if (msg is isolated function () returns (anydata)) {
             logMessage(DEBUG, msg());
         } else {
             logMessage(DEBUG, msg);
@@ -51,9 +51,9 @@ public function printDebug(anydata|(function () returns (anydata)) msg) {
 # 
 # + msg - The message to be logged
 # + err - The error struct to be logged
-public function printError(anydata|(function () returns (anydata)) msg, error? err = ()) {
+public isolated function printError(anydata|(isolated function () returns (anydata)) msg, error? err = ()) {
     if (isLogLevelEnabled(ERROR)) {
-        if (msg is function () returns (anydata)) {
+        if (msg is isolated function () returns (anydata)) {
             logMessageWithError(ERROR, msg(), err);
         } else {
             logMessageWithError(ERROR, msg, err);
@@ -67,9 +67,9 @@ public function printError(anydata|(function () returns (anydata)) msg, error? e
 # ```
 # 
 # + msg - The message to be logged
-public function printInfo(anydata|(function () returns (anydata)) msg) {
+public isolated function printInfo(anydata|(isolated function () returns (anydata)) msg) {
     if (isLogLevelEnabled(INFO)) {
-        if (msg is function () returns (anydata)) {
+        if (msg is isolated function () returns (anydata)) {
             logMessage(INFO, msg());
         } else {
             logMessage(INFO, msg);
@@ -83,9 +83,9 @@ public function printInfo(anydata|(function () returns (anydata)) msg) {
 # ```
 # 
 # + msg - The message to be logged
-public function printTrace(anydata|(function () returns (anydata)) msg) {
+public isolated function printTrace(anydata|(isolated function () returns (anydata)) msg) {
     if (isLogLevelEnabled(TRACE)) {
-        if (msg is function () returns (anydata)) {
+        if (msg is isolated function () returns (anydata)) {
             logMessage(TRACE, msg());
         } else {
             logMessage(TRACE, msg);
@@ -99,9 +99,9 @@ public function printTrace(anydata|(function () returns (anydata)) msg) {
 # ```
 # 
 # + msg - The message to be logged
-public function printWarn(anydata|(function () returns (anydata)) msg) {
+public isolated function printWarn(anydata|(isolated function () returns (anydata)) msg) {
     if (isLogLevelEnabled(WARN)) {
-        if (msg is function () returns (anydata)) {
+        if (msg is isolated function () returns (anydata)) {
             logMessage(WARN, msg());
         } else {
             logMessage(WARN, msg);
@@ -137,14 +137,14 @@ public isolated function setModuleLogLevel(LogLevel logLevel, string? moduleName
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
-function isLogLevelEnabled(LogLevel logLevel) returns boolean = @java:Method {
+isolated function isLogLevelEnabled(LogLevel logLevel) returns boolean = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
-function logMessage(LogLevel logLevel, anydata msg) = @java:Method {
+isolated function logMessage(LogLevel logLevel, anydata msg) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
-function logMessageWithError(LogLevel logLevel, anydata msg, error? err = ()) = @java:Method {
+isolated function logMessageWithError(LogLevel logLevel, anydata msg, error? err = ()) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
