@@ -5,11 +5,11 @@ import ballerina/stringutils;
 import ballerina/test;
 
 const BAL_EXEC_PATH = "bal_exec_path";
-const LOG_PROJECT = "src/integration_tests/tests/resources/log-project";
+const LOG_PROJECT = "tests/resources/log-project";
 const INCORRECT_NUMBER_OF_LINES = "incorrect number of lines in output";
 const UTF_8 = "UTF-8";
-const LOG_LEVEL_TEST_FILE = "src/integration_tests/tests/resources/log_level_test.bal";
-const LOG_MESSAGE_TEST_FILE_LOCATION = "src/integration_tests/tests/resources/log-messages";
+const LOG_LEVEL_TEST_FILE = "tests/resources/log_level_test.bal";
+const LOG_MESSAGE_TEST_FILE_LOCATION = "tests/resources/log-messages";
 const LOG_LEVEL_PROPERTY = "b7a.log.level";
 const ERROR_LOG = "ERROR level log";
 const ERROR_LOG_WITH_ERROR = "ERROR level log with error : error(\"B7aError\",foo=\"bar\")";
@@ -25,7 +25,7 @@ const ERROR_WITH_CAUSE_OUTPUT = "error log with cause : error(\"error occurred\"
 
 @test:Config {}
 public function testBasicLogFunctionality() {
-    system:Process|error execResult = system:exec(config:getAsString(BAL_EXEC_PATH), {}, LOG_PROJECT, "run", "mainmod");
+    system:Process|error execResult = system:exec(config:getAsString(BAL_EXEC_PATH), {}, LOG_PROJECT, "run");
     system:Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -166,7 +166,7 @@ public function testAllOn() {
 
 @test:Config {}
 public function testSettingLogLevelToPackage() {
-    system:Process|error execResult = system:exec(config:getAsString(BAL_EXEC_PATH), {}, LOG_PROJECT, "run", "mainmod",
+    system:Process|error execResult = system:exec(config:getAsString(BAL_EXEC_PATH), {}, LOG_PROJECT, "run",
     "--logorg/foo.loglevel=DEBUG", "--logorg/baz.loglevel=ERROR", "--logorg/mainmod.loglevel=OFF");
     system:Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
