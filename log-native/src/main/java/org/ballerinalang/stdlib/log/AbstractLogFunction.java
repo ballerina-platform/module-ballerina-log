@@ -19,6 +19,7 @@
 package org.ballerinalang.stdlib.log;
 
 import io.ballerina.runtime.observability.ObserveUtils;
+import io.ballerina.runtime.api.values.BString;
 import org.ballerinalang.logging.BLogManager;
 import org.ballerinalang.logging.util.BLogLevel;
 import org.slf4j.Logger;
@@ -52,11 +53,10 @@ public abstract class AbstractLogFunction {
      * Execute logging provided message.
      *
      * @param message  log message
-     * @param logLevel log level
      * @param pckg package
      * @param consumer log message consumer
      */
-    static void logMessage(Object message, BLogLevel logLevel, String pckg,
+    static void logMessage(BString message, String pckg,
                            BiConsumer<String, String> consumer) {
         // Create a new log message supplier
         Supplier<String> logMessage = new Supplier<String>() {
@@ -73,7 +73,6 @@ public abstract class AbstractLogFunction {
             }
         };
         consumer.accept(pckg, logMessage.get());
-        ObserveUtils.logMessageToActiveSpan(logLevel.name(), logMessage, logLevel == BLogLevel.ERROR);
     }
 
     static String getPackagePath() {

@@ -16,34 +16,17 @@
 
 import ballerina/java;
 
-# Represents log level types.
-public enum LogLevel {
-    DEBUG,
-    ERROR,
-    INFO,
-    TRACE,
-    WARN,
-    ALL,
-    OFF
-}
-
-# Logs the specified value at DEBUG level.
+# Prints logs.
 # ```ballerina
-# log:printDebug("debug log");
+# log:print("something went wrong")
 # ```
 #
 # + msg - The message to be logged
-public isolated function printDebug(anydata|(isolated function () returns (anydata)) msg) {
-    if (isLogLevelEnabled(DEBUG)) {
-        if (msg is isolated function () returns (anydata)) {
-            logMessage(DEBUG, msg());
-        } else {
-            logMessage(DEBUG, msg);
-        }
-    }
+public isolated function print(string msg) {
+    logMessage(msg);
 }
 
-# Logs the specified message at ERROR level.
+# Prints error logs.
 # ```ballerina
 # error e = error("error occurred");
 # log:printError("error log with cause", err = e);
@@ -51,100 +34,14 @@ public isolated function printDebug(anydata|(isolated function () returns (anyda
 # 
 # + msg - The message to be logged
 # + err - The error struct to be logged
-public isolated function printError(anydata|(isolated function () returns (anydata)) msg, error? err = ()) {
-    if (isLogLevelEnabled(ERROR)) {
-        if (msg is isolated function () returns (anydata)) {
-            logMessageWithError(ERROR, msg(), err);
-        } else {
-            logMessageWithError(ERROR, msg, err);
-        }
-    }
+public isolated function printError(string msg, error? err = ()) {
+    logMessageWithError(msg, err);
 }
 
-# Logs the specified message at INFO level.
-# ```ballerina
-# log:printInfo("info log");
-# ```
-# 
-# + msg - The message to be logged
-public isolated function printInfo(anydata|(isolated function () returns (anydata)) msg) {
-    if (isLogLevelEnabled(INFO)) {
-        if (msg is isolated function () returns (anydata)) {
-            logMessage(INFO, msg());
-        } else {
-            logMessage(INFO, msg);
-        }
-    }
-}
-
-# Logs the specified message at TRACE level.
-# ```ballerina
-# log:printTrace("trace log");
-# ```
-# 
-# + msg - The message to be logged
-public isolated function printTrace(anydata|(isolated function () returns (anydata)) msg) {
-    if (isLogLevelEnabled(TRACE)) {
-        if (msg is isolated function () returns (anydata)) {
-            logMessage(TRACE, msg());
-        } else {
-            logMessage(TRACE, msg);
-        }
-    }
-}
-
-# Logs the specified message at WARN level.
-# ```ballerina
-# log:printWarn("warn log");
-# ```
-# 
-# + msg - The message to be logged
-public isolated function printWarn(anydata|(isolated function () returns (anydata)) msg) {
-    if (isLogLevelEnabled(WARN)) {
-        if (msg is isolated function () returns (anydata)) {
-            logMessage(WARN, msg());
-        } else {
-            logMessage(WARN, msg);
-        }
-    }
-}
-
-# Sets the module log level. If a module name is not specified, the log level will be set to the current module.
-# Following log levels are allowed.
-#
-# ERROR - error log level
-#
-# WARN - warn log level
-#
-# INFO - info log level
-#
-# DEBUG - debug log level
-#
-# TRACE - trace log level
-#
-# OFF - turns off logging
-#
-# ALL - enables all the log levels
-#
-# ```ballerina
-# log:setModuleLevelLog(log:DEBUG, moduleName=“alpha”);
-# log:setModuleLevelLog(log:WARN);
-# ```
-#
-# + logLevel - Log level to be set
-# + moduleName - Name of the module
-public isolated function setModuleLogLevel(LogLevel logLevel, string? moduleName = ()) = @java:Method {
+isolated function logMessage(string msg) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
-isolated function isLogLevelEnabled(LogLevel logLevel) returns boolean = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function logMessage(LogLevel logLevel, anydata msg) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function logMessageWithError(LogLevel logLevel, anydata msg, error? err = ()) = @java:Method {
+isolated function logMessageWithError(string msg, error? err = ()) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
