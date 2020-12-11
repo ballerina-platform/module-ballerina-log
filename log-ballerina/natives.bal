@@ -48,9 +48,9 @@ public isolated function print(string msg, *KeyValues keyValues) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
         if (v is string) {
-            keyValuesString = keyValuesString + ", " + k + " = " + "\"" + v.toString() + "\"";
+            keyValuesString = keyValuesString + " " + k + " = " + "\"" + v.toString() + "\"";
         } else {
-            keyValuesString = keyValuesString + ", " + k + " = " + v.toString();
+            keyValuesString = keyValuesString + " " + k + " = " + v.toString();
         }
     }
     printExtern("message = " + "\"" + msg + "\"" + keyValuesString);
@@ -69,13 +69,13 @@ public isolated function printError(string msg, *ErrorKeyValues keyValues, error
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
         if (v is string) {
-            keyValuesString = keyValuesString + ", " + k + " = " + "\"" + v.toString() + "\"";
+            keyValuesString = keyValuesString + " " + k + " = " + "\"" + v.toString() + "\"";
         } else {
-            keyValuesString = keyValuesString + ", " + k + " = " + v.toString();
+            keyValuesString = keyValuesString + " " + k + " = " + v.toString();
         }
     }
     if (err is error) {
-        printErrorExtern("message = " + "\"" + msg + "\"" + ", error = " + "\"" + err.message() + "\"" +
+        printErrorExtern("message = " + "\"" + msg + "\"" + " error = " + "\"" + err.message() + "\"" +
         keyValuesString);
     } else {
         printErrorExtern("message = " + "\"" + msg + "\"" + keyValuesString);

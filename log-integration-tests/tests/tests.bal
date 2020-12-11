@@ -29,9 +29,9 @@ public function testSingleFile() {
     string outText = checkpanic sc.read(100000);
     string[] logLines = stringutils:split(outText, "\n");
     test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[6], "[]", "message = " + "\"" + "Inside main function" + "\"");
-    validateLog(logLines[7], "[]", "message = " + "\"" + "Something went wrong" + "\"");
-    validateLog(logLines[8], "[]", "message = " + "\"" + "Something went wrong" + "\"" + ", error = " + "\"" +
+    validateLog(logLines[6], " ", "message = " + "\"" + "Inside main function" + "\"");
+    validateLog(logLines[7], " ", "message = " + "\"" + "Something went wrong" + "\"");
+    validateLog(logLines[8], " ", "message = " + "\"" + "Something went wrong" + "\"" + " error = " + "\"" +
     "bad sad" + "\"");
 }
 
