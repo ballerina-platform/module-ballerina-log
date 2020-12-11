@@ -28,18 +28,17 @@ import org.ballerinalang.logging.util.BLogLevel;
  */
 public class Utils extends AbstractLogFunction {
 
-    public static void logMessage(BString msg) {
+    public static void printExtern(BString msg) {
         logMessage(msg, getPackagePath(),
                 (pkg, message) -> {
                     getLogger(pkg).info(message);
                 });
     }
 
-    public static void logMessageWithError(BString msg, Object err) {
+    public static void printErrorExtern(BString msg) {
         logMessage(msg, getPackagePath(),
                 (pkg, message) -> {
-                    String errorMsg = (err == null) ? "" : " : " + err.toString();
-                    getLogger(pkg).error(message + errorMsg);
+                    getLogger(pkg).error(message);
                 });
     }
 }

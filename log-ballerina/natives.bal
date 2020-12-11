@@ -16,32 +16,76 @@
 
 import ballerina/java;
 
+# A value of anydata type
+public type Value anydata;
+
+# Key-Value pairs that needs to be desplayed in the log.
+#
+# + msg - msg which cannot be a key
+public type KeyValues record {|
+    never msg?;
+    Value...;
+|};
+
+# Key-Value pairs that needs to be desplayed in the error log.
+#
+# + msg - msg which cannot be a key
+# + err - error
+public type ErrorKeyValues record {|
+    never msg?;
+    never err?;
+    Value...;
+|};
+
 # Prints logs.
 # ```ballerina
-# log:print("something went wrong")
+# log:print("something went wrong", id = 845315)
 # ```
 #
 # + msg - The message to be logged
-public isolated function print(string msg) {
-    logMessage(msg);
+# + keyValues - The key-value pairs to be logged
+public isolated function print(string msg, *KeyValues keyValues) {
+    string keyValuesString = "";
+    foreach [string, Value] [k, v] in keyValues.entries() {
+        if (v is string) {
+            keyValuesString = keyValuesString + ", " + k + " = " + "\"" + v.toString() + "\"";
+        } else {
+            keyValuesString = keyValuesString + ", " + k + " = " + v.toString();
+        }
+    }
+    printExtern("message = " + "\"" + msg + "\"" + keyValuesString);
 }
 
 # Prints error logs.
 # ```ballerina
 # error e = error("error occurred");
-# log:printError("error log with cause", err = e);
+# log:printError("error log with cause", err = e, id = 845315);
 # ```
 # 
 # + msg - The message to be logged
+# + keyValues - The key-value pairs to be logged
 # + err - The error struct to be logged
-public isolated function printError(string msg, error? err = ()) {
-    logMessageWithError(msg, err);
+public isolated function printError(string msg, *ErrorKeyValues keyValues, error? err = ()) {
+    string keyValuesString = "";
+    foreach [string, Value] [k, v] in keyValues.entries() {
+        if (v is string) {
+            keyValuesString = keyValuesString + ", " + k + " = " + "\"" + v.toString() + "\"";
+        } else {
+            keyValuesString = keyValuesString + ", " + k + " = " + v.toString();
+        }
+    }
+    if (err is error) {
+        printErrorExtern("message = " + "\"" + msg + "\"" + ", error = " + "\"" + err.message() + "\"" +
+        keyValuesString);
+    } else {
+        printErrorExtern("message = " + "\"" + msg + "\"" + keyValuesString);
+    }
 }
 
-isolated function logMessage(string msg) = @java:Method {
+isolated function printExtern(string msg) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
-isolated function logMessageWithError(string msg, error? err = ()) = @java:Method {
+isolated function printErrorExtern(string msg) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;

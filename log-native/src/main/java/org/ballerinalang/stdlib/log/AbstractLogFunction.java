@@ -18,16 +18,13 @@
 
 package org.ballerinalang.stdlib.log;
 
-import io.ballerina.runtime.observability.ObserveUtils;
 import io.ballerina.runtime.api.values.BString;
 import org.ballerinalang.logging.BLogManager;
-import org.ballerinalang.logging.util.BLogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import java.util.logging.LogManager;
 
 /**
  * Base class for the other log functions, containing a getter to retrieve the correct logger, given a package name.
@@ -35,8 +32,6 @@ import java.util.logging.LogManager;
  * @since 0.95.0
  */
 public abstract class AbstractLogFunction {
-
-    protected static final BLogManager LOG_MANAGER = (BLogManager) LogManager.getLogManager();
 
     private static final Logger ballerinaRootLogger = LoggerFactory.getLogger(BLogManager.BALLERINA_ROOT_LOGGER_NAME);
 
