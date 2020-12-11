@@ -17,11 +17,8 @@
 import ballerina/log;
 
 public function main() {
-    error e = error("B7aError", foo = "bar");
-    log:printError("ERROR level log");
-    log:printError("ERROR level log with error", err = e);
-    log:printWarn("WARN level log");
-    log:printInfo("INFO level log");
-    log:printDebug("DEBUG level log");
-    log:printTrace("TRACE level log");
+    error e = error("bad sad");
+    log:print("Inside main function", username = "madhuka92", id = 845315, foo = true);
+    log:printError("Something went wrong", username = "madhuka92", id = 845315, foo = true);
+    log:printError("Something went wrong", err = e, username = "madhuka92", id = 845315, foo = true);
 }

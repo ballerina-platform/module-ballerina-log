@@ -18,15 +18,13 @@
 
 package org.ballerinalang.stdlib.log;
 
-import io.ballerina.runtime.observability.ObserveUtils;
+import io.ballerina.runtime.api.values.BString;
 import org.ballerinalang.logging.BLogManager;
-import org.ballerinalang.logging.util.BLogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
-import java.util.logging.LogManager;
 
 /**
  * Base class for the other log functions, containing a getter to retrieve the correct logger, given a package name.
@@ -34,8 +32,6 @@ import java.util.logging.LogManager;
  * @since 0.95.0
  */
 public abstract class AbstractLogFunction {
-
-    protected static final BLogManager LOG_MANAGER = (BLogManager) LogManager.getLogManager();
 
     private static final Logger ballerinaRootLogger = LoggerFactory.getLogger(BLogManager.BALLERINA_ROOT_LOGGER_NAME);
 
@@ -52,11 +48,10 @@ public abstract class AbstractLogFunction {
      * Execute logging provided message.
      *
      * @param message  log message
-     * @param logLevel log level
      * @param pckg package
      * @param consumer log message consumer
      */
-    static void logMessage(Object message, BLogLevel logLevel, String pckg,
+    static void logMessage(BString message, String pckg,
                            BiConsumer<String, String> consumer) {
         // Create a new log message supplier
         Supplier<String> logMessage = new Supplier<String>() {
@@ -73,7 +68,6 @@ public abstract class AbstractLogFunction {
             }
         };
         consumer.accept(pckg, logMessage.get());
-        ObserveUtils.logMessageToActiveSpan(logLevel.name(), logMessage, logLevel == BLogLevel.ERROR);
     }
 
     static String getPackagePath() {

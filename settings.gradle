@@ -13,7 +13,7 @@ plugins {
 
 rootProject.name = 'log'
 include(':build-config:checkstyle')
-include ':log-native', ':log-test-utils', ':log-ballerina'
+include ':log-native', ':log-test-utils', ':log-ballerina', ':log-integration-tests'
 
 gradleEnterprise {
     buildScan {

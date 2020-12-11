@@ -63,6 +63,7 @@ task unpackStdLibs() {
 
 task copyStdlibs(type: Copy) {
     def ballerinaDist = "build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}"
+    def buildCacheParent = "../log-ballerina/build/cache_parent"
     into ballerinaDist
 
     /* Standard Libraries */
@@ -74,6 +75,13 @@ task copyStdlibs(type: Copy) {
         into("repo/cache") {
             from "${artifactExtractedPath}/cache"
         }
+    }
+    /* Log module */
+    into("repo/balo") {
+        from "${buildCacheParent}/balo/"
+    }
+    into("repo/cache") {
+        from "${buildCacheParent}/cache"
     }
 }
 

@@ -28,67 +28,17 @@ import org.ballerinalang.logging.util.BLogLevel;
  */
 public class Utils extends AbstractLogFunction {
 
-    public static boolean isLogLevelEnabled(BString logLevel) {
-        if (LOG_MANAGER.isModuleLogLevelEnabled()) {
-            return LOG_MANAGER.getPackageLogLevel(getPackagePath()).value() <= BLogLevel.toBLogLevel(logLevel.getValue()).value();
-        } else {
-            return LOG_MANAGER.getPackageLogLevel(".").value() <= BLogLevel.toBLogLevel(logLevel.getValue()).value();
-        }
-    }
-
-    public static void logMessage(BString logLevel, Object msg) {
-        switch (BLogLevel.toBLogLevel(logLevel.getValue())) {
-            case WARN:
-                logMessage(msg, BLogLevel.toBLogLevel(logLevel.getValue()), getPackagePath(),
-                        (pkg, message) -> {
-                            getLogger(pkg).warn(message);
-                        });
-                break;
-            case INFO:
-                logMessage(msg, BLogLevel.toBLogLevel(logLevel.getValue()), getPackagePath(),
-                        (pkg, message) -> {
-                            getLogger(pkg).info(message);
-                        });
-                break;
-            case DEBUG:
-                logMessage(msg, BLogLevel.toBLogLevel(logLevel.getValue()), getPackagePath(),
-                        (pkg, message) -> {
-                            getLogger(pkg).debug(message);
-                        });
-                break;
-            case TRACE:
-                logMessage(msg, BLogLevel.toBLogLevel(logLevel.getValue()), getPackagePath(),
-                        (pkg, message) -> {
-                            getLogger(pkg).trace(message);
-                        });
-                break;
-            default:
-                break;
-        }
-    }
-
-    public static void logMessageWithError(BString logLevel, Object msg, Object err) {
-        logMessage(msg, BLogLevel.ERROR, getPackagePath(),
+    public static void printExtern(BString msg) {
+        logMessage(msg, getPackagePath(),
                 (pkg, message) -> {
-                    String errorMsg = (err == null) ? "" : " : " + err.toString();
-                    getLogger(pkg).error(message + errorMsg);
+                    getLogger(pkg).info(message);
                 });
     }
 
-    public static void setModuleLogLevel(BString logLevel, Object moduleName) {
-        String module;
-        if (moduleName == null) {
-            String className = Thread.currentThread().getStackTrace()[3].getClassName();
-            String[] pkgData = className.split("\\.");
-            if (pkgData.length > 1) {
-                module = pkgData[0] + "/" + pkgData[1];
-            } else {
-                module =".";
-            }
-        } else {
-            module = moduleName.toString();
-        }
-        String level = logLevel.getValue();
-        LOG_MANAGER.setModuleLogLevel(BLogLevel.toBLogLevel(level), module);
+    public static void printErrorExtern(BString msg) {
+        logMessage(msg, getPackagePath(),
+                (pkg, message) -> {
+                    getLogger(pkg).error(message);
+                });
     }
 }
