@@ -56,7 +56,7 @@ public isolated function print(string msg, *KeyValues keyValues) {
         } else {
            value = v;
         }
-        keyValuesString = appendKeyValue(keyValuesString, k, value);
+        keyValuesString += appendKeyValue(keyValuesString, k, value);
     }
     printExtern("message = " + "\"" + msg + "\"" + keyValuesString);
 }
@@ -79,7 +79,7 @@ public isolated function printError(string msg, *ErrorKeyValues keyValues, error
         } else {
            value = v;
         }
-        keyValuesString = appendKeyValue(keyValuesString, k, value);
+        keyValuesString += appendKeyValue(keyValuesString, k, value);
     }
     if (err is error) {
         printErrorExtern("message = " + "\"" + msg + "\"" + " error = " + "\"" + err.message() + "\"" +
