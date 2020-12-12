@@ -17,7 +17,10 @@
 import ballerina/java;
 
 # A value of anydata type
-public type Value anydata;
+public type Value anydata|Valuer;
+
+# A function that returns anydata type
+public type Valuer isolated function() returns anydata;
 
 # Key-Value pairs that needs to be desplayed in the log.
 #
@@ -49,7 +52,14 @@ public isolated function print(string msg, *KeyValues keyValues) {
     foreach [string, Value] [k, v] in keyValues.entries() {
         if (v is string) {
             keyValuesString = keyValuesString + " " + k + " = " + "\"" + v.toString() + "\"";
-        } else {
+        } else if (v is Valuer) {
+            var valuerOutput = v();
+            if (valuerOutput is string) {
+                keyValuesString = keyValuesString + " " + k + " = " + "\"" + v().toString() + "\"";
+            } else {
+                keyValuesString = keyValuesString + " " + k + " = " + v().toString();
+            }
+        }else {
             keyValuesString = keyValuesString + " " + k + " = " + v.toString();
         }
     }
@@ -70,7 +80,14 @@ public isolated function printError(string msg, *ErrorKeyValues keyValues, error
     foreach [string, Value] [k, v] in keyValues.entries() {
         if (v is string) {
             keyValuesString = keyValuesString + " " + k + " = " + "\"" + v.toString() + "\"";
-        } else {
+        } else if (v is Valuer) {
+            var valuerOutput = v();
+            if (valuerOutput is string) {
+                keyValuesString = keyValuesString + " " + k + " = " + "\"" + v().toString() + "\"";
+            } else {
+                keyValuesString = keyValuesString + " " + k + " = " + v().toString();
+            }
+        }else {
             keyValuesString = keyValuesString + " " + k + " = " + v.toString();
         }
     }

@@ -28,10 +28,12 @@ public function testSingleFile() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = stringutils:split(outText, "\n");
-    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[6], " ", "message = " + "\"" + "Inside main function" + "\"");
-    validateLog(logLines[7], " ", "message = " + "\"" + "Something went wrong" + "\"");
-    validateLog(logLines[8], " ", "message = " + "\"" + "Something went wrong" + "\"" + " error = " + "\"" +
+    validateLog(logLines[7], " ", "message = " + "\"" + "Inside main function" + "\"");
+    validateLog(logLines[8], " ", "message = " + "\"" + "Something went wrong" + "\"");
+    validateLog(logLines[9], " ", "message = " + "\"" + "Something went wrong" + "\"");
+    validateLog(logLines[10], " ", "message = " + "\"" + "Something went wrong" + "\"" + " error = " + "\"" +
     "bad sad" + "\"");
 }
 
