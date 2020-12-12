@@ -50,17 +50,13 @@ public type ErrorKeyValues record {|
 public isolated function print(string msg, *KeyValues keyValues) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata keyValue;
+        anydata value;
         if (v is Valuer) {
-           keyValue = v();
+           value = v();
         } else {
-           keyValue = v;
+           value = v;
         }
-        if (keyValue is string) {
-            keyValuesString = keyValuesString + " " + k + " = " + "\"" + v.toString() + "\"";
-        } else {
-            keyValuesString = keyValuesString + " " + k + " = " + v.toString();
-        }
+        keyValuesString = appendKeyValue(keyValuesString, k, value);
     }
     printExtern("message = " + "\"" + msg + "\"" + keyValuesString);
 }
@@ -77,17 +73,13 @@ public isolated function print(string msg, *KeyValues keyValues) {
 public isolated function printError(string msg, *ErrorKeyValues keyValues, error? err = ()) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata keyValue;
+        anydata value;
         if (v is Valuer) {
-           keyValue = v();
+           value = v();
         } else {
-           keyValue = v;
+           value = v;
         }
-        if (keyValue is string) {
-            keyValuesString = keyValuesString + " " + k + " = " + "\"" + v.toString() + "\"";
-        } else {
-            keyValuesString = keyValuesString + " " + k + " = " + v.toString();
-        }
+        keyValuesString = appendKeyValue(keyValuesString, k, value);
     }
     if (err is error) {
         printErrorExtern("message = " + "\"" + msg + "\"" + " error = " + "\"" + err.message() + "\"" +
@@ -104,3 +96,13 @@ isolated function printExtern(string msg) = @java:Method {
 isolated function printErrorExtern(string msg) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
+
+isolated function appendKeyValue(string keyValueString, string key, anydata value) returns string {
+    string keyValuesString = "";
+    if (value is string) {
+        keyValuesString = keyValuesString + " " + key + " = " + "\"" + value + "\"";
+    } else {
+        keyValuesString = keyValuesString + " " + key + " = " + value.toString();
+    }
+    return keyValuesString;
+}
