@@ -50,16 +50,15 @@ public type ErrorKeyValues record {|
 public isolated function print(string msg, *KeyValues keyValues) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
-        if (v is string) {
+        anydata keyValue;
+        if (v is Valuer) {
+           keyValue = v();
+        } else {
+           keyValue = v;
+        }
+        if (keyValue is string) {
             keyValuesString = keyValuesString + " " + k + " = " + "\"" + v.toString() + "\"";
-        } else if (v is Valuer) {
-            var valuerOutput = v();
-            if (valuerOutput is string) {
-                keyValuesString = keyValuesString + " " + k + " = " + "\"" + v().toString() + "\"";
-            } else {
-                keyValuesString = keyValuesString + " " + k + " = " + v().toString();
-            }
-        }else {
+        } else {
             keyValuesString = keyValuesString + " " + k + " = " + v.toString();
         }
     }
@@ -71,23 +70,22 @@ public isolated function print(string msg, *KeyValues keyValues) {
 # error e = error("error occurred");
 # log:printError("error log with cause", err = e, id = 845315);
 # ```
-# 
+#
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
 # + err - The error struct to be logged
 public isolated function printError(string msg, *ErrorKeyValues keyValues, error? err = ()) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
-        if (v is string) {
+        anydata keyValue;
+        if (v is Valuer) {
+           keyValue = v();
+        } else {
+           keyValue = v;
+        }
+        if (keyValue is string) {
             keyValuesString = keyValuesString + " " + k + " = " + "\"" + v.toString() + "\"";
-        } else if (v is Valuer) {
-            var valuerOutput = v();
-            if (valuerOutput is string) {
-                keyValuesString = keyValuesString + " " + k + " = " + "\"" + v().toString() + "\"";
-            } else {
-                keyValuesString = keyValuesString + " " + k + " = " + v().toString();
-            }
-        }else {
+        } else {
             keyValuesString = keyValuesString + " " + k + " = " + v.toString();
         }
     }
