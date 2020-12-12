@@ -19,6 +19,8 @@ import ballerina/log;
 public function main() {
     error e = error("bad sad");
     log:print("Inside main function", username = "madhuka92", id = 845315, foo = true);
+    log:print("Inside main function", username = isolated function() returns string { return "madhuka92";}, id = isolated function() returns int { return 845315;});
     log:printError("Something went wrong", username = "madhuka92", id = 845315, foo = true);
+    log:printError("Something went wrong", username = isolated function() returns string { return "madhuka92";}, id = isolated function() returns int { return 845315;});
     log:printError("Something went wrong", err = e, username = "madhuka92", id = 845315, foo = true);
 }

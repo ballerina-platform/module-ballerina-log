@@ -17,7 +17,10 @@
 import ballerina/java;
 
 # A value of anydata type
-public type Value anydata;
+public type Value anydata|Valuer;
+
+# A function that returns anydata type
+public type Valuer isolated function() returns anydata;
 
 # Key-Value pairs that needs to be desplayed in the log.
 #
@@ -47,11 +50,13 @@ public type ErrorKeyValues record {|
 public isolated function print(string msg, *KeyValues keyValues) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
-        if (v is string) {
-            keyValuesString = keyValuesString + " " + k + " = " + "\"" + v.toString() + "\"";
+        anydata value;
+        if (v is Valuer) {
+           value = v();
         } else {
-            keyValuesString = keyValuesString + " " + k + " = " + v.toString();
+           value = v;
         }
+        keyValuesString = appendKeyValue(keyValuesString, k, value);
     }
     printExtern("message = " + "\"" + msg + "\"" + keyValuesString);
 }
@@ -61,18 +66,20 @@ public isolated function print(string msg, *KeyValues keyValues) {
 # error e = error("error occurred");
 # log:printError("error log with cause", err = e, id = 845315);
 # ```
-# 
+#
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
 # + err - The error struct to be logged
 public isolated function printError(string msg, *ErrorKeyValues keyValues, error? err = ()) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
-        if (v is string) {
-            keyValuesString = keyValuesString + " " + k + " = " + "\"" + v.toString() + "\"";
+        anydata value;
+        if (v is Valuer) {
+           value = v();
         } else {
-            keyValuesString = keyValuesString + " " + k + " = " + v.toString();
+           value = v;
         }
+        keyValuesString = appendKeyValue(keyValuesString, k, value);
     }
     if (err is error) {
         printErrorExtern("message = " + "\"" + msg + "\"" + " error = " + "\"" + err.message() + "\"" +
@@ -89,3 +96,13 @@ isolated function printExtern(string msg) = @java:Method {
 isolated function printErrorExtern(string msg) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
+
+isolated function appendKeyValue(string keyValueString, string key, anydata value) returns string {
+    string keyValuesString = "";
+    if (value is string) {
+        keyValuesString = keyValuesString + " " + key + " = " + "\"" + value + "\"";
+    } else {
+        keyValuesString = keyValuesString + " " + key + " = " + value.toString();
+    }
+    return keyValuesString;
+}
