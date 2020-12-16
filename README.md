@@ -14,7 +14,7 @@ This module provides a basic API for logging.
 
 Each module in Ballerina has its own dedicated logger. A log record contains the timestamp, log level, module name, and the log message. The `printError()` function takes an optional `error` record apart from the log message. A sample log record logged from the `foo` module would look as follows:
 ```bash
-2018-04-09 11:33:21,300 ERROR [foo] - This is an error log.
+time = 2020-12-16 11:22:44,029 level = ERROR module = myorg/foo message = "Something went wrong."
 ```
 
 ### Log Output

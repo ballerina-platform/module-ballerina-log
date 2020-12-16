@@ -19,6 +19,7 @@
 package org.ballerinalang.stdlib.log;
 
 import io.ballerina.runtime.api.values.BString;
+import io.ballerina.runtime.api.utils.IdentifierUtils;
 import org.ballerinalang.logging.BLogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,7 +75,8 @@ public abstract class AbstractLogFunction {
         String className = Thread.currentThread().getStackTrace()[5].getClassName();
         String[] pkgData = className.split("\\.");
         if (pkgData.length > 1) {
-            return pkgData[0] + "/" + pkgData[1];
+            String module = IdentifierUtils.decodeIdentifier(pkgData[1]);
+            return pkgData[0] + "/" + module;
         }
         return ".";
     }

@@ -5,13 +5,9 @@ version = "@toml.version@"
 
 [[dependency]]
 org = "ballerina"
-name = "io"
-version = "@stdlib.io.version@"
-
-[[dependency]]
-org = "ballerina"
 name = "stringutils"
 version = "@stdlib.stringutils.version@"
+scope = "testOnly"
 
 [[platform.java11.dependency]]
 path = "../log-native/build/libs/log-native-@project.version@.jar"
