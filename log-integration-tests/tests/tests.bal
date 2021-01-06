@@ -1,6 +1,6 @@
 import ballerina/config;
 import ballerina/io;
-import ballerina/system;
+import ballerina/os;
 import ballerina/stringutils;
 import ballerina/test;
 
@@ -19,8 +19,8 @@ const string KEY_VALUE_USERNAME = "username = " + "\"" + "Alex92" + "\"";
 
 @test:Config {}
 public function testSingleFile() {
-    system:Process|error execResult = system:exec(config:getAsString(BAL_EXEC_PATH), {}, (), "run", LOG_LEVEL_TEST_FILE);
-    system:Process result = checkpanic execResult;
+    os:Process|error execResult = os:exec(config:getAsString(BAL_EXEC_PATH), {}, (), "run", LOG_LEVEL_TEST_FILE);
+    os:Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
