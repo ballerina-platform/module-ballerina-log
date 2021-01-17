@@ -15,7 +15,6 @@
 // under the License.
 
 import ballerina/java;
-import ballerina/stringutils;
 import ballerina/test;
 
 @test:Config {}
@@ -27,7 +26,7 @@ function testFormat() {
                              "55\nserver: wso2-http-transport\ndate: Fri, 16 Mar 2018 14:26:12 +0530, " +
                              "55B\n{\"message\":\"Max entity body size resource is invoked.\"} ";
     string result = format(traceLogMessage);
-    test:assertTrue(stringutils:contains(result, "[id: 0x65d56de4, correlatedSource: n/a, " +
+    test:assertTrue(result.includes("[id: 0x65d56de4, correlatedSource: n/a, " +
                                                  "host:localhost/0:0:0:0:0:0:0:1:9090 - remote:/0:0:0:0:0:0:0:1:52872] " +
                                                  "OUTBOUND: DefaultFullHttpResponse(decodeResult: success, " +
                                                  "version: HTTP/1.1, content: CompositeByteBuf(ridx: 0, widx: 55, " +
@@ -50,21 +49,21 @@ function testFormatWithCustomValues() {
                              "55B\n{\"message\":\"Max entity body size resource is invoked.\"} ";
     string result = formatWithCustomValues(traceLogMessage + " {0,number}", "logger", "rb name", "class", "method",
     100, 1000, 12321312, 0, 12321312);
-    test:assertTrue(stringutils:contains(result, "class"), "Log record doesn't contain class.");
-    test:assertTrue(stringutils:contains(result, "method"), "Log record doesn't contain method.");
-    test:assertTrue(stringutils:contains(result, "100"), "Log record doesn't contain parameters.");
+    test:assertTrue(result.includes("class"), "Log record doesn't contain class.");
+    test:assertTrue(result.includes("method"), "Log record doesn't contain method.");
+    test:assertTrue(result.includes("100"), "Log record doesn't contain parameters.");
 }
 
 @test:Config {}
 function testGetHead() {
     string result = getHead();
-    test:assertTrue(stringutils:contains(result, ""));
+    test:assertTrue(result.includes(""));
 }
 
 @test:Config {}
 function testGetTail() {
     string result = getTail();
-    test:assertTrue(stringutils:contains(result, ""));
+    test:assertTrue(result.includes(""));
 }
 
 public function format(string logMessage) returns string = @java:Method {

@@ -3,12 +3,6 @@ org = "ballerina"
 name = "log"
 version = "@toml.version@"
 
-[[dependency]]
-org = "ballerina"
-name = "stringutils"
-version = "@stdlib.stringutils.version@"
-scope = "testOnly"
-
 [[platform.java11.dependency]]
 path = "../log-native/build/libs/log-native-@project.version@.jar"
 groupId = "ballerina"
