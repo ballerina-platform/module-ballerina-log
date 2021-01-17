@@ -1,7 +1,7 @@
 import ballerina/config;
 import ballerina/io;
 import ballerina/os;
-import ballerina/stringutils;
+import ballerina/regex;
 import ballerina/test;
 
 const BAL_EXEC_PATH = "bal_exec_path";
@@ -26,7 +26,7 @@ public function testSingleFile() {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
-    string[] logLines = stringutils:split(outText, "\n");
+    string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[6], " ", PRINT_MESSAGE, [KEY_VALUE_FOO, KEY_VALUE_ID, KEY_VALUE_USERNAME]);
     validateLog(logLines[7], " ", PRINT_MESSAGE, [KEY_VALUE_ID, KEY_VALUE_USERNAME]);
@@ -35,11 +35,11 @@ public function testSingleFile() {
     validateLog(logLines[10], " ", PRINT_ERROR_WITH_CAUSE_MESSAGE, [KEY_VALUE_FOO, KEY_VALUE_ID, KEY_VALUE_USERNAME]);
 }
 
-function validateLog(string log, string logLocation, string logMsg, string[] keyValues) {
-    test:assertTrue(stringutils:contains(log, logLocation));
-    test:assertTrue(stringutils:contains(log, logMsg));
+isolated function validateLog(string log, string logLocation, string logMsg, string[] keyValues) {
+    test:assertTrue(log.includes(logLocation));
+    test:assertTrue(log.includes(logMsg));
     foreach var keyValue in keyValues {
-        test:assertTrue(stringutils:contains(log, keyValue));
+        test:assertTrue(log.includes(keyValue));
     }
 }
 
