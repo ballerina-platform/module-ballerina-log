@@ -54,19 +54,18 @@ public class JsonLogFormatterTestUtils {
                                                  int sequenceNumber, int millis, int calMillis) {
         JsonLogFormatter jsonLogFormatter = new JsonLogFormatter();
         LogRecord logRecord = new LogRecord(Level.FINEST, logMessage.toString());
-        String str = jsonLogFormatter.format(logRecord);
 
         logRecord.setMessage(logMessage.toString());
         logRecord.setLoggerName(logger.toString());
         logRecord.setResourceBundleName(resourceBundleName.toString());
         logRecord.setSourceClassName(className.toString());
         logRecord.setSourceMethodName(methodName.toString());
-        logRecord.setParameters(new Object[]{new Integer(param), new Object()});
+        logRecord.setParameters(new Object[]{Integer.valueOf(param), new Object()});
         logRecord.setThreadID(threadId);
         logRecord.setSequenceNumber(sequenceNumber);
         logRecord.setMillis(millis);
 
-        str = jsonLogFormatter.format(logRecord);
+        String str = jsonLogFormatter.format(logRecord);
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(calMillis);
 

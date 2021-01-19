@@ -19,7 +19,6 @@
 package org.ballerinalang.stdlib.log;
 
 import io.ballerina.runtime.api.values.BString;
-import org.ballerinalang.logging.util.BLogLevel;
 
 /**
  * Native function implementations of the log-api module.

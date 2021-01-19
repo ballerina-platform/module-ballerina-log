@@ -18,8 +18,8 @@
 
 package org.ballerinalang.stdlib.log;
 
-import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.utils.IdentifierUtils;
+import io.ballerina.runtime.api.values.BString;
 import org.ballerinalang.logging.BLogManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
