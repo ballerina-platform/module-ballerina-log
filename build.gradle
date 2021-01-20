@@ -28,7 +28,6 @@ ext.testngVersion = project.testngVersion
 ext.slf4jVersion = project.slf4jVersion
 ext.stdlibIoVersion = project.stdlibIoVersion
 ext.stdlibRegexVersion = project.stdlibRegexVersion
-ext.stdlibConfigVersion = project.stdlibConfigVersion
 ext.stdlibOsVersion = project.stdlibOsVersion
 
 allprojects {
@@ -77,14 +76,6 @@ allprojects {
         }
 
         maven {
-            url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-config'
-            credentials {
-                username System.getenv("packageUser")
-                password System.getenv("packagePAT")
-            }
-        }
-
-        maven {
             url = 'https://maven.pkg.github.com/ballerina-platform/module-ballerina-os'
             credentials {
                 username System.getenv("packageUser")
@@ -104,7 +95,6 @@ subprojects {
         /* Standard libraries */
         ballerinaStdLibs "org.ballerinalang:io-ballerina:${stdlibIoVersion}"
         ballerinaStdLibs "org.ballerinalang:regex-ballerina:${stdlibRegexVersion}"
-        ballerinaStdLibs "org.ballerinalang:config-ballerina:${stdlibConfigVersion}"
         ballerinaStdLibs "org.ballerinalang:os-ballerina:${stdlibOsVersion}"
     }
 }

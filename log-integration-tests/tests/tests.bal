@@ -1,10 +1,8 @@
-import ballerina/config;
 import ballerina/io;
 import ballerina/os;
 import ballerina/regex;
 import ballerina/test;
 
-const BAL_EXEC_PATH = "bal_exec_path";
 const INCORRECT_NUMBER_OF_LINES = "incorrect number of lines in output";
 const UTF_8 = "UTF-8";
 const LOG_LEVEL_TEST_FILE = "tests/resources/log_level_test.bal";
@@ -17,9 +15,11 @@ const string KEY_VALUE_FOO = "foo = true";
 const string KEY_VALUE_ID = "id = 845315";
 const string KEY_VALUE_USERNAME = "username = " + "\"" + "Alex92" + "\"";
 
+configurable string bal_exec_path = ?;
+
 @test:Config {}
 public function testSingleFile() {
-    os:Process|error execResult = os:exec(config:getAsString(BAL_EXEC_PATH), {}, (), "run", LOG_LEVEL_TEST_FILE);
+    os:Process|error execResult = os:exec(bal_exec_path, {}, (), "run", LOG_LEVEL_TEST_FILE);
     os:Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
