@@ -58,7 +58,7 @@ public isolated function print(string msg, *KeyValues keyValues) {
         } else {
            value = v;
         }
-        keyValuesString += appendKeyValue(keyValuesString, k, value);
+        keyValuesString += appendKeyValue(k, value);
     }
     printExtern(getOutput(msg, keyValuesString), output_format == "json");
 }
@@ -81,7 +81,7 @@ public isolated function printError(string msg, *ErrorKeyValues keyValues, error
         } else {
            value = v;
         }
-        keyValuesString += appendKeyValue(keyValuesString, k, value);
+        keyValuesString += appendKeyValue(k, value);
     }
     printErrorExtern(getOutput(msg, keyValuesString, err), output_format == "json");
 }
@@ -94,7 +94,7 @@ isolated function printErrorExtern(string msg, boolean jsonFormat) = @java:Metho
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
-isolated function appendKeyValue(string keyValueString, string key, anydata value) returns string {
+isolated function appendKeyValue(string key, anydata value) returns string {
     string k;
     string v;
     if (output_format == "json") {
