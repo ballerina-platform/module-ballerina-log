@@ -27,17 +27,19 @@ import io.ballerina.runtime.api.values.BString;
  */
 public class Utils extends AbstractLogFunction {
 
-    public static void printExtern(BString msg) {
+    public static void printExtern(BString msg, boolean jsonFormat) {
         logMessage(msg, getPackagePath(),
                 (pkg, message) -> {
                     getLogger(pkg).info(message);
-                });
+                }
+                , jsonFormat);
     }
 
-    public static void printErrorExtern(BString msg) {
+    public static void printErrorExtern(BString msg, boolean jsonFormat) {
         logMessage(msg, getPackagePath(),
                 (pkg, message) -> {
                     getLogger(pkg).error(message);
-                });
+                }
+                , jsonFormat);
     }
 }

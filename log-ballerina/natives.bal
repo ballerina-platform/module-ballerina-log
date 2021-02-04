@@ -40,6 +40,8 @@ public type ErrorKeyValues record {|
     Value...;
 |};
 
+final configurable string output_format = "logfmt";
+
 # Prints logs.
 # ```ballerina
 # log:print("something went wrong", id = 845315)
@@ -58,7 +60,7 @@ public isolated function print(string msg, *KeyValues keyValues) {
         }
         keyValuesString += appendKeyValue(keyValuesString, k, value);
     }
-    printExtern("message = " + "\"" + msg + "\"" + keyValuesString);
+    printExtern(getOutput(msg, keyValuesString), output_format == "json");
 }
 
 # Prints error logs.
@@ -81,28 +83,51 @@ public isolated function printError(string msg, *ErrorKeyValues keyValues, error
         }
         keyValuesString += appendKeyValue(keyValuesString, k, value);
     }
-    if (err is error) {
-        printErrorExtern("message = " + "\"" + msg + "\"" + " error = " + "\"" + err.message() + "\"" +
-        keyValuesString);
-    } else {
-        printErrorExtern("message = " + "\"" + msg + "\"" + keyValuesString);
-    }
+    printErrorExtern(getOutput(msg, keyValuesString, err), output_format == "json");
 }
 
-isolated function printExtern(string msg) = @java:Method {
+isolated function printExtern(string msg, boolean jsonFormat) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
-isolated function printErrorExtern(string msg) = @java:Method {
+isolated function printErrorExtern(string msg, boolean jsonFormat) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
 isolated function appendKeyValue(string keyValueString, string key, anydata value) returns string {
-    string keyValuesString = "";
-    if (value is string) {
-        keyValuesString = keyValuesString + " " + key + " = " + "\"" + value + "\"";
+    string k;
+    string v;
+    if (output_format == "json") {
+        k = ", \"" + key + "\": ";
     } else {
-        keyValuesString = keyValuesString + " " + key + " = " + value.toString();
+        k = " " + key + " = ";
     }
-    return keyValuesString;
+    if (value is string) {
+        v = "\"" + value + "\"";
+    } else {
+        v = value.toString();
+    }
+    return k + v;
+}
+
+isolated function getOutput(string msg, string keyValues, error? err = ()) returns string {
+    string output = "";
+    if (output_format == "json") {
+        output = "\"message\": " + getMessage(msg, err) + keyValues;
+    } else {
+        output = "message = " + getMessage(msg, err) + keyValues;
+    }
+    return output;
+}
+
+isolated function getMessage(string msg, error? err = ()) returns string {
+    string message =  "\"" + msg + "\"";
+    if (err is error) {
+        if (output_format == "json") {
+            message += ", \"error\": \"" + err.message() + "\"";
+        } else {
+            message += " error = \"" + err.message() + "\"" ;
+        }
+    }
+    return message;
 }
