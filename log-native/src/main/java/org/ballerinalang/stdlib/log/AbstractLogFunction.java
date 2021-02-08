@@ -53,10 +53,8 @@ public abstract class AbstractLogFunction {
      * @param consumer log message consumer
      */
     static void logMessage(BString message, String pckg,
-                           BiConsumer<String, String> consumer, boolean jsonFormat) {
-        if (jsonFormat) {
-            BLogManager.setBallerinaJsonLogFormat();
-        }
+                           BiConsumer<String, String> consumer, String outputFormat) {
+        BLogManager.setLogOutputFormat(outputFormat);
         // Create a new log message supplier
         Supplier<String> logMessage = new Supplier<String>() {
             private String msg = null;
