@@ -41,7 +41,7 @@ public type ErrorKeyValues record {|
 |};
 
 final configurable string output_format = "logfmt";
-const string output_format_json = "json"
+const string JSON_OUTPUT_FORMAT = "json";
 
 # Prints logs.
 # ```ballerina
@@ -98,7 +98,7 @@ isolated function printErrorExtern(string msg, string outputFormat) = @java:Meth
 isolated function appendKeyValue(string key, anydata value) returns string {
     string k;
     string v;
-    if (output_format == output_format_json) {
+    if (output_format == JSON_OUTPUT_FORMAT) {
         k = ", \"" + key + "\": ";
     } else {
         k = " " + key + " = ";
@@ -113,7 +113,7 @@ isolated function appendKeyValue(string key, anydata value) returns string {
 
 isolated function getOutput(string msg, string keyValues, error? err = ()) returns string {
     string output = "";
-    if (output_format == output_format_json) {
+    if (output_format == JSON_OUTPUT_FORMAT) {
         output = "\"message\": " + getMessage(msg, err) + keyValues;
     } else {
         output = "message = " + getMessage(msg, err) + keyValues;
@@ -124,7 +124,7 @@ isolated function getOutput(string msg, string keyValues, error? err = ()) retur
 isolated function getMessage(string msg, error? err = ()) returns string {
     string message =  "\"" + msg + "\"";
     if (err is error) {
-        if (output_format == output_format_json) {
+        if (output_format == JSON_OUTPUT_FORMAT) {
             message += ", \"error\": \"" + err.message() + "\"";
         } else {
             message += " error = \"" + err.message() + "\"" ;
