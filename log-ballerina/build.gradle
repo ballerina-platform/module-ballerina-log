@@ -60,8 +60,6 @@ task unpackStdLibs() {
 }
 
 task copyStdlibs(type: Copy) {
-    dependsOn(unpackJballerinaTools)
-    dependsOn(unpackStdLibs)
     def ballerinaDist = "build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}"
     into ballerinaDist
 
@@ -125,13 +123,6 @@ task initializeVariables {
 }
 
 task ballerinaTest {
-    dependsOn(":log-native:build")
-    dependsOn(":log-test-utils:build")
-    dependsOn(copyStdlibs)
-    dependsOn(updateTomlVerions)
-    dependsOn(initializeVariables)
-    finalizedBy(revertTomlFile)
-
     doLast {
         exec {
             workingDir project.projectDir
@@ -148,20 +139,8 @@ task ballerinaTest {
     }
 }
 
-test {
-    dependsOn(ballerinaTest)
-}
-
 task ballerinaBuild {
     inputs.dir file(project.projectDir)
-    dependsOn(":log-native:build")
-    dependsOn(":log-test-utils:build")
-    dependsOn(copyStdlibs)
-    dependsOn(updateTomlVerions)
-    dependsOn(test)
-    dependsOn(initializeVariables)
-    finalizedBy(revertTomlFile)
-    finalizedBy(':log-integration-tests:build')
 
     def testParams = "--skip-tests"
     gradle.taskGraph.whenReady { graph ->
@@ -260,6 +239,24 @@ publishing {
     }
 }
 
-build {
-    dependsOn(ballerinaBuild)
-}
+copyStdlibs.dependsOn unpackStdLibs
+copyStdlibs.dependsOn unpackJballerinaTools
+
+ballerinaTest.dependsOn ":log-native:build"
+ballerinaTest.dependsOn ":log-test-utils:build"
+ballerinaTest.dependsOn copyStdlibs
+ballerinaTest.dependsOn updateTomlVerions
+ballerinaTest.dependsOn initializeVariables
+ballerinaTest.finalizedBy revertTomlFile
+test.dependsOn ballerinaTest
+
+
+ballerinaBuild.dependsOn ":log-native:build"
+ballerinaBuild.dependsOn ":log-test-utils:build"
+ballerinaBuild.dependsOn copyStdlibs
+ballerinaBuild.dependsOn updateTomlVerions
+ballerinaBuild.dependsOn initializeVariables
+ballerinaBuild.dependsOn test
+ballerinaBuild.finalizedBy revertTomlFile
+ballerinaBuild.finalizedBy ':log-integration-tests:build'
+build.dependsOn ballerinaBuild
