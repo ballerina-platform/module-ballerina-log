@@ -25,9 +25,9 @@ To publish the logs to a file, redirect the `stderr` stream to a file.
 ```bash
 $ ballerina run program.bal 2> b7a-user.log
 ```
-For more information go to [The Log Module](https://ballerina.io/swan-lake/learn/api-docs/ballerina/log/).
+For more information go to [The Log Module](https://ballerina.io/learn/api-docs/ballerina/log/).
 
-For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/swan-lake/learn/by-example/).
+For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
 
 ## Issues and Projects
 
