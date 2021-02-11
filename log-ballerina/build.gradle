@@ -19,6 +19,19 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 description = 'Ballerina - Log Ballerina Generator'
 
+def packageName = "log"
+def packageOrg = "ballerina"
+def tomlVersion = project.version.replace("-SNAPSHOT", "")
+def ballerinaConfigFile = new File("${project.projectDir}/Ballerina.toml")
+def artifactBallerinaDocs = file("${project.projectDir}/build/docs_parent/")
+def artifactCacheParent = file("${project.projectDir}/build/cache_parent/")
+def artifactLibParent = file("${project.projectDir}/build/lib_parent/")
+def artifactCodeCoverageReport = file("${project.projectDir}/target/cache/tests_cache/coverage/ballerina.exec")
+def artifactTestableJar = file("${project.projectDir}/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java11/")
+def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
+def distributionBinPath = project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
+def originalConfig = ballerinaConfigFile.text
+
 configurations {
     jbalTools
 }
@@ -28,7 +41,7 @@ dependencies {
     jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
         transitive = false
     }
-    compile project(':log-native')
+    compile project(":${packageName}-native")
 }
 
 clean {
@@ -75,20 +88,6 @@ task copyStdlibs(type: Copy) {
     }
 }
 
-def packageName = "log"
-def packageOrg = "ballerina"
-def tomlVersion = project.version.split("-")[0]
-def ballerinaConfigFile = new File("${project.projectDir}/Ballerina.toml")
-def artifactBallerinaDocs = file("${project.projectDir}/build/docs_parent/")
-def artifactCacheParent = file("${project.projectDir}/build/cache_parent/")
-def artifactLibParent = file("${project.projectDir}/build/lib_parent/")
-def artifactCodeCoverageReport = file("${project.projectDir}/target/cache/tests_cache/coverage/ballerina.exec")
-def artifactTestableJar = file("$project.projectDir/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java11/")
-def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
-def originalConfig = ballerinaConfigFile.text
-def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/" +
-        "jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
-
 task updateTomlVerions {
     doLast {
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
@@ -107,6 +106,7 @@ def groupParams = ""
 def disableGroups = ""
 def debugParams = ""
 def balJavaDebugParam = ""
+def testParams = ""
 
 task initializeVariables {
     if (project.hasProperty("groups")) {
@@ -120,6 +120,24 @@ task initializeVariables {
     }
     if (project.hasProperty("balJavaDebug")) {
         balJavaDebugParam = "BAL_JAVA_DEBUG=${project.findProperty("balJavaDebug")}"
+    }
+
+    gradle.taskGraph.whenReady { graph ->
+        if (graph.hasTask(":${packageName}-ballerina:build") || graph.hasTask(":${packageName}-ballerina:publish")) {
+            ballerinaTest.enabled = false
+        }
+
+        if (graph.hasTask(":${packageName}-ballerina:test")) {
+            testParams = "--code-coverage --includes=*"
+        } else {
+            testParams = "--skip-tests"
+        }
+
+        if (graph.hasTask(":${packageName}-ballerina:publish")) {
+            ballerinaPublish.enabled = true
+        } else {
+            ballerinaPublish.enabled = false
+        }
     }
 }
 
@@ -143,26 +161,15 @@ task ballerinaTest {
 task ballerinaBuild {
     inputs.dir file(project.projectDir)
 
-    def testParams = "--skip-tests"
-    gradle.taskGraph.whenReady { graph ->
-        if (graph.hasTask(":${packageName}-ballerina:build") || graph.hasTask(":${packageName}-ballerina:publish")) {
-            ballerinaTest.enabled = false
-        }
-        if (graph.hasTask(":${packageName}-ballerina:test")) {
-            testParams = "--code-coverage --includes=*"
-        }
-    }
-
     doLast {
         // Build and populate caches
         exec {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "${balJavaDebugParam} ${distributionBinPath}/bal.bat build " +
-                        "${testParams} ${debugParams} && exit %%ERRORLEVEL%%"
+                commandLine 'cmd', '/c', "$balJavaDebugParam $distributionBinPath/bal.bat build ${testParams} ${debugParams} && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "${balJavaDebugParam} ${distributionBinPath}/bal build ${testParams} ${debugParams}"
+                commandLine 'sh', '-c', "$balJavaDebugParam $distributionBinPath/bal build ${testParams} ${debugParams}"
             }
         }
         copy {
@@ -176,20 +183,6 @@ task ballerinaBuild {
             into file("${artifactCacheParent}/cache/")
         }
 
-        // Publish to central
-        if (!project.version.endsWith('-SNAPSHOT') && ballerinaCentralAccessToken != null && project.hasProperty("publishToCentral")) {
-            println("Publishing to the ballerina central..")
-            exec {
-                workingDir project.projectDir
-                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
-                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                    commandLine 'cmd', '/c', "${distributionBinPath}/bal.bat push && exit %%ERRORLEVEL%%"
-                } else {
-                    commandLine 'sh', '-c', "${distributionBinPath}/bal push"
-                }
-            }
-
-        }
         // Doc creation and packing
         exec {
             workingDir project.projectDir
@@ -209,6 +202,23 @@ task ballerinaBuild {
     outputs.dir artifactCacheParent
     outputs.dir artifactBallerinaDocs
     outputs.dir artifactLibParent
+}
+
+task ballerinaPublish {
+    doLast {
+        if (ballerinaCentralAccessToken != null) {
+            println("Publishing to the ballerina central...")
+            exec {
+                workingDir project.projectDir
+                environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
+                if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                    commandLine 'cmd', '/c', "$distributionBinPath/bal.bat push ${packageName} && exit %%ERRORLEVEL%%"
+                } else {
+                    commandLine 'sh', '-c', "$distributionBinPath/bal push ${packageName}"
+                }
+            }
+        }
+    }
 }
 
 task createArtifactZip(type: Zip) {
@@ -236,7 +246,7 @@ publishing {
     repositories {
         maven {
             name = "GitHubPackages"
-            url = uri("https://maven.pkg.github.com/ballerina-platform/module-ballerina-log")
+            url = uri("https://maven.pkg.github.com/ballerina-platform/module-${packageOrg}-${packageName}")
             credentials {
                 username = System.getenv("packageUser")
                 password = System.getenv("packagePAT")
@@ -248,8 +258,8 @@ publishing {
 copyStdlibs.dependsOn unpackStdLibs
 copyStdlibs.dependsOn unpackJballerinaTools
 
-ballerinaTest.dependsOn ":log-native:build"
-ballerinaTest.dependsOn ":log-test-utils:build"
+ballerinaTest.dependsOn ":${packageName}-native:build"
+ballerinaTest.dependsOn ":${packageName}-test-utils:build"
 ballerinaTest.dependsOn copyStdlibs
 ballerinaTest.dependsOn updateTomlVerions
 ballerinaTest.dependsOn initializeVariables
@@ -257,8 +267,8 @@ ballerinaTest.finalizedBy revertTomlFile
 test.dependsOn ballerinaTest
 
 
-ballerinaBuild.dependsOn ":log-native:build"
-ballerinaBuild.dependsOn ":log-test-utils:build"
+ballerinaBuild.dependsOn ":${packageName}-native:build"
+ballerinaBuild.dependsOn ":${packageName}-test-utils:build"
 ballerinaBuild.dependsOn copyStdlibs
 ballerinaBuild.dependsOn updateTomlVerions
 ballerinaBuild.dependsOn initializeVariables
@@ -266,5 +276,8 @@ ballerinaBuild.dependsOn test
 ballerinaBuild.finalizedBy revertTomlFile
 ballerinaBuild.finalizedBy ':log-integration-tests:build'
 build.dependsOn ballerinaBuild
+
+ballerinaPublish.dependsOn ballerinaBuild
+publish.dependsOn ballerinaPublish
 
 createTestableJarZip.dependsOn ballerinaBuild
