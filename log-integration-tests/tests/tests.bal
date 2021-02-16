@@ -13,6 +13,8 @@ const string PRINT_ERROR_WITH_CAUSE_MESSAGE_LOGFMT = "message = \"Something went
 const string KEY_VALUE_FOO_LOGFMT = "foo = true";
 const string KEY_VALUE_ID_LOGFMT = "id = 845315";
 const string KEY_VALUE_USERNAME_LOGFMT = "username = \"Alex92\"";
+const string MODULE_LOGFMT = "module = \"\"";
+const string TIME_LOGFMT = "time =";
 
 const string PRINT_MESSAGE_JSON = "\"message\": \"Inside main function\"";
 const string PRINT_ERROR_MESSAGE_JSON = "\"message\": \"Something went wrong\"";
@@ -20,6 +22,8 @@ const string PRINT_ERROR_WITH_CAUSE_MESSAGE_JSON = "\"message\": \"Something wen
 const string KEY_VALUE_FOO_JSON = "\"foo\": true";
 const string KEY_VALUE_ID_JSON = "\"id\": 845315";
 const string KEY_VALUE_USERNAME_JSON = "\"username\": \"Alex92\"";
+const string MODULE_JSON= "\"module\": \"\"";
+const string TIME_JSON = "\"time\":";
 
 configurable string bal_exec_path = ?;
 
@@ -33,12 +37,15 @@ public function testSingleFileLogfmtFormat() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
+        foreach var logLine in logLines {
+                    io:println(logLine);
+                }
     test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[6], " ", PRINT_MESSAGE_LOGFMT, [KEY_VALUE_FOO_LOGFMT, KEY_VALUE_ID_LOGFMT, KEY_VALUE_USERNAME_LOGFMT]);
-    validateLog(logLines[7], " ", PRINT_MESSAGE_LOGFMT, [KEY_VALUE_ID_LOGFMT, KEY_VALUE_USERNAME_LOGFMT]);
-    validateLog(logLines[8], " ", PRINT_ERROR_MESSAGE_LOGFMT, [KEY_VALUE_FOO_LOGFMT, KEY_VALUE_ID_LOGFMT, KEY_VALUE_USERNAME_LOGFMT]);
-    validateLog(logLines[9], " ", PRINT_ERROR_MESSAGE_LOGFMT, [KEY_VALUE_ID_LOGFMT, KEY_VALUE_USERNAME_LOGFMT]);
-    validateLog(logLines[10], " ", PRINT_ERROR_WITH_CAUSE_MESSAGE_LOGFMT, [KEY_VALUE_FOO_LOGFMT, KEY_VALUE_ID_LOGFMT, KEY_VALUE_USERNAME_LOGFMT]);
+    validateLog(logLines[6], TIME_LOGFMT, MODULE_LOGFMT, PRINT_MESSAGE_LOGFMT, [KEY_VALUE_FOO_LOGFMT, KEY_VALUE_ID_LOGFMT, KEY_VALUE_USERNAME_LOGFMT]);
+    validateLog(logLines[7], TIME_LOGFMT, MODULE_LOGFMT, PRINT_MESSAGE_LOGFMT, [KEY_VALUE_ID_LOGFMT, KEY_VALUE_USERNAME_LOGFMT]);
+    validateLog(logLines[8], TIME_LOGFMT, MODULE_LOGFMT, PRINT_ERROR_MESSAGE_LOGFMT, [KEY_VALUE_FOO_LOGFMT, KEY_VALUE_ID_LOGFMT, KEY_VALUE_USERNAME_LOGFMT]);
+    validateLog(logLines[9], TIME_LOGFMT, MODULE_LOGFMT, PRINT_ERROR_MESSAGE_LOGFMT, [KEY_VALUE_ID_LOGFMT, KEY_VALUE_USERNAME_LOGFMT]);
+    validateLog(logLines[10], TIME_LOGFMT, MODULE_LOGFMT, PRINT_ERROR_WITH_CAUSE_MESSAGE_LOGFMT, [KEY_VALUE_FOO_LOGFMT, KEY_VALUE_ID_LOGFMT, KEY_VALUE_USERNAME_LOGFMT]);
 }
 
 @test:Config {}
@@ -51,15 +58,19 @@ public function testSingleFileJsonFormat() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
+        foreach var logLine in logLines {
+                    io:println(logLine);
+                }
     test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[6], " ", PRINT_MESSAGE_JSON, [KEY_VALUE_FOO_JSON, KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
-    validateLog(logLines[7], " ", PRINT_MESSAGE_JSON, [KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
-    validateLog(logLines[8], " ", PRINT_ERROR_MESSAGE_JSON, [KEY_VALUE_FOO_JSON, KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
-    validateLog(logLines[9], " ", PRINT_ERROR_MESSAGE_JSON, [KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
-    validateLog(logLines[10], " ", PRINT_ERROR_WITH_CAUSE_MESSAGE_JSON, [KEY_VALUE_FOO_JSON, KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
+    validateLog(logLines[6], TIME_JSON, MODULE_JSON, PRINT_MESSAGE_JSON, [KEY_VALUE_FOO_JSON, KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
+    validateLog(logLines[7], TIME_JSON, MODULE_JSON, PRINT_MESSAGE_JSON, [KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
+    validateLog(logLines[8], TIME_JSON, MODULE_JSON, PRINT_ERROR_MESSAGE_JSON, [KEY_VALUE_FOO_JSON, KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
+    validateLog(logLines[9], TIME_JSON, MODULE_JSON, PRINT_ERROR_MESSAGE_JSON, [KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
+    validateLog(logLines[10], TIME_JSON, MODULE_JSON, PRINT_ERROR_WITH_CAUSE_MESSAGE_JSON, [KEY_VALUE_FOO_JSON, KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
 }
 
-isolated function validateLog(string log, string logLocation, string logMsg, string[] keyValues) {
+isolated function validateLog(string log, string time, string logLocation, string logMsg, string[] keyValues) {
+    test:assertTrue(log.includes(time));
     test:assertTrue(log.includes(logLocation));
     test:assertTrue(log.includes(logMsg));
     foreach var keyValue in keyValues {
