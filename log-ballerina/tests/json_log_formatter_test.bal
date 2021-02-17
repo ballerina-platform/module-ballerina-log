@@ -25,7 +25,7 @@ function testFormat() {
                              "components=1))\nHTTP/1.1 200 OK\ncontent-type: application/json\ncontent-length: " +
                              "55\nserver: wso2-http-transport\ndate: Fri, 16 Mar 2018 14:26:12 +0530, " +
                              "55B\n{\"message\":\"Max entity body size resource is invoked.\"} ";
-    string result = format(traceLogMessage);
+    string result = formatMessage(traceLogMessage);
     test:assertTrue(result.includes("[id: 0x65d56de4, correlatedSource: n/a, " +
                                                  "host:localhost/0:0:0:0:0:0:0:1:9090 - remote:/0:0:0:0:0:0:0:1:52872] " +
                                                  "OUTBOUND: DefaultFullHttpResponse(decodeResult: success, " +
@@ -66,7 +66,7 @@ function testGetTail() {
     test:assertTrue(result.includes(""));
 }
 
-public function format(string logMessage) returns string = @java:Method {
+public function formatMessage(string logMessage) returns string = @java:Method {
     'class: "org/ballerinalang/stdlib/log/testutils/JsonLogFormatterTestUtils"
 } external;
 
