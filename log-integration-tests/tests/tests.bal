@@ -7,14 +7,17 @@ const string UTF_8 = "UTF-8";
 const string LOG_MESSAGE_INFO_FILE = "tests/resources/log-messages/info.bal";
 const string LOG_MESSAGE_WARN_FILE = "tests/resources/log-messages/warn.bal";
 const string LOG_MESSAGE_DEBUG_FILE = "tests/resources/log-messages/debug.bal";
+const string LOG_MESSAGE_ERROR_FILE = "tests/resources/log-messages/error.bal";
 const string CONFIG_DEBUG_FILE = "tests/resources/config/debug/Config.toml";
 
 const string LEVEL_DEBUG = "level = DEBUG";
+const string LEVEL_ERROR = "level = ERROR";
 const string LEVEL_INFO = "level = INFO";
 const string LEVEL_WARN = "level = WARN";
 const string PACKAGE = "module = \"\"";
 const string MESSAGE_INFO = "message = \"info log\"";
 const string MESSAGE_DEBUG = "message = \"debug log\"";
+const string MESSAGE_ERROR = "message = \"error log\"";
 const string MESSAGE_WARN = "message = \"warn log\"";
 const string KEY_VALUES1 = "foo = true id = 845315 username = \"Alex92\"";
 const string KEY_VALUES2 = "id = 845315 username = \"Alex92\"";
@@ -35,6 +38,22 @@ public function testDebugMessage() {
     validateLog(logLines[6], LEVEL_DEBUG, PACKAGE, MESSAGE_DEBUG, "");
     validateLog(logLines[7], LEVEL_DEBUG, PACKAGE, MESSAGE_DEBUG, KEY_VALUES1);
     validateLog(logLines[8], LEVEL_DEBUG, PACKAGE, MESSAGE_DEBUG, KEY_VALUES2);
+}
+
+@test:Config {}
+public function testErrorMessage() {
+    os:Process|error execResult = os:exec(bal_exec_path, {}, (), "run", LOG_MESSAGE_ERROR_FILE);
+    os:Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[6], LEVEL_ERROR, PACKAGE, MESSAGE_ERROR, "");
+    validateLog(logLines[7], LEVEL_ERROR, PACKAGE, MESSAGE_ERROR, KEY_VALUES1);
+    validateLog(logLines[8], LEVEL_ERROR, PACKAGE, MESSAGE_ERROR, KEY_VALUES2);
 }
 
 @test:Config {}

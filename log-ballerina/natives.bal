@@ -56,6 +56,19 @@ public isolated function printDebug(string msg, *KeyValues keyValues) {
     }
 }
 
+# Prints error logs.
+# ```ballerina
+# log:printError("error message", id = 845315)
+# ```
+#
+# + msg - The message to be logged
+# + keyValues - The key-value pairs to be logged
+public isolated function printError(string msg, *KeyValues keyValues) {
+    if (isLogLevelEnabled(ERROR)) {
+        print("ERROR", msg, keyValues);
+    }
+}
+
 # Prints info logs.
 # ```ballerina
 # log:printInfo("info message", id = 845315)

@@ -17,7 +17,7 @@
 import ballerina/log;
 
 public function main() {
-    log:printWarn("warn log");
-    log:printWarn("warn log", username = "Alex92", id = 845315, foo = true);
-    log:printWarn("warn log", username = isolated function() returns string { return "Alex92";}, id = isolated function() returns int { return 845315;});
+    log:printError("error log");
+    log:printError("error log", username = "Alex92", id = 845315, foo = true);
+    log:printError("error log", username = isolated function() returns string { return "Alex92";}, id = isolated function() returns int { return 845315;});
 }
