@@ -90,7 +90,7 @@ public isolated function printInfo(string msg, *KeyValues keyValues) {
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printWarn(string msg, *KeyValues keyValues) {
-    if (isLogLevelEnabled(INFO)) {
+    if (isLogLevelEnabled(WARN)) {
         print("WARN", msg, keyValues);
     }
 }
