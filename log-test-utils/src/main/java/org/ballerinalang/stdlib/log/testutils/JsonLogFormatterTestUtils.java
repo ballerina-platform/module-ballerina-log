@@ -31,7 +31,7 @@ import java.util.logging.LogRecord;
  */
 public class JsonLogFormatterTestUtils {
 
-    public static BString format(BString logMessage) {
+    public static BString formatMessage(BString logMessage) {
         JsonLogFormatter jsonLogFormatter = new JsonLogFormatter();
         LogRecord logRecord = new LogRecord(Level.FINEST, logMessage.toString());
         return StringUtils.fromString(jsonLogFormatter.format(logRecord));
