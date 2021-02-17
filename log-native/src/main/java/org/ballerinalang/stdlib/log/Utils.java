@@ -19,6 +19,7 @@
 package org.ballerinalang.stdlib.log;
 
 import io.ballerina.runtime.api.values.BString;
+import org.ballerinalang.logging.util.BLogLevel;
 
 /**
  * Native function implementations of the log-api module.
@@ -27,19 +28,45 @@ import io.ballerina.runtime.api.values.BString;
  */
 public class Utils extends AbstractLogFunction {
 
-    public static void printExtern(BString msg, BString outputFormat) {
-        logMessage(msg, getPackagePath(),
-                (pkg, message) -> {
-                    getLogger(pkg).info(message);
-                }
-                , outputFormat.toString());
-    }
-
-    public static void printErrorExtern(BString msg, BString outputFormat) {
-        logMessage(msg, getPackagePath(),
-                (pkg, message) -> {
-                    getLogger(pkg).error(message);
-                }
-                , outputFormat.toString());
+    /**
+     * Prints the log message.
+     *
+     * @param logLevel log level
+     * @param msg log message
+     * @param format output format
+     */
+    public static void printExtern(BString logLevel, BString msg, BString format) {
+        switch (BLogLevel.toBLogLevel(logLevel.getValue())) {
+            case DEBUG:
+                logMessage(msg, getPackagePath(),
+                        (pkg, message) -> {
+                            getLogger(pkg).debug(message);
+                        },
+                        format.toString());
+                break;
+            case INFO:
+                logMessage(msg, getPackagePath(),
+                        (pkg, message) -> {
+                            getLogger(pkg).info(message);
+                        },
+                        format.toString());
+                break;
+            case ERROR:
+                logMessage(msg, getPackagePath(),
+                        (pkg, message) -> {
+                            getLogger(pkg).error(message);
+                        },
+                        format.toString());
+                break;
+            case WARN:
+                logMessage(msg, getPackagePath(),
+                        (pkg, message) -> {
+                            getLogger(pkg).warn(message);
+                        },
+                        format.toString());
+                break;
+            default:
+                break;
+        }
     }
 }

@@ -30,27 +30,23 @@ public type KeyValues record {|
     Value...;
 |};
 
-# Key-Value pairs that needs to be desplayed in the error log.
-#
-# + msg - msg which cannot be a key
-# + err - error
-public type ErrorKeyValues record {|
-    never msg?;
-    never err?;
-    Value...;
-|};
-
 final configurable string format = "logfmt";
+final configurable string level = "INFO";
+
 const string JSON_OUTPUT_FORMAT = "json";
 
-# Prints logs.
+# Prints info logs.
 # ```ballerina
-# log:print("something went wrong", id = 845315)
+# log:printInfo("info message", id = 845315)
 # ```
 #
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function print(string msg, *KeyValues keyValues) {
+public isolated function printInfo(string msg, *KeyValues keyValues) {
+    print(msg, keyValues);
+}
+
+isolated function print(string msg, *KeyValues keyValues) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
         anydata value;
@@ -61,37 +57,10 @@ public isolated function print(string msg, *KeyValues keyValues) {
         }
         keyValuesString += appendKeyValue(k, value);
     }
-    printExtern(getOutput(msg, keyValuesString), format);
+    printExtern(level, getOutput(msg, keyValuesString), format);
 }
 
-# Prints error logs.
-# ```ballerina
-# error e = error("error occurred");
-# log:printError("error log with cause", err = e, id = 845315);
-# ```
-#
-# + msg - The message to be logged
-# + keyValues - The key-value pairs to be logged
-# + err - The error struct to be logged
-public isolated function printError(string msg, *ErrorKeyValues keyValues, error? err = ()) {
-    string keyValuesString = "";
-    foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata value;
-        if (v is Valuer) {
-           value = v();
-        } else {
-           value = v;
-        }
-        keyValuesString += appendKeyValue(k, value);
-    }
-    printErrorExtern(getOutput(msg, keyValuesString, err), format);
-}
-
-isolated function printExtern(string msg, string outputFormat) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function printErrorExtern(string msg, string outputFormat) = @java:Method {
+isolated function printExtern(string logLevel, string msg, string outputFormat) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
