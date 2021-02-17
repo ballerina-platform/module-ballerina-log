@@ -69,6 +69,19 @@ public isolated function printInfo(string msg, *KeyValues keyValues) {
     }
 }
 
+# Prints warn logs.
+# ```ballerina
+# log:printWarn("info message", id = 845315)
+# ```
+#
+# + msg - The message to be logged
+# + keyValues - The key-value pairs to be logged
+public isolated function printWarn(string msg, *KeyValues keyValues) {
+    if (isLogLevelEnabled(INFO)) {
+        print("WARN", msg, keyValues);
+    }
+}
+
 isolated function print(string logLevel, string msg, *KeyValues keyValues) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
