@@ -65,9 +65,9 @@ public function testSingleFileJsonFormat() {
     validateLog(logLines[10], LEVEL_ERROR_JSON, MODULE_JSON, PRINT_ERROR_WITH_CAUSE_MESSAGE_JSON, [KEY_VALUE_FOO_JSON, KEY_VALUE_ID_JSON, KEY_VALUE_USERNAME_JSON]);
 }
 
-isolated function validateLog(string log, string level, string module, string logMsg, string[] keyValues) {
+isolated function validateLog(string log, string level, string moduleName, string logMsg, string[] keyValues) {
     test:assertTrue(log.includes(level));
-    test:assertTrue(log.includes(module));
+    test:assertTrue(log.includes(moduleName));
     test:assertTrue(log.includes(logMsg));
     foreach var keyValue in keyValues {
         test:assertTrue(log.includes(keyValue));
