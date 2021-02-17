@@ -16,6 +16,14 @@
 
 import ballerina/jballerina.java;
 
+# Represents log level types.
+public enum LogLevel {
+    DEBUG,
+    ERROR,
+    INFO,
+    WARN
+}
+
 # A value of anydata type
 public type Value anydata|Valuer;
 
@@ -35,6 +43,19 @@ final configurable string level = "INFO";
 
 const string JSON_OUTPUT_FORMAT = "json";
 
+# Prints debug logs.
+# ```ballerina
+# log:printDebug("debug message", id = 845315)
+# ```
+#
+# + msg - The message to be logged
+# + keyValues - The key-value pairs to be logged
+public isolated function printDebug(string msg, *KeyValues keyValues) {
+    if (isLogLevelEnabled(DEBUG)) {
+        print("DEBUG", msg, keyValues);
+    }
+}
+
 # Prints info logs.
 # ```ballerina
 # log:printInfo("info message", id = 845315)
@@ -43,10 +64,12 @@ const string JSON_OUTPUT_FORMAT = "json";
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printInfo(string msg, *KeyValues keyValues) {
-    print(msg, keyValues);
+    if (isLogLevelEnabled(INFO)) {
+        print("INFO", msg, keyValues);
+    }
 }
 
-isolated function print(string msg, *KeyValues keyValues) {
+isolated function print(string logLevel, string msg, *KeyValues keyValues) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
         anydata value;
@@ -57,7 +80,7 @@ isolated function print(string msg, *KeyValues keyValues) {
         }
         keyValuesString += appendKeyValue(k, value);
     }
-    printExtern(level, getOutput(msg, keyValuesString), format);
+    printExtern(logLevel, getOutput(msg, keyValuesString), format);
 }
 
 isolated function printExtern(string logLevel, string msg, string outputFormat) = @java:Method {
@@ -101,3 +124,19 @@ isolated function getMessage(string msg, error? err = ()) returns string {
     }
     return message;
 }
+
+isolated function isLogLevelEnabled(LogLevel logLevel) returns boolean {
+    // Sets the global log level
+    var globalLevel = setGlobalLogLevelExtern(level);
+
+    // Checks whether the log level of the print function is enabled
+    return isLogLevelEnabledExtern(logLevel);
+}
+
+isolated function isLogLevelEnabledExtern(LogLevel logLevel) returns boolean = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+isolated function setGlobalLogLevelExtern(string logLevel) = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;

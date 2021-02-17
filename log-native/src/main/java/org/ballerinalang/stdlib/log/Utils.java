@@ -69,4 +69,29 @@ public class Utils extends AbstractLogFunction {
                 break;
         }
     }
+
+    /**
+     * Checks if the given log level is enabled.
+     *
+     * @param logLevel log level
+     * @return true if log level is enabled, false otherwise
+     */
+    public static boolean isLogLevelEnabledExtern(BString logLevel) {
+        if (LOG_MANAGER.isModuleLogLevelEnabled()) {
+            return LOG_MANAGER.getPackageLogLevel(getPackagePath()).value() <=
+                    BLogLevel.toBLogLevel(logLevel.getValue()).value();
+        } else {
+            return LOG_MANAGER.getPackageLogLevel(".").value() <= BLogLevel.toBLogLevel(logLevel.getValue()).value();
+        }
+    }
+
+    /**
+     * Sets the global log level.
+     *
+     * @param logLevel log level
+     */
+    public static void setGlobalLogLevelExtern(BString logLevel) {
+        String level = logLevel.getValue();
+        LOG_MANAGER.setModuleLogLevel(BLogLevel.toBLogLevel(level), ".");
+    }
 }

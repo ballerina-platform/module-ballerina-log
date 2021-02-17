@@ -26,6 +26,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
+import java.util.logging.LogManager;
 
 /**
  * Base class for the other log functions, containing a getter to retrieve the correct logger, given a package name.
@@ -34,6 +35,7 @@ import java.util.function.Supplier;
  */
 public abstract class AbstractLogFunction {
 
+    protected static final BLogManager LOG_MANAGER = (BLogManager) LogManager.getLogManager();
     private static final Logger ballerinaRootLogger = LoggerFactory.getLogger(BLogManager.BALLERINA_ROOT_LOGGER_NAME);
 
     protected static Logger getLogger(String pkg) {
