@@ -105,6 +105,7 @@ release {
     failOnPublishNeeded = false
 
     buildTasks = ["build"]
+    failOnSnapshotDependencies = true
     versionPropertyFile = 'gradle.properties'
     tagTemplate = 'v$version'
 
