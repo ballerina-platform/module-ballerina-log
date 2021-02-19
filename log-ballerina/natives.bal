@@ -35,11 +35,18 @@ public type Valuer isolated function() returns anydata;
 # + msg - msg which cannot be a key
 public type KeyValues record {|
     never msg?;
+    never err?;
     Value...;
 |};
 
+type Module record {
+  readonly string name;
+  string level;
+};
+
 final configurable string format = "logfmt";
 final configurable string level = "INFO";
+final configurable table<Module> key(name) & readonly modules = table [];
 
 const string JSON_OUTPUT_FORMAT = "json";
 
@@ -51,7 +58,7 @@ const string JSON_OUTPUT_FORMAT = "json";
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printDebug(string msg, *KeyValues keyValues) {
-    if (isLogLevelEnabled(DEBUG)) {
+    if (isLogLevelEnabledExtern(DEBUG)) {
         print("DEBUG", msg, keyValues);
     }
 }
@@ -63,8 +70,9 @@ public isolated function printDebug(string msg, *KeyValues keyValues) {
 #
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printError(string msg, *KeyValues keyValues) {
-    if (isLogLevelEnabled(ERROR)) {
+# + err - The error struct to be logged
+public isolated function printError(string msg, *KeyValues keyValues, error? err = ()) {
+    if (isLogLevelEnabledExtern(ERROR)) {
         print("ERROR", msg, keyValues);
     }
 }
@@ -77,20 +85,20 @@ public isolated function printError(string msg, *KeyValues keyValues) {
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printInfo(string msg, *KeyValues keyValues) {
-    if (isLogLevelEnabled(INFO)) {
+    if (isLogLevelEnabledExtern(INFO)) {
         print("INFO", msg, keyValues);
     }
 }
 
 # Prints warn logs.
 # ```ballerina
-# log:printWarn("info message", id = 845315)
+# log:printWarn("warn message", id = 845315)
 # ```
 #
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printWarn(string msg, *KeyValues keyValues) {
-    if (isLogLevelEnabled(WARN)) {
+    if (isLogLevelEnabledExtern(WARN)) {
         print("WARN", msg, keyValues);
     }
 }
@@ -151,18 +159,21 @@ isolated function getMessage(string msg, error? err = ()) returns string {
     return message;
 }
 
-isolated function isLogLevelEnabled(LogLevel logLevel) returns boolean {
-    // Sets the global log level
+isolated function initializeLogLevels() {
     var globalLevel = setGlobalLogLevelExtern(level);
-
-    // Checks whether the log level of the print function is enabled
-    return isLogLevelEnabledExtern(logLevel);
+    modules.forEach(isolated function(Module module) {
+        var moduleLevel = setModuleLogLevelExtern(module.name, module.level);
+    });
 }
 
-isolated function isLogLevelEnabledExtern(LogLevel logLevel) returns boolean = @java:Method {
+isolated function setGlobalLogLevelExtern(string logLevel) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
-isolated function setGlobalLogLevelExtern(string logLevel) = @java:Method {
+isolated function setModuleLogLevelExtern(string module, string level) = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+isolated function isLogLevelEnabledExtern(LogLevel logLevel) returns boolean = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;

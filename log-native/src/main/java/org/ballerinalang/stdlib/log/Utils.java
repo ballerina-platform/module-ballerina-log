@@ -28,6 +28,8 @@ import org.ballerinalang.logging.util.BLogLevel;
  */
 public class Utils extends AbstractLogFunction {
 
+    private static String packagePath = "";
+
     /**
      * Prints the log message.
      *
@@ -38,28 +40,28 @@ public class Utils extends AbstractLogFunction {
     public static void printExtern(BString logLevel, BString msg, BString format) {
         switch (BLogLevel.toBLogLevel(logLevel.getValue())) {
             case DEBUG:
-                logMessage(msg, getPackagePath(),
+                logMessage(msg, packagePath,
                         (pkg, message) -> {
                             getLogger(pkg).debug(message);
                         },
                         format.toString());
                 break;
             case INFO:
-                logMessage(msg, getPackagePath(),
+                logMessage(msg, packagePath,
                         (pkg, message) -> {
                             getLogger(pkg).info(message);
                         },
                         format.toString());
                 break;
             case ERROR:
-                logMessage(msg, getPackagePath(),
+                logMessage(msg, packagePath,
                         (pkg, message) -> {
                             getLogger(pkg).error(message);
                         },
                         format.toString());
                 break;
             case WARN:
-                logMessage(msg, getPackagePath(),
+                logMessage(msg, packagePath,
                         (pkg, message) -> {
                             getLogger(pkg).warn(message);
                         },
@@ -77,8 +79,9 @@ public class Utils extends AbstractLogFunction {
      * @return true if log level is enabled, false otherwise
      */
     public static boolean isLogLevelEnabledExtern(BString logLevel) {
-        if (LOG_MANAGER.isModuleLogLevelEnabled()) {
-            return LOG_MANAGER.getPackageLogLevel(getPackagePath()).value() <=
+        packagePath = getPackagePath();
+        if (LOG_MANAGER.isPackageLogLevelEnabled()) {
+            return LOG_MANAGER.getPackageLogLevel(packagePath).value() <=
                     BLogLevel.toBLogLevel(logLevel.getValue()).value();
         } else {
             return LOG_MANAGER.getPackageLogLevel(".").value() <= BLogLevel.toBLogLevel(logLevel.getValue()).value();
@@ -86,12 +89,20 @@ public class Utils extends AbstractLogFunction {
     }
 
     /**
-     * Sets the global log level.
+     * Sets the module log level.
      *
      * @param logLevel log level
      */
     public static void setGlobalLogLevelExtern(BString logLevel) {
-        String level = logLevel.getValue();
-        LOG_MANAGER.setModuleLogLevel(BLogLevel.toBLogLevel(level), ".");
+        LOG_MANAGER.setGlobalLogLevel(BLogLevel.toBLogLevel(logLevel.getValue()), ".");
+    }
+
+    /**
+     * Sets the log level.
+     * @param module module
+     * @param logLevel log level
+     */
+    public static void setModuleLogLevelExtern(BString module, BString logLevel) {
+        LOG_MANAGER.setModuleLogLevel(BLogLevel.toBLogLevel(logLevel.getValue()), module.getValue());
     }
 }

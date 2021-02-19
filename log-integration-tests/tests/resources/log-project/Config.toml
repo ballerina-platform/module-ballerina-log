@@ -1,0 +1,10 @@
+[log]
+level = "WARN"
+
+[[log.modules]]
+name = "foo"
+level = "ERROR"
+
+[[log.modules]]
+name = "bar"
+level = "DEBUG"

@@ -127,9 +127,19 @@ def setExecPath(configTOMLFile, distributionBinPath) {
     configTOMLFile.text = configTOMLFile.text.replace("@exec.path@", distributionBinPath)
 }
 
+task copyTestResources(type: Copy) {
+    def ballerinaBuild = "build"
+    def testResources = "tests/resources"
+    into ballerinaBuild
+    into("tmp/log-project") {
+        from "${testResources}/log-project"
+    }
+}
+
 task ballerinaIntegrationTests {
     inputs.dir file(project.projectDir)
     dependsOn(copyStdlibs)
+    dependsOn(copyTestResources)
     dependsOn(":log-ballerina:build")
     dependsOn(updateTomlVerions)
     finalizedBy(revertTomlFile)
