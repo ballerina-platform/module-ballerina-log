@@ -127,13 +127,17 @@ def setExecPath(configTOMLFile, distributionBinPath) {
     configTOMLFile.text = configTOMLFile.text.replace("@exec.path@", distributionBinPath)
 }
 
+def setTempDirPath(configTOMLFile, tempDirPath) {
+    configTOMLFile.text = configTOMLFile.text.replace("@temp.path@/bal", tempDirPath)
+}
+
 task copyTestResources(type: Copy) {
-    def ballerinaBuild = "build"
-    def testResources = "tests/resources"
-    into ballerinaBuild
-    into("tmp/log-project") {
-        from "${testResources}/log-project"
+    def tempDir = File.createTempDir()
+    into tempDir
+    into("log-project") {
+        from "tests/resources/log-project"
     }
+    setTempDirPath(configTOMLFile, "$tempDir")
 }
 
 task ballerinaIntegrationTests {
