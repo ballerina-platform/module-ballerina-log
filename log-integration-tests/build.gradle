@@ -135,7 +135,7 @@ task copyTestResources(type: Copy) {
     def tempDir = File.createTempDir()
     into tempDir
     into("log-project") {
-        from "tests/resources/log-project"
+        from "tests/resources/samples/log-project"
     }
     setTempDirPath(configTOMLFile, "$tempDir")
 }

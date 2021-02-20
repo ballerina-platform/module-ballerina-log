@@ -4,37 +4,47 @@ import ballerina/test;
 
 const string UTF_8 = "UTF-8";
 const string INCORRECT_NUMBER_OF_LINES = "incorrect number of lines in output";
-const string LOG_MESSAGE_INFO_FILE = "tests/resources/log-messages/info.bal";
-const string LOG_MESSAGE_WARN_FILE = "tests/resources/log-messages/warn.bal";
-const string LOG_MESSAGE_DEBUG_FILE = "tests/resources/log-messages/debug.bal";
-const string LOG_MESSAGE_ERROR_FILE = "tests/resources/log-messages/error.bal";
-const string LOG_LEVEL_FILE = "tests/resources/log-levels/main.bal";
+const string PRINT_INFO_FILE = "tests/resources/samples/print-functions/info.bal";
+const string PRINT_WARN_FILE = "tests/resources/samples/print-functions/warn.bal";
+const string PRINT_DEBUG_FILE = "tests/resources/samples/print-functions/debug.bal";
+const string PRINT_ERROR_FILE = "tests/resources/samples/print-functions/error.bal";
+const string LOG_LEVEL_FILE = "tests/resources/samples/log-levels/main.bal";
+const string FORMAT_JSON_FILE = "tests/resources/samples/format/format-json.bal";
 
-const string CONFIG_DEBUG_FILE = "tests/resources/config/levels/debug/Config.toml";
-const string CONFIG_ERROR_FILE = "tests/resources/config/levels/error/Config.toml";
-const string CONFIG_INFO_FILE = "tests/resources/config/levels/info/Config.toml";
-const string CONFIG_WARN_FILE = "tests/resources/config/levels/warn/Config.toml";
-const string PROJECT_CONFIG_GLOBAL_LEVEL = "tests/resources/config/project/global/Config.toml";
-const string PROJECT_CONFIG_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL = "tests/resources/config/project/default/Config.toml";
-const string PROJECT_CONFIG_GLOBAL_AND_MODULE_LEVEL = "tests/resources/config/project/global-and-module/Config.toml";
+const string CONFIG_DEBUG_FILE = "tests/resources/config/log-levels/debug/Config.toml";
+const string CONFIG_ERROR_FILE = "tests/resources/config/log-levels/error/Config.toml";
+const string CONFIG_INFO_FILE = "tests/resources/config/log-levels/info/Config.toml";
+const string CONFIG_WARN_FILE = "tests/resources/config/log-levels/warn/Config.toml";
+const string CONFIG_FORMAT_JSON = "tests/resources/config/format/Config.toml";
+const string PROJECT_CONFIG_GLOBAL_LEVEL = "tests/resources/config/log-project/global/Config.toml";
+const string PROJECT_CONFIG_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL = "tests/resources/config/log-project/default/Config.toml";
+const string PROJECT_CONFIG_GLOBAL_AND_MODULE_LEVEL = "tests/resources/config/log-project/global-and-module/Config.toml";
 
 const string LEVEL_DEBUG = "level = DEBUG";
 const string LEVEL_ERROR = "level = ERROR";
+const string LEVEL_ERROR_JSON = "\"level\": \"ERROR\"";
 const string LEVEL_INFO = "level = INFO";
+const string LEVEL_INFO_JSON = "\"level\": \"INFO \"";
 const string LEVEL_WARN = "level = WARN";
 
 const string PACKAGE_SINGLE_FILE = "module = \"\"";
+const string PACKAGE_SINGLE_FILE_JSON = "\"module\": \"\"";
 const string PACKAGE_DEFAULT = "module = myorg/myproject";
 const string PACKAGE_FOO = "module = myorg/myproject.foo";
 const string PACKAGE_BAR = "module = myorg/myproject.bar";
 
 const string MESSAGE_INFO = "message = \"info log\"";
+const string MESSAGE_INFO_JSON = "\"message\": \"info log\"";
 const string MESSAGE_DEBUG = "message = \"debug log\"";
 const string MESSAGE_ERROR = "message = \"error log\"";
+const string MESSAGE_ERROR_JSON = "\"message\": \"error log\"";
 const string MESSAGE_ERROR_WITH_ERR = "message = \"error log\" error = \"bad sad\"";
+const string MESSAGE_ERROR_WITH_ERR_JSON = "\"message\": \"error log\", \"error\": \"bad sad\"";
 const string MESSAGE_WARN = "message = \"warn log\"";
 const string KEY_VALUES1 = "foo = true id = 845315 username = \"Alex92\"";
+const string KEY_VALUES1_JSON = "\"foo\": true, \"id\": 845315, \"username\": \"Alex92\"";
 const string KEY_VALUES2 = "id = 845315 username = \"Alex92\"";
+const string KEY_VALUES2_JSON = "\"id\": 845315, \"username\": \"Alex92\"";
 
 configurable string bal_exec_path = ?;
 configurable string temp_dir_path = ?;
@@ -42,7 +52,7 @@ configurable string temp_dir_path = ?;
 @test:Config {}
 public function testPrintDebug() {
     os:Process|error execResult = os:exec(bal_exec_path, {BALCONFIGFILE: CONFIG_DEBUG_FILE}, (), "run",
-    LOG_MESSAGE_DEBUG_FILE);
+    PRINT_DEBUG_FILE);
     os:Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -58,7 +68,7 @@ public function testPrintDebug() {
 
 @test:Config {}
 public function testPrintError() {
-    os:Process|error execResult = os:exec(bal_exec_path, {}, (), "run", LOG_MESSAGE_ERROR_FILE);
+    os:Process|error execResult = os:exec(bal_exec_path, {}, (), "run", PRINT_ERROR_FILE);
     os:Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -76,7 +86,7 @@ public function testPrintError() {
 
 @test:Config {}
 public function testPrintInfo() {
-    os:Process|error execResult = os:exec(bal_exec_path, {}, (), "run", LOG_MESSAGE_INFO_FILE);
+    os:Process|error execResult = os:exec(bal_exec_path, {}, (), "run", PRINT_INFO_FILE);
     os:Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -92,7 +102,7 @@ public function testPrintInfo() {
 
 @test:Config {}
 public function testPrintWarn() {
-    os:Process|error execResult = os:exec(bal_exec_path, {}, (), "run", LOG_MESSAGE_WARN_FILE);
+    os:Process|error execResult = os:exec(bal_exec_path, {}, (), "run", PRINT_WARN_FILE);
     os:Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -251,6 +261,24 @@ public function testProjectWithGlobalAndModuleLogLevels() {
     validateLog(logLines[13], LEVEL_INFO, PACKAGE_FOO, MESSAGE_INFO, "");
     validateLog(logLines[14], LEVEL_DEBUG, PACKAGE_FOO, MESSAGE_DEBUG, "");
     validateLog(logLines[15], LEVEL_ERROR, PACKAGE_BAR, MESSAGE_ERROR, "");
+}
+
+@test:Config {}
+public function testJsonFormat() {
+    os:Process|error execResult = os:exec(bal_exec_path, {BALCONFIGFILE: CONFIG_FORMAT_JSON}, (), "run", FORMAT_JSON_FILE);
+    os:Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[6], LEVEL_INFO_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_INFO_JSON, KEY_VALUES1_JSON);
+    validateLog(logLines[7], LEVEL_INFO_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_INFO_JSON, KEY_VALUES2_JSON);
+    validateLog(logLines[8], LEVEL_ERROR_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_ERROR_JSON, KEY_VALUES1_JSON);
+    validateLog(logLines[9], LEVEL_ERROR_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_ERROR_JSON, KEY_VALUES2_JSON);
+    validateLog(logLines[10], LEVEL_ERROR_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_ERROR_JSON, KEY_VALUES1_JSON);
 }
 
 isolated function validateLog(string log, string level, string package, string message, string keyValues) {
