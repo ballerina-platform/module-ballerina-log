@@ -2,19 +2,21 @@
 import ballerina/regex;
 import ballerina/test;
 
-const string INCORRECT_NUMBER_OF_LINES = "incorrect number of lines in output";
 const string UTF_8 = "UTF-8";
+const string INCORRECT_NUMBER_OF_LINES = "incorrect number of lines in output";
 const string LOG_MESSAGE_INFO_FILE = "tests/resources/log-messages/info.bal";
 const string LOG_MESSAGE_WARN_FILE = "tests/resources/log-messages/warn.bal";
 const string LOG_MESSAGE_DEBUG_FILE = "tests/resources/log-messages/debug.bal";
 const string LOG_MESSAGE_ERROR_FILE = "tests/resources/log-messages/error.bal";
 const string LOG_LEVEL_FILE = "tests/resources/log-levels/main.bal";
 
-const string CONFIG_DEBUG_FILE = "tests/resources/config/debug/Config.toml";
-const string CONFIG_ERROR_FILE = "tests/resources/config/error/Config.toml";
-const string CONFIG_INFO_FILE = "tests/resources/config/info/Config.toml";
-const string CONFIG_WARN_FILE = "tests/resources/config/warn/Config.toml";
-const string PROJECT_CONFIG_FILE = "tests/resources/config/project/Config.toml";
+const string CONFIG_DEBUG_FILE = "tests/resources/config/levels/debug/Config.toml";
+const string CONFIG_ERROR_FILE = "tests/resources/config/levels/error/Config.toml";
+const string CONFIG_INFO_FILE = "tests/resources/config/levels/info/Config.toml";
+const string CONFIG_WARN_FILE = "tests/resources/config/levels/warn/Config.toml";
+const string PROJECT_CONFIG_GLOBAL_LEVEL = "tests/resources/config/project/global/Config.toml";
+const string PROJECT_CONFIG_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL = "tests/resources/config/project/default/Config.toml";
+const string PROJECT_CONFIG_GLOBAL_AND_MODULE_LEVEL = "tests/resources/config/project/global-and-module/Config.toml";
 
 const string LEVEL_DEBUG = "level = DEBUG";
 const string LEVEL_ERROR = "level = ERROR";
@@ -167,9 +169,73 @@ public function testDebugLevel() {
 }
 
 @test:Config {}
-public function testModuleLogLevel() {
-    os:Process|error execResult = os:exec(bal_exec_path, {BALCONFIGFILE: PROJECT_CONFIG_FILE}, (), "run", temp_dir_path
+public function testProjectWithoutLogLevel() {
+    os:Process|error execResult = os:exec(bal_exec_path, {}, (), "run", temp_dir_path
     + "/log-project");
+    os:Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    test:assertEquals(logLines.length(), 18, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[9], LEVEL_ERROR, PACKAGE_DEFAULT, MESSAGE_ERROR, "");
+    validateLog(logLines[10], LEVEL_WARN, PACKAGE_DEFAULT, MESSAGE_WARN, "");
+    validateLog(logLines[11], LEVEL_INFO, PACKAGE_DEFAULT, MESSAGE_INFO, "");
+    validateLog(logLines[12], LEVEL_ERROR, PACKAGE_FOO, MESSAGE_ERROR, "");
+    validateLog(logLines[13], LEVEL_WARN, PACKAGE_FOO, MESSAGE_WARN, "");
+    validateLog(logLines[14], LEVEL_INFO, PACKAGE_FOO, MESSAGE_INFO, "");
+    validateLog(logLines[15], LEVEL_ERROR, PACKAGE_BAR, MESSAGE_ERROR, "");
+    validateLog(logLines[16], LEVEL_WARN, PACKAGE_BAR, MESSAGE_WARN, "");
+    validateLog(logLines[17], LEVEL_INFO, PACKAGE_BAR, MESSAGE_INFO, "");
+}
+
+@test:Config {}
+public function testProjectWithGlobalLogLevel() {
+    os:Process|error execResult = os:exec(bal_exec_path, {BALCONFIGFILE: PROJECT_CONFIG_GLOBAL_LEVEL}, (),
+    "run", temp_dir_path + "/log-project");
+    os:Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    test:assertEquals(logLines.length(), 15, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[9], LEVEL_ERROR, PACKAGE_DEFAULT, MESSAGE_ERROR, "");
+    validateLog(logLines[10], LEVEL_WARN, PACKAGE_DEFAULT, MESSAGE_WARN, "");
+    validateLog(logLines[11], LEVEL_ERROR, PACKAGE_FOO, MESSAGE_ERROR, "");
+    validateLog(logLines[12], LEVEL_WARN, PACKAGE_FOO, MESSAGE_WARN, "");
+    validateLog(logLines[13], LEVEL_ERROR, PACKAGE_BAR, MESSAGE_ERROR, "");
+    validateLog(logLines[14], LEVEL_WARN, PACKAGE_BAR, MESSAGE_WARN, "");
+}
+
+@test:Config {}
+public function testProjectWithGlobalAndDefualtPackageLogLevel() {
+    os:Process|error execResult = os:exec(bal_exec_path, {BALCONFIGFILE: PROJECT_CONFIG_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL},
+     (), "run", temp_dir_path + "/log-project");
+    os:Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    test:assertEquals(logLines.length(), 16, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[9], LEVEL_ERROR, PACKAGE_DEFAULT, MESSAGE_ERROR, "");
+    validateLog(logLines[10], LEVEL_WARN, PACKAGE_DEFAULT, MESSAGE_WARN, "");
+    validateLog(logLines[11], LEVEL_INFO, PACKAGE_DEFAULT, MESSAGE_INFO, "");
+    validateLog(logLines[12], LEVEL_DEBUG, PACKAGE_DEFAULT, MESSAGE_DEBUG, "");
+    validateLog(logLines[13], LEVEL_ERROR, PACKAGE_FOO, MESSAGE_ERROR, "");
+    validateLog(logLines[14], LEVEL_ERROR, PACKAGE_BAR, MESSAGE_ERROR, "");
+    validateLog(logLines[15], LEVEL_WARN, PACKAGE_BAR, MESSAGE_WARN, "");
+}
+
+@test:Config {}
+public function testProjectWithGlobalAndModuleLogLevels() {
+    os:Process|error execResult = os:exec(bal_exec_path, {BALCONFIGFILE: PROJECT_CONFIG_GLOBAL_AND_MODULE_LEVEL}, (),
+    "run", temp_dir_path + "/log-project");
     os:Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
