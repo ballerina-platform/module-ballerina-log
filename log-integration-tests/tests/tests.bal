@@ -29,6 +29,7 @@ const string PACKAGE_BAR = "module = myorg/myproject.bar";
 const string MESSAGE_INFO = "message = \"info log\"";
 const string MESSAGE_DEBUG = "message = \"debug log\"";
 const string MESSAGE_ERROR = "message = \"error log\"";
+const string MESSAGE_ERROR_WITH_ERR = "message = \"error log\" error = \"bad sad\"";
 const string MESSAGE_WARN = "message = \"warn log\"";
 const string KEY_VALUES1 = "foo = true id = 845315 username = \"Alex92\"";
 const string KEY_VALUES2 = "id = 845315 username = \"Alex92\"";
@@ -63,10 +64,12 @@ public function testPrintError() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[6], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR, "");
     validateLog(logLines[7], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR, KEY_VALUES1);
     validateLog(logLines[8], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR, KEY_VALUES2);
+    validateLog(logLines[9], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR_WITH_ERR, "");
+    validateLog(logLines[10], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR_WITH_ERR, KEY_VALUES1);
 }
 
 @test:Config {}

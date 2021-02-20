@@ -33,6 +33,7 @@ public type Valuer isolated function() returns anydata;
 # Key-Value pairs that needs to be desplayed in the log.
 #
 # + msg - msg which cannot be a key
+# + err - err which cannot be a key
 public type KeyValues record {|
     never msg?;
     never err?;
@@ -73,7 +74,7 @@ public isolated function printDebug(string msg, *KeyValues keyValues) {
 # + err - The error struct to be logged
 public isolated function printError(string msg, *KeyValues keyValues, error? err = ()) {
     if (isLogLevelEnabledExtern(ERROR)) {
-        print("ERROR", msg, keyValues);
+        print("ERROR", msg, keyValues, err);
     }
 }
 
@@ -103,7 +104,7 @@ public isolated function printWarn(string msg, *KeyValues keyValues) {
     }
 }
 
-isolated function print(string logLevel, string msg, *KeyValues keyValues) {
+isolated function print(string logLevel, string msg, *KeyValues keyValues, error? err = ()) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
         anydata value;
@@ -114,7 +115,7 @@ isolated function print(string logLevel, string msg, *KeyValues keyValues) {
         }
         keyValuesString += appendKeyValue(k, value);
     }
-    printExtern(logLevel, getOutput(msg, keyValuesString), format);
+    printExtern(logLevel, getOutput(msg, keyValuesString, err), format);
 }
 
 isolated function printExtern(string logLevel, string msg, string outputFormat) = @java:Method {
