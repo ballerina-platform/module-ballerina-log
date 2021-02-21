@@ -25,7 +25,7 @@ public enum LogLevel {
 }
 
 # A value of anydata type
-public type Value anydata|Valuer;
+public type Value anydata|error:CallStack|Valuer;
 
 # A function that returns anydata type
 public type Valuer isolated function() returns anydata;
@@ -108,8 +108,10 @@ isolated function print(string logLevel, string msg, *KeyValues keyValues, error
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
         anydata value;
-        if (v is Valuer) {
-           value = v();
+        if (v is error:CallStack) {
+            value = v.callStack;
+        } else if (v is Valuer) {
+            value = v();
         } else {
            value = v;
         }
