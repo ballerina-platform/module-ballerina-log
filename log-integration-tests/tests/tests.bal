@@ -76,12 +76,18 @@ public function testPrintError() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[6], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR, "");
     validateLog(logLines[7], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR, KEY_VALUES1);
     validateLog(logLines[8], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR, KEY_VALUES2);
     validateLog(logLines[9], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR_WITH_ERR, "");
     validateLog(logLines[10], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR_WITH_ERR, KEY_VALUES1);
+    validateLog(logLines[11], LEVEL_ERROR, PACKAGE_SINGLE_FILE, MESSAGE_ERROR, "stackTrace = " +
+    "[{\"callableName\":\"f3\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":38}," +
+    "{\"callableName\":\"f2\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":34}," +
+    "{\"callableName\":\"f1\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":30}," +
+    "{\"callableName\":\"main\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":26}] " +
+    "id = 845315 username = \"Alex92\"");
 }
 
 @test:Config {}
@@ -273,12 +279,18 @@ public function testJsonFormat() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[6], LEVEL_INFO_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_INFO_JSON, KEY_VALUES1_JSON);
     validateLog(logLines[7], LEVEL_INFO_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_INFO_JSON, KEY_VALUES2_JSON);
     validateLog(logLines[8], LEVEL_ERROR_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_ERROR_JSON, KEY_VALUES1_JSON);
     validateLog(logLines[9], LEVEL_ERROR_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_ERROR_JSON, KEY_VALUES2_JSON);
     validateLog(logLines[10], LEVEL_ERROR_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_ERROR_JSON, KEY_VALUES1_JSON);
+    validateLog(logLines[11], LEVEL_ERROR_JSON, PACKAGE_SINGLE_FILE_JSON, MESSAGE_ERROR_JSON, "\"stackTrace\": " +
+    "[{\"callableName\":\"f3\",\"moduleName\":\"format-json\",\"fileName\":\"format-json.bal\",\"lineNumber\":38}," +
+    "{\"callableName\":\"f2\",\"moduleName\":\"format-json\",\"fileName\":\"format-json.bal\",\"lineNumber\":34}," +
+    "{\"callableName\":\"f1\",\"moduleName\":\"format-json\",\"fileName\":\"format-json.bal\",\"lineNumber\":30}," +
+    "{\"callableName\":\"main\",\"moduleName\":\"format-json\",\"fileName\":\"format-json.bal\",\"lineNumber\":26}]," +
+    " \"id\": 845315, \"username\": \"Alex92\"}");
 }
 
 isolated function validateLog(string log, string level, string package, string message, string keyValues) {

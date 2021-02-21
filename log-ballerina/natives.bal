@@ -17,7 +17,7 @@
 import ballerina/jballerina.java;
 
 # Represents log level types.
-public enum LogLevel {
+enum LogLevel {
     DEBUG,
     ERROR,
     INFO,
@@ -60,7 +60,7 @@ const string JSON_OUTPUT_FORMAT = "json";
 # + keyValues - The key-value pairs to be logged
 public isolated function printDebug(string msg, *KeyValues keyValues) {
     if (isLogLevelEnabledExtern(DEBUG)) {
-        print("DEBUG", msg, keyValues);
+        print(DEBUG, msg, keyValues);
     }
 }
 
@@ -74,7 +74,7 @@ public isolated function printDebug(string msg, *KeyValues keyValues) {
 # + err - The error struct to be logged
 public isolated function printError(string msg, *KeyValues keyValues, error? err = ()) {
     if (isLogLevelEnabledExtern(ERROR)) {
-        print("ERROR", msg, keyValues, err);
+        print(ERROR, msg, keyValues, err);
     }
 }
 
@@ -87,7 +87,7 @@ public isolated function printError(string msg, *KeyValues keyValues, error? err
 # + keyValues - The key-value pairs to be logged
 public isolated function printInfo(string msg, *KeyValues keyValues) {
     if (isLogLevelEnabledExtern(INFO)) {
-        print("INFO", msg, keyValues);
+        print(INFO, msg, keyValues);
     }
 }
 
@@ -100,7 +100,7 @@ public isolated function printInfo(string msg, *KeyValues keyValues) {
 # + keyValues - The key-value pairs to be logged
 public isolated function printWarn(string msg, *KeyValues keyValues) {
     if (isLogLevelEnabledExtern(WARN)) {
-        print("WARN", msg, keyValues);
+        print(WARN, msg, keyValues);
     }
 }
 
