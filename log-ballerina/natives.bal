@@ -25,7 +25,7 @@ enum LogLevel {
 }
 
 # A value of anydata type
-public type Value anydata|error:CallStack|Valuer;
+public type Value anydata|Valuer;
 
 # A function that returns anydata type
 public type Valuer isolated function() returns anydata;
@@ -66,7 +66,8 @@ public isolated function printDebug(string msg, *KeyValues keyValues) {
 
 # Prints error logs.
 # ```ballerina
-# log:printError("error message", id = 845315)
+# error e = error("error occurred");
+# log:printError("error log with cause", err = e, id = 845315);
 # ```
 #
 # + msg - The message to be logged
@@ -108,12 +109,10 @@ isolated function print(string logLevel, string msg, *KeyValues keyValues, error
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
         anydata value;
-        if (v is error:CallStack) {
-            value = v.callStack;
-        } else if (v is Valuer) {
+        if (v is Valuer) {
             value = v();
         } else {
-           value = v;
+            value = v;
         }
         keyValuesString += appendKeyValue(k, value);
     }
@@ -128,12 +127,12 @@ isolated function appendKeyValue(string key, anydata value) returns string {
     string k;
     string v;
     if (format == JSON_OUTPUT_FORMAT) {
-        k = ", \"" + key + "\": ";
+        k = string `, "${key}": `;
     } else {
-        k = " " + key + " = ";
+        k = string ` ${key} = `;
     }
     if (value is string) {
-        v = "\"" + value + "\"";
+        v = string `"${value}"`;
     } else {
         v = value.toString();
     }
@@ -143,20 +142,20 @@ isolated function appendKeyValue(string key, anydata value) returns string {
 isolated function getOutput(string msg, string keyValues, error? err = ()) returns string {
     string output = "";
     if (format == JSON_OUTPUT_FORMAT) {
-        output = "\"message\": " + getMessage(msg, err) + keyValues;
+        output = string `"message": ${getMessage(msg, err)}${keyValues}`;
     } else {
-        output = "message = " + getMessage(msg, err) + keyValues;
+        output = string `message = ${getMessage(msg, err)}${keyValues}`;
     }
     return output;
 }
 
 isolated function getMessage(string msg, error? err = ()) returns string {
-    string message =  "\"" + msg + "\"";
+    string message =  string `"${msg}"`;
     if (err is error) {
         if (format == JSON_OUTPUT_FORMAT) {
-            message += ", \"error\": \"" + err.message() + "\"";
+            message = string `"${msg}", "error": "${err.message()}"`;
         } else {
-            message += " error = \"" + err.message() + "\"" ;
+            message = string `"${msg}" error = "${err.message()}"`;
         }
     }
     return message;

@@ -27,6 +27,7 @@ def originalConfig = ballerinaConfigFile.text
 def configTOMLFile = new File("$project.projectDir/tests/Config.toml")
 def initialTOMLcontent = configTOMLFile.text
 def originalDependencyConfig = ballerinaDependencyFile.text
+def tempDir = File.createTempDir()
 
 configurations {
     jbalTools
@@ -132,12 +133,10 @@ def setTempDirPath(configTOMLFile, tempDirPath) {
 }
 
 task copyTestResources(type: Copy) {
-    def tempDir = File.createTempDir()
     into tempDir
     into("log-project") {
         from "tests/resources/samples/log-project"
     }
-    setTempDirPath(configTOMLFile, "$tempDir")
 }
 
 task ballerinaIntegrationTests {
@@ -150,6 +149,7 @@ task ballerinaIntegrationTests {
     doLast {
         def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
         setExecPath(configTOMLFile,distributionBinPath)
+        setTempDirPath(configTOMLFile, "$tempDir")
         exec {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"

@@ -36,5 +36,5 @@ function f2() {
 
 function f3() {
     error e = error("bad sad");
-    log:printError("error log", stackTrace = e.stackTrace(), username = "Alex92", id = 845315);
+    log:printError("error log", stackTrace = e.stackTrace().callStack, username = "Alex92", id = 845315);
 }

@@ -19,6 +19,7 @@
 package org.ballerinalang.stdlib.log;
 
 import io.ballerina.runtime.api.values.BString;
+import org.ballerinalang.logging.BLogManager;
 import org.ballerinalang.logging.util.BLogLevel;
 
 /**
@@ -28,7 +29,7 @@ import org.ballerinalang.logging.util.BLogLevel;
  */
 public class Utils extends AbstractLogFunction {
 
-    private static String packagePath = ".";
+    private static String packagePath = BLogManager.GLOBAL_PACKAGE_PATH;
 
     /**
      * Prints the log message.
@@ -79,9 +80,19 @@ public class Utils extends AbstractLogFunction {
      * @return true if log level is enabled, false otherwise
      */
     public static boolean isLogLevelEnabledExtern(BString logLevel) {
-        packagePath = getPackagePath();
-        return LOG_MANAGER.getPackageLogLevel(packagePath).value() <= BLogLevel.toBLogLevel(logLevel.getValue())
-                .value();
+        if (LOG_MANAGER.isModuleLogLevelEnabled()) {
+            packagePath = getPackagePath();
+            return LOG_MANAGER.getPackageLogLevel(packagePath).value() <= BLogLevel.toBLogLevel(logLevel.getValue())
+                    .value();
+        } else {
+            if (LOG_MANAGER.getPackageLogLevel(BLogManager.GLOBAL_PACKAGE_PATH).value() <=
+                    BLogLevel.toBLogLevel(logLevel.getValue()).value()) {
+                packagePath = getPackagePath();
+                return true;
+            } else {
+                return false;
+            }
+        }
     }
 
     /**
