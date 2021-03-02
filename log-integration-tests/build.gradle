@@ -31,11 +31,15 @@ def tempDir = File.createTempDir()
 
 configurations {
     jbalTools
+    externalJars
 }
 
 dependencies {
     compile group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
     jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
+        transitive = false
+    }
+    externalJars (group: 'org.ballerinalang', name: 'io-native', version: "${stdlibIoVersion}") {
         transitive = false
     }
     compile project(':log-native')
@@ -95,23 +99,24 @@ task copyStdlibs(type: Copy) {
     }
 }
 
+task copyToLib(type: Copy) {
+    into "$project.projectDir/lib"
+    from configurations.externalJars
+}
+
 task updateTomlVerions {
     doLast {
-        def stdlibDependentIoVersion = project.stdlibIoVersion.replace("${snapshotVersion}", "")
-        def stdlibDependentRegexVersion = project.stdlibRegexVersion.replace("${snapshotVersion}", "")
-        def stdlibDependentOsVersion = project.stdlibOsVersion.replace("${snapshotVersion}", "")
-
+        def stdlibNativeIoVersion = project.stdlibIoVersion
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
-        newConfig = newConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
-        newConfig = newConfig.replace("@stdlib.regex.version@", stdlibDependentRegexVersion)
-        newConfig = newConfig.replace("@stdlib.os.version@", stdlibDependentOsVersion)
+        newConfig = newConfig.replace("@io.native.version@", stdlibNativeIoVersion)
         ballerinaConfigFile.text = newConfig
 
+        def stdlibDependentIoVersion = project.stdlibIoVersion.replace("${snapshotVersion}", "")
+        def stdlibDependentRegexVersion = project.stdlibRegexVersion.replace("${snapshotVersion}", "")
         def newDependencyConfig = ballerinaDependencyFile.text.replace("@toml.version@", tomlVersion)
         newDependencyConfig = newDependencyConfig.replace("@stdlib.io.version@", stdlibDependentIoVersion)
         newDependencyConfig = newDependencyConfig.replace("@stdlib.regex.version@", stdlibDependentRegexVersion)
-        newDependencyConfig = newDependencyConfig.replace("@stdlib.os.version@", stdlibDependentOsVersion)
         ballerinaDependencyFile.text = newDependencyConfig
     }
 }
@@ -142,6 +147,7 @@ task copyTestResources(type: Copy) {
 task ballerinaIntegrationTests {
     inputs.dir file(project.projectDir)
     dependsOn(copyStdlibs)
+    dependsOn(copyToLib)
     dependsOn(copyTestResources)
     dependsOn(":log-ballerina:build")
     dependsOn(updateTomlVerions)

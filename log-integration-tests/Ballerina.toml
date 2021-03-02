@@ -16,3 +16,9 @@ groupId = "org.ballerinalang.stdlib.log"
 scope = "testOnly"
 artifactId = "log"
 version = "@project.version@"
+
+[[platform.java11.dependency]]
+path = "./lib/io-native-@io.native.version@.jar"
+groupId = "org.ballerinalang"
+artifactId = "io-native"
+version = "@io.native.version@"
