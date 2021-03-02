@@ -7,10 +7,6 @@ const INCORRECT_NUMBER_OF_LINES = "incorrect number of lines in output";
 const UTF_8 = "UTF-8";
 const LOG_LEVEL_TEST_FILE = "tests/resources/log_level_test.bal";
 const BALCONFIGFILE_PATH = "tests/resources/Config.toml";
-const string DIST_LIB_REL_PATH = "bre/lib/";
-const string COVERAGE_DIR_REL_PATH = "target/cache/tests_cache/coverage/";
-const string JACOCO_AGENT_JAR = "jacocoagent.jar";
-const string JACOCO_EXEC_FILE_NAME = "ballerina-additional.exec";
 const string PRINT_MESSAGE_LOGFMT = "message = \"Inside main function\"";
 const string PRINT_ERROR_MESSAGE_LOGFMT = "message = \"Something went wrong\"";
 const string PRINT_ERROR_WITH_CAUSE_MESSAGE_LOGFMT = "message = \"Something went wrong\" error = \"bad sad\"";
@@ -35,7 +31,7 @@ configurable string bal_exec_path = ?;
 
 @test:Config {}
 public function testSingleFileLogfmtFormat() {
-    os:Process|error execResult = os:exec(bal_exec_path, createEnvVariables(), (), "run", "--debug", "5005", LOG_LEVEL_TEST_FILE);
+    os:Process|error execResult = os:exec(bal_exec_path, {}, (), "run", LOG_LEVEL_TEST_FILE);
     os:Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -77,19 +73,3 @@ isolated function validateLog(string log, string level, string moduleName, strin
         test:assertTrue(log.includes(keyValue));
     }
 }
-
-function createEnvVariables() returns map<string> {
-    string logModulePath = bal_exec_path.substring(0, <int> bal_exec_path.indexOf("log-integration-tests")) 
-        + "log-ballerina" + "/";
-    string balDistPath = logModulePath + 
-        bal_exec_path.substring(<int> bal_exec_path.indexOf("build"), <int> bal_exec_path.indexOf("bin"));
-    string jacocoAgentPath = balDistPath + DIST_LIB_REL_PATH + JACOCO_AGENT_JAR;
-    string execFilePath = logModulePath + COVERAGE_DIR_REL_PATH + JACOCO_EXEC_FILE_NAME;
-    map<string> envVariables= {
-        JAVA_OPTS: os:getEnv("JAVA_OPTS") + " -javaagent:" + jacocoAgentPath + "=destfile=" + execFilePath +
-        ",includes=* "
-    };
-    return envVariables;
-}
-
-
