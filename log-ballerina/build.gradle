@@ -26,8 +26,6 @@ def ballerinaConfigFile = new File("${project.projectDir}/Ballerina.toml")
 def artifactBallerinaDocs = file("${project.projectDir}/build/docs_parent/")
 def artifactCacheParent = file("${project.projectDir}/build/cache_parent/")
 def artifactLibParent = file("${project.projectDir}/build/lib_parent/")
-def artifactCodeCoverageReport = file("${project.projectDir}/target/cache/tests_cache/coverage/ballerina.exec")
-def artifactTestableJar = file("${project.projectDir}/target/cache/${packageOrg}/${packageName}/${tomlVersion}/java11/")
 def ballerinaCentralAccessToken = System.getenv('BALLERINA_CENTRAL_ACCESS_TOKEN')
 def distributionBinPath = project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
 def originalConfig = ballerinaConfigFile.text
@@ -235,20 +233,10 @@ task createArtifactZip(type: Zip) {
     from ballerinaBuild
 }
 
-task createTestableJarZip(type: Zip) {
-    archiveName("${packageOrg}-${packageName}-${project.version}-testable-jars.zip")
-    destinationDir(file("${buildDir}/distributions"))
-    from("${artifactTestableJar}") {
-        include '**/*-testable.jar'
-    }
-}
-
 publishing {
     publications {
         maven(MavenPublication) {
             artifact source: createArtifactZip, extension: 'zip'
-            artifact source: artifactCodeCoverageReport, classifier: 'jacoco'
-            artifact source: createTestableJarZip, classifier: 'testable-jars', extension: 'zip'
         }
     }
 
@@ -293,5 +281,3 @@ ballerinaPublish.dependsOn updateTomlVersions
 ballerinaPublish.dependsOn ":${packageName}-native:build"
 ballerinaPublish.dependsOn ballerinaBuild
 publish.dependsOn ballerinaPublish
-
-createTestableJarZip.dependsOn ballerinaBuild
