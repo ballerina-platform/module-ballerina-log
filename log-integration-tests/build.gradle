@@ -142,7 +142,7 @@ task ballerinaIntegrationTests {
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
                 commandLine 'cmd', '/c', "$distributionBinPath/bal.bat test"
             } else {
-                commandLine 'sh', '-c', "$distributionBinPath/bal test"
+                commandLine 'sh', '-c', "$distributionBinPath/bal test --code-coverage --includes=*"
             }
         }
     }
