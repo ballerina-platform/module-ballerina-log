@@ -20,7 +20,6 @@ package org.ballerinalang.stdlib.log.testutils.nativeimpl;
 
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
-import io.ballerina.runtime.api.utils.StringUtils;
 import org.ballerinalang.stdlib.log.testutils.utils.OSConstants;
 import org.ballerinalang.stdlib.log.testutils.utils.OSUtils;
 

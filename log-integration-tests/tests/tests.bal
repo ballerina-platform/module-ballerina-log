@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/jballerina.java;
+import ballerina/lang.'value;
 import ballerina/io;
 import ballerina/regex;
 import ballerina/test;
@@ -307,6 +308,10 @@ public function testJsonFormat() {
     "{\"callableName\":\"f1\",\"moduleName\":\"format-json\",\"fileName\":\"format-json.bal\",\"lineNumber\":30}," +
     "{\"callableName\":\"main\",\"moduleName\":\"format-json\",\"fileName\":\"format-json.bal\",\"lineNumber\":26}]," +
     " \"id\": 845315, \"username\": \"Alex92\"}");
+
+    foreach var i in 6 ... 11 {
+        test:assertTrue(isValidJsonString(logLines[i]), "log output is not a valid json string");
+    }
 }
 
 isolated function validateLog(string log, string level, string package, string message, string keyValues) {
@@ -314,6 +319,11 @@ isolated function validateLog(string log, string level, string package, string m
     test:assertTrue(log.includes(package));
     test:assertTrue(log.includes(message));
     test:assertTrue(log.includes(keyValues));
+}
+
+isolated function isValidJsonString(string log) returns boolean {
+    json|error j = value:fromJsonString(log);
+    return j is json ? true : false;
 }
 
 function exec(@untainted string command, @untainted map<string> env = {},
