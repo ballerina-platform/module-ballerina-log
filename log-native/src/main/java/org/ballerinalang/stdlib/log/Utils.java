@@ -19,6 +19,8 @@
 package org.ballerinalang.stdlib.log;
 
 import io.ballerina.runtime.api.values.BString;
+import org.ballerinalang.logging.BLogManager;
+import org.ballerinalang.logging.util.BLogLevel;
 
 /**
  * Native function implementations of the log-api module.
@@ -27,19 +29,88 @@ import io.ballerina.runtime.api.values.BString;
  */
 public class Utils extends AbstractLogFunction {
 
-    public static void printExtern(BString msg, BString outputFormat) {
-        logMessage(msg, getPackagePath(),
-                (pkg, message) -> {
-                    getLogger(pkg).info(message);
-                }
-                , outputFormat.toString());
+    private static String packagePath = BLogManager.GLOBAL_PACKAGE_PATH;
+
+    /**
+     * Prints the log message.
+     *
+     * @param logLevel log level
+     * @param msg log message
+     * @param format output format
+     */
+    public static void printExtern(BString logLevel, BString msg, BString format) {
+        switch (BLogLevel.toBLogLevel(logLevel.getValue())) {
+            case DEBUG:
+                logMessage(msg, packagePath,
+                        (pkg, message) -> {
+                            getLogger(pkg).debug(message);
+                        },
+                        format.toString());
+                break;
+            case INFO:
+                logMessage(msg, packagePath,
+                        (pkg, message) -> {
+                            getLogger(pkg).info(message);
+                        },
+                        format.toString());
+                break;
+            case ERROR:
+                logMessage(msg, packagePath,
+                        (pkg, message) -> {
+                            getLogger(pkg).error(message);
+                        },
+                        format.toString());
+                break;
+            case WARN:
+                logMessage(msg, packagePath,
+                        (pkg, message) -> {
+                            getLogger(pkg).warn(message);
+                        },
+                        format.toString());
+                break;
+            default:
+                break;
+        }
     }
 
-    public static void printErrorExtern(BString msg, BString outputFormat) {
-        logMessage(msg, getPackagePath(),
-                (pkg, message) -> {
-                    getLogger(pkg).error(message);
-                }
-                , outputFormat.toString());
+    /**
+     * Checks if the given log level is enabled.
+     *
+     * @param logLevel log level
+     * @return true if log level is enabled, false otherwise
+     */
+    public static boolean isLogLevelEnabledExtern(BString logLevel) {
+        if (LOG_MANAGER.isModuleLogLevelEnabled()) {
+            packagePath = getPackagePath();
+            return LOG_MANAGER.getPackageLogLevel(packagePath).value() <= BLogLevel.toBLogLevel(logLevel.getValue())
+                    .value();
+        } else {
+            if (LOG_MANAGER.getPackageLogLevel(BLogManager.GLOBAL_PACKAGE_PATH).value() <=
+                    BLogLevel.toBLogLevel(logLevel.getValue()).value()) {
+                packagePath = getPackagePath();
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Sets the global log level.
+     *
+     * @param logLevel log level
+     */
+    public static void setGlobalLogLevelExtern(BString logLevel) {
+        LOG_MANAGER.setGlobalLogLevel(BLogLevel.toBLogLevel(logLevel.getValue()));
+    }
+
+    /**
+     * Sets the module log level.
+     *
+     * @param module module
+     * @param logLevel log level
+     */
+    public static void setModuleLogLevelExtern(BString module, BString logLevel) {
+        LOG_MANAGER.setModuleLogLevel(BLogLevel.toBLogLevel(logLevel.getValue()), module.getValue());
     }
 }

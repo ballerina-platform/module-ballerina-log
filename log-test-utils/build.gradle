@@ -27,6 +27,7 @@ dependencies {
     compile group: 'org.ballerinalang', name: 'ballerina-lang', version: "${ballerinaLangVersion}"
     compile group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
     compile group: 'org.ballerinalang', name: 'ballerina-logging', version: "${ballerinaLangVersion}"
+    compile group: 'org.ballerinalang', name: 'io-native', version: "${stdlibIoVersion}"
     compile "org.slf4j:slf4j-jdk14:${slf4jVersion}"
     compile project(":log-native")
     checkstyle project(":build-config:checkstyle")

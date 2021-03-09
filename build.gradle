@@ -28,7 +28,6 @@ ext.testngVersion = project.testngVersion
 ext.slf4jVersion = project.slf4jVersion
 ext.stdlibIoVersion = project.stdlibIoVersion
 ext.stdlibRegexVersion = project.stdlibRegexVersion
-ext.stdlibOsVersion = project.stdlibOsVersion
 
 allprojects {
     group = 'org.ballerinalang'
@@ -95,7 +94,6 @@ subprojects {
         /* Standard libraries */
         ballerinaStdLibs "org.ballerinalang:io-ballerina:${stdlibIoVersion}"
         ballerinaStdLibs "org.ballerinalang:regex-ballerina:${stdlibRegexVersion}"
-        ballerinaStdLibs "org.ballerinalang:os-ballerina:${stdlibOsVersion}"
     }
 }
 

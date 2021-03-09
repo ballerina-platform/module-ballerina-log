@@ -16,6 +16,14 @@
 
 import ballerina/jballerina.java;
 
+# Represents log level types.
+enum LogLevel {
+    DEBUG,
+    ERROR,
+    INFO,
+    WARN
+}
+
 # A value of anydata type
 public type Value anydata|Valuer;
 
@@ -25,73 +33,96 @@ public type Valuer isolated function() returns anydata;
 # Key-Value pairs that needs to be desplayed in the log.
 #
 # + msg - msg which cannot be a key
+# + 'error - 'error which cannot be a key
 public type KeyValues record {|
     never msg?;
+    never 'error?;
     Value...;
 |};
 
-# Key-Value pairs that needs to be desplayed in the error log.
-#
-# + msg - msg which cannot be a key
-# + err - error
-public type ErrorKeyValues record {|
-    never msg?;
-    never err?;
-    Value...;
-|};
+type Module record {
+  readonly string name;
+  string level;
+};
 
 final configurable string format = "logfmt";
+final configurable string level = "INFO";
+final configurable table<Module> key(name) & readonly modules = table [];
+
 const string JSON_OUTPUT_FORMAT = "json";
 
-# Prints logs.
+# Prints debug logs.
 # ```ballerina
-# log:print("something went wrong", id = 845315)
+# log:printDebug("debug message", id = 845315)
 # ```
 #
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function print(string msg, *KeyValues keyValues) {
-    string keyValuesString = "";
-    foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata value;
-        if (v is Valuer) {
-           value = v();
-        } else {
-           value = v;
-        }
-        keyValuesString += appendKeyValue(k, value);
+# + 'error - The error struct to be logged
+public isolated function printDebug(string msg, *KeyValues keyValues, error? 'error = ()) {
+    if (isLogLevelEnabledExtern(DEBUG)) {
+        print(DEBUG, msg, keyValues, 'error);
     }
-    printExtern(getOutput(msg, keyValuesString), format);
 }
 
 # Prints error logs.
 # ```ballerina
 # error e = error("error occurred");
-# log:printError("error log with cause", err = e, id = 845315);
+# log:printError("error log with cause", 'error = e, id = 845315);
 # ```
 #
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
-# + err - The error struct to be logged
-public isolated function printError(string msg, *ErrorKeyValues keyValues, error? err = ()) {
+# + 'error - The error struct to be logged
+public isolated function printError(string msg, *KeyValues keyValues, error? 'error = ()) {
+    if (isLogLevelEnabledExtern(ERROR)) {
+        print(ERROR, msg, keyValues, 'error);
+    }
+}
+
+# Prints info logs.
+# ```ballerina
+# log:printInfo("info message", id = 845315)
+# ```
+#
+# + msg - The message to be logged
+# + keyValues - The key-value pairs to be logged
+# + 'error - The error struct to be logged
+public isolated function printInfo(string msg, *KeyValues keyValues, error? 'error = ()) {
+    if (isLogLevelEnabledExtern(INFO)) {
+        print(INFO, msg, keyValues, 'error);
+    }
+}
+
+# Prints warn logs.
+# ```ballerina
+# log:printWarn("warn message", id = 845315)
+# ```
+#
+# + msg - The message to be logged
+# + keyValues - The key-value pairs to be logged
+# + 'error - The error struct to be logged
+public isolated function printWarn(string msg, *KeyValues keyValues, error? 'error = ()) {
+    if (isLogLevelEnabledExtern(WARN)) {
+        print(WARN, msg, keyValues, 'error);
+    }
+}
+
+isolated function print(string logLevel, string msg, *KeyValues keyValues, error? err = ()) {
     string keyValuesString = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
         anydata value;
         if (v is Valuer) {
-           value = v();
+            value = v();
         } else {
-           value = v;
+            value = v;
         }
         keyValuesString += appendKeyValue(k, value);
     }
-    printErrorExtern(getOutput(msg, keyValuesString, err), format);
+    printExtern(logLevel, getOutput(msg, keyValuesString, err), format);
 }
 
-isolated function printExtern(string msg, string outputFormat) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function printErrorExtern(string msg, string outputFormat) = @java:Method {
+isolated function printExtern(string logLevel, string msg, string outputFormat) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
@@ -99,12 +130,12 @@ isolated function appendKeyValue(string key, anydata value) returns string {
     string k;
     string v;
     if (format == JSON_OUTPUT_FORMAT) {
-        k = ", \"" + key + "\": ";
+        k = string `, "${key}": `;
     } else {
-        k = " " + key + " = ";
+        k = string ` ${key} = `;
     }
     if (value is string) {
-        v = "\"" + value + "\"";
+        v = string `"${value}"`;
     } else {
         v = value.toString();
     }
@@ -114,21 +145,40 @@ isolated function appendKeyValue(string key, anydata value) returns string {
 isolated function getOutput(string msg, string keyValues, error? err = ()) returns string {
     string output = "";
     if (format == JSON_OUTPUT_FORMAT) {
-        output = "\"message\": " + getMessage(msg, err) + keyValues;
+        output = string `"message": ${getMessage(msg, err)}${keyValues}`;
     } else {
-        output = "message = " + getMessage(msg, err) + keyValues;
+        output = string `message = ${getMessage(msg, err)}${keyValues}`;
     }
     return output;
 }
 
 isolated function getMessage(string msg, error? err = ()) returns string {
-    string message =  "\"" + msg + "\"";
+    string message =  string `"${msg}"`;
     if (err is error) {
         if (format == JSON_OUTPUT_FORMAT) {
-            message += ", \"error\": \"" + err.message() + "\"";
+            message = string `"${msg}", "error": "${err.message()}"`;
         } else {
-            message += " error = \"" + err.message() + "\"" ;
+            message = string `"${msg}" error = "${err.message()}"`;
         }
     }
     return message;
 }
+
+isolated function initializeLogLevels() {
+    var globalLevel = setGlobalLogLevelExtern(level);
+    modules.forEach(isolated function(Module module) {
+        var moduleLevel = setModuleLogLevelExtern(module.name, module.level);
+    });
+}
+
+isolated function setGlobalLogLevelExtern(string logLevel) = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+isolated function setModuleLogLevelExtern(string module, string level) = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+isolated function isLogLevelEnabledExtern(LogLevel logLevel) returns boolean = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;

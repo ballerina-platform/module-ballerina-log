@@ -7,8 +7,3 @@ version = "@stdlib.io.version@"
 org = "ballerina"
 name = "regex"
 version = "@stdlib.regex.version@"
-
-[[dependency]]
-org = "ballerina"
-name = "os"
-version = "@stdlib.os.version@"
