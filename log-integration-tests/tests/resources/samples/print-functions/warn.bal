@@ -17,7 +17,24 @@
 import ballerina/log;
 
 public function main() {
+    error e = error("bad sad");
     log:printWarn("warn log");
     log:printWarn("warn log", username = "Alex92", id = 845315, foo = true);
     log:printWarn("warn log", username = isolated function() returns string { return "Alex92";}, id = isolated function() returns int { return 845315;});
+    log:printWarn("warn log", 'error = e);
+    log:printWarn("warn log", 'error = e, username = "Alex92", id = 845315, foo = true);
+    f1();
+}
+
+function f1() {
+    f2();
+}
+
+function f2() {
+    f3();
+}
+
+function f3() {
+    error e = error("bad sad");
+    log:printWarn("warn log", stackTrace = e.stackTrace().callStack, username = "Alex92", id = 845315);
 }

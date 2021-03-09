@@ -56,7 +56,10 @@ const string MESSAGE_INFO_JSON = "\"message\": \"info log\"";
 const string MESSAGE_DEBUG = "message = \"debug log\"";
 const string MESSAGE_ERROR = "message = \"error log\"";
 const string MESSAGE_ERROR_JSON = "\"message\": \"error log\"";
+const string MESSAGE_DEBUG_WITH_ERR = "message = \"debug log\" error = \"bad sad\"";
 const string MESSAGE_ERROR_WITH_ERR = "message = \"error log\" error = \"bad sad\"";
+const string MESSAGE_INFO_WITH_ERR = "message = \"info log\" error = \"bad sad\"";
+const string MESSAGE_WARN_WITH_ERR = "message = \"warn log\" error = \"bad sad\"";
 const string MESSAGE_ERROR_WITH_ERR_JSON = "\"message\": \"error log\", \"error\": \"bad sad\"";
 const string MESSAGE_WARN = "message = \"warn log\"";
 const string KEY_VALUES1 = "foo = true id = 845315 username = \"Alex92\"";
@@ -77,10 +80,18 @@ public function testPrintDebug() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[6], LEVEL_DEBUG, PACKAGE_SINGLE_FILE, MESSAGE_DEBUG, "");
     validateLog(logLines[7], LEVEL_DEBUG, PACKAGE_SINGLE_FILE, MESSAGE_DEBUG, KEY_VALUES1);
     validateLog(logLines[8], LEVEL_DEBUG, PACKAGE_SINGLE_FILE, MESSAGE_DEBUG, KEY_VALUES2);
+    validateLog(logLines[9], LEVEL_DEBUG, PACKAGE_SINGLE_FILE, MESSAGE_DEBUG_WITH_ERR, "");
+    validateLog(logLines[10], LEVEL_DEBUG, PACKAGE_SINGLE_FILE, MESSAGE_DEBUG_WITH_ERR, KEY_VALUES1);
+    validateLog(logLines[11], LEVEL_DEBUG, PACKAGE_SINGLE_FILE, MESSAGE_DEBUG, "stackTrace = " +
+    "[{\"callableName\":\"f3\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":38}," +
+    "{\"callableName\":\"f2\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":34}," +
+    "{\"callableName\":\"f1\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":30}," +
+    "{\"callableName\":\"main\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":26}] " +
+    "id = 845315 username = \"Alex92\"");
 }
 
 @test:Config {}
@@ -117,10 +128,18 @@ public function testPrintInfo() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[6], LEVEL_INFO, PACKAGE_SINGLE_FILE, MESSAGE_INFO, "");
     validateLog(logLines[7], LEVEL_INFO, PACKAGE_SINGLE_FILE, MESSAGE_INFO, KEY_VALUES1);
     validateLog(logLines[8], LEVEL_INFO, PACKAGE_SINGLE_FILE, MESSAGE_INFO, KEY_VALUES2);
+    validateLog(logLines[9], LEVEL_INFO, PACKAGE_SINGLE_FILE, MESSAGE_INFO_WITH_ERR, "");
+    validateLog(logLines[10], LEVEL_INFO, PACKAGE_SINGLE_FILE, MESSAGE_INFO_WITH_ERR, KEY_VALUES1);
+    validateLog(logLines[11], LEVEL_INFO, PACKAGE_SINGLE_FILE, MESSAGE_INFO, "stackTrace = " +
+    "[{\"callableName\":\"f3\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":38}," +
+    "{\"callableName\":\"f2\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":34}," +
+    "{\"callableName\":\"f1\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":30}," +
+    "{\"callableName\":\"main\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":26}] " +
+    "id = 845315 username = \"Alex92\"");
 }
 
 @test:Config {}
@@ -133,10 +152,18 @@ public function testPrintWarn() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[6], LEVEL_WARN, PACKAGE_SINGLE_FILE, MESSAGE_WARN, "");
     validateLog(logLines[7], LEVEL_WARN, PACKAGE_SINGLE_FILE, MESSAGE_WARN, KEY_VALUES1);
     validateLog(logLines[8], LEVEL_WARN, PACKAGE_SINGLE_FILE, MESSAGE_WARN, KEY_VALUES2);
+    validateLog(logLines[9], LEVEL_WARN, PACKAGE_SINGLE_FILE, MESSAGE_WARN_WITH_ERR, "");
+    validateLog(logLines[10], LEVEL_WARN, PACKAGE_SINGLE_FILE, MESSAGE_WARN_WITH_ERR, KEY_VALUES1);
+    validateLog(logLines[11], LEVEL_WARN, PACKAGE_SINGLE_FILE, MESSAGE_WARN, "stackTrace = " +
+    "[{\"callableName\":\"f3\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":38}," +
+    "{\"callableName\":\"f2\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":34}," +
+    "{\"callableName\":\"f1\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":30}," +
+    "{\"callableName\":\"main\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":26}] " +
+    "id = 845315 username = \"Alex92\"");
 }
 
 @test:Config {}
