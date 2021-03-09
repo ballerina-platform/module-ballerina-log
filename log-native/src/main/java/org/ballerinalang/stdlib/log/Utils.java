@@ -96,7 +96,7 @@ public class Utils extends AbstractLogFunction {
     }
 
     /**
-     * Sets the module log level.
+     * Sets the global log level.
      *
      * @param logLevel log level
      */
@@ -105,7 +105,8 @@ public class Utils extends AbstractLogFunction {
     }
 
     /**
-     * Sets the log level.
+     * Sets the module log level.
+     *
      * @param module module
      * @param logLevel log level
      */
