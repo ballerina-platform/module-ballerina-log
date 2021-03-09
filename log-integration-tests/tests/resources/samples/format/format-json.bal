@@ -22,7 +22,7 @@ public function main() {
     log:printInfo("info log", username = isolated function() returns string { return "Alex92";}, id = isolated function() returns int { return 845315;});
     log:printError("error log", username = "Alex92", id = 845315, foo = true);
     log:printError("error log", username = isolated function() returns string { return "Alex92";}, id = isolated function() returns int { return 845315;});
-    log:printError("error log", err = e, username = "Alex92", id = 845315, foo = true);
+    log:printError("error log", 'error = e, username = "Alex92", id = 845315, foo = true);
     f1();
 }
 

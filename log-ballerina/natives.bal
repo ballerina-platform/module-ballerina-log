@@ -33,10 +33,10 @@ public type Valuer isolated function() returns anydata;
 # Key-Value pairs that needs to be desplayed in the log.
 #
 # + msg - msg which cannot be a key
-# + err - err which cannot be a key
+# + 'error - 'error which cannot be a key
 public type KeyValues record {|
     never msg?;
-    never err?;
+    never 'error?;
     Value...;
 |};
 
@@ -58,24 +58,25 @@ const string JSON_OUTPUT_FORMAT = "json";
 #
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printDebug(string msg, *KeyValues keyValues) {
+# + 'error - The error struct to be logged
+public isolated function printDebug(string msg, *KeyValues keyValues, error? 'error = ()) {
     if (isLogLevelEnabledExtern(DEBUG)) {
-        print(DEBUG, msg, keyValues);
+        print(DEBUG, msg, keyValues, 'error);
     }
 }
 
 # Prints error logs.
 # ```ballerina
 # error e = error("error occurred");
-# log:printError("error log with cause", err = e, id = 845315);
+# log:printError("error log with cause", 'error = e, id = 845315);
 # ```
 #
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
-# + err - The error struct to be logged
-public isolated function printError(string msg, *KeyValues keyValues, error? err = ()) {
+# + 'error - The error struct to be logged
+public isolated function printError(string msg, *KeyValues keyValues, error? 'error = ()) {
     if (isLogLevelEnabledExtern(ERROR)) {
-        print(ERROR, msg, keyValues, err);
+        print(ERROR, msg, keyValues, 'error);
     }
 }
 
@@ -86,9 +87,10 @@ public isolated function printError(string msg, *KeyValues keyValues, error? err
 #
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printInfo(string msg, *KeyValues keyValues) {
+# + 'error - The error struct to be logged
+public isolated function printInfo(string msg, *KeyValues keyValues, error? 'error = ()) {
     if (isLogLevelEnabledExtern(INFO)) {
-        print(INFO, msg, keyValues);
+        print(INFO, msg, keyValues, 'error);
     }
 }
 
@@ -99,9 +101,10 @@ public isolated function printInfo(string msg, *KeyValues keyValues) {
 #
 # + msg - The message to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printWarn(string msg, *KeyValues keyValues) {
+# + 'error - The error struct to be logged
+public isolated function printWarn(string msg, *KeyValues keyValues, error? 'error = ()) {
     if (isLogLevelEnabledExtern(WARN)) {
-        print(WARN, msg, keyValues);
+        print(WARN, msg, keyValues, 'error);
     }
 }
 
