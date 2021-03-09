@@ -19,6 +19,7 @@ import org.apache.tools.ant.taskdefs.condition.Os
 
 description = 'Ballerina - Log Ballerina Integration Tests'
 
+def ballerinaDist = "build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}"
 def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
 def ballerinaDependencyFile = new File("$project.projectDir/Dependencies.toml")
 def snapshotVersion = "-SNAPSHOT"
@@ -76,8 +77,6 @@ task unpackStdLibs() {
 }
 
 task copyStdlibs(type: Copy) {
-    def ballerinaDist = "build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}"
-    def buildCacheParent = "../log-ballerina/build/cache_parent"
     into ballerinaDist
 
     /* Standard Libraries */
@@ -90,18 +89,27 @@ task copyStdlibs(type: Copy) {
             from "${artifactExtractedPath}/cache"
         }
     }
-    /* Log module */
-    into("repo/bala") {
-        from "${buildCacheParent}/bala/"
-    }
-    into("repo/cache") {
-        from "${buildCacheParent}/cache"
-    }
 }
 
 task copyToLib(type: Copy) {
     into "$project.projectDir/lib"
     from configurations.externalJars
+}
+
+task copyLogStdlib {
+    dependsOn(":log-ballerina:build")
+    dependsOn(copyStdlibs)
+    doLast {
+        /* Copy Log module */
+        copy {
+            from "$project.rootDir/log-ballerina/build/cache_parent/bala"
+            into "${ballerinaDist}/repo/bala"
+        }
+        copy {
+            from "$project.rootDir/log-ballerina/build/cache_parent/cache"
+            into "${ballerinaDist}/repo/cache"
+        }
+    }
 }
 
 task updateTomlVerions {
@@ -151,6 +159,7 @@ task ballerinaIntegrationTests {
     dependsOn(copyTestResources)
     dependsOn(":log-ballerina:build")
     dependsOn(updateTomlVerions)
+    dependsOn(copyLogStdlib)
     finalizedBy(revertTomlFile)
     doLast {
         def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
