@@ -11,9 +11,13 @@ The Log package is one of the standard library packages of the<a target="_blank"
 
 This package provides a basic API for logging.
 
-### Loggers 
+### Log record
 
-Each module in Ballerina has its own dedicated logger. A log record contains the timestamp, log level, module name, and the log message. The `printError()` function takes an optional `error` record apart from the log message. A sample log record logged from the `foo` module would look as follows:
+A log record contains the timestamp, log level, module name, and the log message.
+Users can pass any number of key/value pairs which needs to be displayed in the log message.
+These can be of `anydata` type including int, string and boolean.
+
+A sample log record logged from the `foo` module would look as follows:
 ```bash
 time = 2020-12-16 11:22:44,029 level = ERROR module = myorg/foo message = "Something went wrong."
 ```
