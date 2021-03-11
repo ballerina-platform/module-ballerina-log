@@ -19,7 +19,6 @@
 package org.ballerinalang.stdlib.log;
 
 import io.ballerina.runtime.api.values.BString;
-import org.ballerinalang.logging.BLogManager;
 import org.ballerinalang.logging.util.BLogLevel;
 
 import java.util.HashMap;
@@ -91,7 +90,7 @@ public class Utils extends AbstractLogFunction {
             return getPackageLogLevel(packagePath).value() <= BLogLevel.toBLogLevel(logLevel.getValue())
                     .value();
         } else {
-            if (getPackageLogLevel(BLogManager.GLOBAL_PACKAGE_PATH).value() <=
+            if (getPackageLogLevel(GLOBAL_PACKAGE_PATH).value() <=
                     BLogLevel.toBLogLevel(logLevel.getValue()).value()) {
                 packagePath = getPackagePath();
                 return true;

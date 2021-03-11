@@ -34,7 +34,8 @@ import java.util.function.Supplier;
  */
 public abstract class AbstractLogFunction {
 
-    private static final Logger ballerinaRootLogger = LoggerFactory.getLogger(BLogManager.BALLERINA_ROOT_LOGGER_NAME);
+    private static final String BALLERINA_ROOT_LOGGER_NAME = "ballerina";
+    private static final Logger ballerinaRootLogger = LoggerFactory.getLogger(BALLERINA_ROOT_LOGGER_NAME);
 
     protected static Logger getLogger(String pkg) {
         if (".".equals(pkg) || pkg == null) {
@@ -56,15 +57,14 @@ public abstract class AbstractLogFunction {
                            BiConsumer<String, String> consumer, String outputFormat) {
         BLogManager.setLogOutputFormat(outputFormat);
         // Create a new log message supplier
-        Supplier<String> logMessage = new Supplier<String>() {
+        Supplier<String> logMessage = new Supplier<>() {
             private String msg = null;
 
             @Override
             public String get() {
                 // We should invoke the lambda only once, thus caching return value
                 if (msg == null) {
-                    Object arg = message;
-                    msg = arg.toString();
+                    msg = message.toString();
                 }
                 return msg;
             }
