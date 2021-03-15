@@ -1,5 +1,0 @@
-fixes:
-  - "ballerina/log/*/::log-ballerina/"
-
-ignore:
-  - "**/tests"
