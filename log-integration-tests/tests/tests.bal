@@ -33,35 +33,43 @@ const string CONFIG_DEBUG_FILE = "tests/resources/config/log-levels/debug/Config
 const string CONFIG_ERROR_FILE = "tests/resources/config/log-levels/error/Config.toml";
 const string CONFIG_INFO_FILE = "tests/resources/config/log-levels/info/Config.toml";
 const string CONFIG_WARN_FILE = "tests/resources/config/log-levels/warn/Config.toml";
-const string CONFIG_FORMAT_JSON = "tests/resources/config/format/Config.toml";
+const string CONFIG_FORMAT_JSON_SINGLE_FILE = "tests/resources/config/format/Config.toml";
+const string CONFIG_FORMAT_JSON_PROJECT = "tests/resources/config/format/project/Config.toml";
 const string PROJECT_CONFIG_GLOBAL_LEVEL = "tests/resources/config/log-project/global/Config.toml";
 const string PROJECT_CONFIG_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL = "tests/resources/config/log-project/default/Config.toml";
 const string PROJECT_CONFIG_GLOBAL_AND_MODULE_LEVEL = "tests/resources/config/log-project/global-and-module/Config.toml";
 
 const string LEVEL_DEBUG = "level = DEBUG";
+const string LEVEL_DEBUG_JSON = "\"level\": \"DEBUG\"";
 const string LEVEL_ERROR = "level = ERROR";
 const string LEVEL_ERROR_JSON = "\"level\": \"ERROR\"";
-const string LEVEL_INFO = "level = INFO";
+const string LEVEL_INFO = "level = INFO ";
 const string LEVEL_INFO_JSON = "\"level\": \"INFO \"";
-const string LEVEL_WARN = "level = WARN";
+const string LEVEL_WARN = "level = WARN ";
+const string LEVEL_WARN_JSON = "\"level\": \"WARN \"";
 
 const string PACKAGE_SINGLE_FILE = "module = \"\"";
 const string PACKAGE_SINGLE_FILE_JSON = "\"module\": \"\"";
 const string PACKAGE_DEFAULT = "module = myorg/myproject";
+const string PACKAGE_DEFAULT_JSON = "\"module\": \"myorg/myproject\"";
 const string PACKAGE_FOO = "module = myorg/myproject.foo";
+const string PACKAGE_FOO_JSON = "\"module\": \"myorg/myproject.foo\"";
 const string PACKAGE_BAR = "module = myorg/myproject.bar";
+const string PACKAGE_BAR_JSON = "\"module\": \"myorg/myproject.bar\"";
 
 const string MESSAGE_INFO = "message = \"info log\"";
 const string MESSAGE_INFO_JSON = "\"message\": \"info log\"";
 const string MESSAGE_DEBUG = "message = \"debug log\"";
+const string MESSAGE_DEBUG_JSON = "\"message\": \"debug log\"";
 const string MESSAGE_ERROR = "message = \"error log\"";
 const string MESSAGE_ERROR_JSON = "\"message\": \"error log\"";
+const string MESSAGE_WARN = "message = \"warn log\"";
+const string MESSAGE_WARN_JSON = "\"message\": \"warn log\"";
 const string MESSAGE_DEBUG_WITH_ERR = "message = \"debug log\" error = \"bad sad\"";
 const string MESSAGE_ERROR_WITH_ERR = "message = \"error log\" error = \"bad sad\"";
 const string MESSAGE_INFO_WITH_ERR = "message = \"info log\" error = \"bad sad\"";
 const string MESSAGE_WARN_WITH_ERR = "message = \"warn log\" error = \"bad sad\"";
 const string MESSAGE_ERROR_WITH_ERR_JSON = "\"message\": \"error log\", \"error\": \"bad sad\"";
-const string MESSAGE_WARN = "message = \"warn log\"";
 const string KEY_VALUES1 = "foo = true id = 845315 username = \"Alex92\"";
 const string KEY_VALUES1_JSON = "\"foo\": true, \"id\": 845315, \"username\": \"Alex92\"";
 const string KEY_VALUES2 = "id = 845315 username = \"Alex92\"";
@@ -314,8 +322,8 @@ public function testProjectWithGlobalAndModuleLogLevels() {
 }
 
 @test:Config {}
-public function testJsonFormat() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_FORMAT_JSON}, (), "run", FORMAT_JSON_FILE);
+public function testJsonFormatSingleFile() {
+    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_FORMAT_JSON_SINGLE_FILE}, (), "run", FORMAT_JSON_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -337,6 +345,31 @@ public function testJsonFormat() {
     " \"id\": 845315, \"username\": \"Alex92\"}");
 
     foreach var i in 6 ... 11 {
+        test:assertTrue(isValidJsonString(logLines[i]), "log output is not a valid json string");
+    }
+}
+
+@test:Config {}
+public function testJsonFormatProject() {
+    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_FORMAT_JSON_PROJECT}, (),
+    "run", temp_dir_path + "/log-project");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    test:assertEquals(logLines.length(), 16, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[9], LEVEL_ERROR_JSON, PACKAGE_DEFAULT_JSON, MESSAGE_ERROR_JSON, "");
+    validateLog(logLines[10], LEVEL_WARN_JSON, PACKAGE_DEFAULT_JSON, MESSAGE_WARN_JSON, "");
+    validateLog(logLines[11], LEVEL_ERROR_JSON, PACKAGE_FOO_JSON, MESSAGE_ERROR_JSON, "");
+    validateLog(logLines[12], LEVEL_WARN_JSON, PACKAGE_FOO_JSON, MESSAGE_WARN_JSON, "");
+    validateLog(logLines[13], LEVEL_INFO_JSON, PACKAGE_FOO_JSON, MESSAGE_INFO_JSON, "");
+    validateLog(logLines[14], LEVEL_DEBUG_JSON, PACKAGE_FOO_JSON, MESSAGE_DEBUG_JSON, "");
+    validateLog(logLines[15], LEVEL_ERROR_JSON, PACKAGE_BAR_JSON, MESSAGE_ERROR_JSON, "");
+
+    foreach var i in 9 ... 15 {
         test:assertTrue(isValidJsonString(logLines[i]), "log output is not a valid json string");
     }
 }
