@@ -1,0 +1,11 @@
+[log]
+level = "WARN"
+format = "json"
+
+[[log.modules]]
+name = "myorg/myproject.foo"
+level = "DEBUG"
+
+[[log.modules]]
+name = "myorg/myproject.bar"
+level = "ERROR"

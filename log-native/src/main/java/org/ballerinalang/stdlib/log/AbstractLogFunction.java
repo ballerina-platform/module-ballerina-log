@@ -27,6 +27,8 @@ import org.slf4j.LoggerFactory;
 import java.util.function.BiConsumer;
 import java.util.function.Supplier;
 
+import static org.ballerinalang.stdlib.log.Utils.GLOBAL_PACKAGE_PATH;
+
 /**
  * Base class for the other log functions, containing a getter to retrieve the correct logger, given a package name.
  *
@@ -36,6 +38,7 @@ public abstract class AbstractLogFunction {
 
     private static final String BALLERINA_ROOT_LOGGER_NAME = "ballerina";
     private static final Logger ballerinaRootLogger = LoggerFactory.getLogger(BALLERINA_ROOT_LOGGER_NAME);
+    private static final String FORMAT_JSON = "json";
 
     protected static Logger getLogger(String pkg) {
         if (".".equals(pkg) || pkg == null) {
@@ -69,6 +72,9 @@ public abstract class AbstractLogFunction {
                 return msg;
             }
         };
+        if (outputFormat.equals(FORMAT_JSON) && !pckg.equals(GLOBAL_PACKAGE_PATH)) {
+            pckg = "\"" + pckg + "\"";
+        }
         consumer.accept(pckg, logMessage.get());
     }
 
