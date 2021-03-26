@@ -197,16 +197,16 @@ public function testProjectWithoutLogLevelJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 18, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[9], MESSAGE_ERROR_MAIN_JSON);
-    validateLogJson(logLines[10], MESSAGE_WARN_MAIN_JSON);
-    validateLogJson(logLines[11], MESSAGE_INFO_MAIN_JSON);
-    validateLogJson(logLines[12], MESSAGE_ERROR_FOO_JSON);
-    validateLogJson(logLines[13], MESSAGE_WARN_FOO_JSON);
-    validateLogJson(logLines[14], MESSAGE_INFO_FOO_JSON);
-    validateLogJson(logLines[15], MESSAGE_ERROR_BAR_JSON);
-    validateLogJson(logLines[16], MESSAGE_WARN_BAR_JSON);
-    validateLogJson(logLines[17], MESSAGE_INFO_BAR_JSON);
+    test:assertEquals(logLines.length(), 15, INCORRECT_NUMBER_OF_LINES);
+    validateLogJson(logLines[6], MESSAGE_ERROR_MAIN_JSON);
+    validateLogJson(logLines[7], MESSAGE_WARN_MAIN_JSON);
+    validateLogJson(logLines[8], MESSAGE_INFO_MAIN_JSON);
+    validateLogJson(logLines[9], MESSAGE_ERROR_FOO_JSON);
+    validateLogJson(logLines[10], MESSAGE_WARN_FOO_JSON);
+    validateLogJson(logLines[11], MESSAGE_INFO_FOO_JSON);
+    validateLogJson(logLines[12], MESSAGE_ERROR_BAR_JSON);
+    validateLogJson(logLines[13], MESSAGE_WARN_BAR_JSON);
+    validateLogJson(logLines[14], MESSAGE_INFO_BAR_JSON);
 }
 
 @test:Config {}
@@ -220,13 +220,13 @@ public function testProjectWithGlobalLogLevelJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 15, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[9], MESSAGE_ERROR_MAIN_JSON);
-    validateLogJson(logLines[10], MESSAGE_WARN_MAIN_JSON);
-    validateLogJson(logLines[11], MESSAGE_ERROR_FOO_JSON);
-    validateLogJson(logLines[12], MESSAGE_WARN_FOO_JSON);
-    validateLogJson(logLines[13], MESSAGE_ERROR_BAR_JSON);
-    validateLogJson(logLines[14], MESSAGE_WARN_BAR_JSON);
+    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
+    validateLogJson(logLines[6], MESSAGE_ERROR_MAIN_JSON);
+    validateLogJson(logLines[7], MESSAGE_WARN_MAIN_JSON);
+    validateLogJson(logLines[8], MESSAGE_ERROR_FOO_JSON);
+    validateLogJson(logLines[9], MESSAGE_WARN_FOO_JSON);
+    validateLogJson(logLines[10], MESSAGE_ERROR_BAR_JSON);
+    validateLogJson(logLines[11], MESSAGE_WARN_BAR_JSON);
 }
 
 @test:Config {}
@@ -240,14 +240,14 @@ public function testProjectWithGlobalAndDefualtPackageLogLevelJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 16, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[9], MESSAGE_ERROR_MAIN_JSON);
-    validateLogJson(logLines[10], MESSAGE_WARN_MAIN_JSON);
-    validateLogJson(logLines[11], MESSAGE_INFO_MAIN_JSON);
-    validateLogJson(logLines[12], MESSAGE_DEBUG_MAIN_JSON);
-    validateLogJson(logLines[13], MESSAGE_ERROR_FOO_JSON);
-    validateLogJson(logLines[14], MESSAGE_ERROR_BAR_JSON);
-    validateLogJson(logLines[15], MESSAGE_WARN_BAR_JSON);
+    test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
+    validateLogJson(logLines[6], MESSAGE_ERROR_MAIN_JSON);
+    validateLogJson(logLines[7], MESSAGE_WARN_MAIN_JSON);
+    validateLogJson(logLines[8], MESSAGE_INFO_MAIN_JSON);
+    validateLogJson(logLines[9], MESSAGE_DEBUG_MAIN_JSON);
+    validateLogJson(logLines[10], MESSAGE_ERROR_FOO_JSON);
+    validateLogJson(logLines[11], MESSAGE_ERROR_BAR_JSON);
+    validateLogJson(logLines[12], MESSAGE_WARN_BAR_JSON);
 }
 
 @test:Config {}
@@ -261,14 +261,14 @@ public function testProjectWithGlobalAndModuleLogLevelsJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 16, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[9], MESSAGE_ERROR_MAIN_JSON);
-    validateLogJson(logLines[10], MESSAGE_WARN_MAIN_JSON);
-    validateLogJson(logLines[11], MESSAGE_ERROR_FOO_JSON);
-    validateLogJson(logLines[12], MESSAGE_WARN_FOO_JSON);
-    validateLogJson(logLines[13], MESSAGE_INFO_FOO_JSON);
-    validateLogJson(logLines[14], MESSAGE_DEBUG_FOO_JSON);
-    validateLogJson(logLines[15], MESSAGE_ERROR_BAR_JSON);
+    test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
+    validateLogJson(logLines[6], MESSAGE_ERROR_MAIN_JSON);
+    validateLogJson(logLines[7], MESSAGE_WARN_MAIN_JSON);
+    validateLogJson(logLines[8], MESSAGE_ERROR_FOO_JSON);
+    validateLogJson(logLines[9], MESSAGE_WARN_FOO_JSON);
+    validateLogJson(logLines[10], MESSAGE_INFO_FOO_JSON);
+    validateLogJson(logLines[11], MESSAGE_DEBUG_FOO_JSON);
+    validateLogJson(logLines[12], MESSAGE_ERROR_BAR_JSON);
 }
 
 isolated function validateLogJson(string log, string output) {

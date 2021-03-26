@@ -32,7 +32,6 @@ const string CONFIG_DEBUG_LOGFMT = "tests/resources/config/logfmt/log-levels/deb
 const string CONFIG_ERROR_LOGFMT = "tests/resources/config/logfmt/log-levels/error/Config.toml";
 const string CONFIG_INFO_LOGFMT = "tests/resources/config/logfmt/log-levels/info/Config.toml";
 const string CONFIG_WARN_LOGFMT = "tests/resources/config/logfmt/log-levels/warn/Config.toml";
-const string CONFIG_PROJECT_WITHOUT_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/no-level/Config.toml";
 const string CONFIG_PROJECT_GLOBAL_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/global/Config.toml";
 const string CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/default/Config.toml";
 const string CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/global-and-module/Config.toml";
@@ -200,7 +199,7 @@ public function testDebugLevelLogfmt() {
 
 @test:Config {}
 public function testProjectWithoutLogLevelLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_WITHOUT_LEVEL_LOGFMT}, (), "run", temp_dir_path
+    Process|error execResult = exec(bal_exec_path, {}, (), "run", temp_dir_path
     + "/log-project");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
@@ -209,16 +208,16 @@ public function testProjectWithoutLogLevelLogfmt() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 18, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[9], MESSAGE_ERROR_MAIN_LOGFMT);
-    validateLog(logLines[10], MESSAGE_WARN_MAIN_LOGFMT);
-    validateLog(logLines[11], MESSAGE_INFO_MAIN_LOGFMT);
-    validateLog(logLines[12], MESSAGE_ERROR_FOO_LOGFMT);
-    validateLog(logLines[13], MESSAGE_WARN_FOO_LOGFMT);
-    validateLog(logLines[14], MESSAGE_INFO_FOO_LOGFMT);
-    validateLog(logLines[15], MESSAGE_ERROR_BAR_LOGFMT);
-    validateLog(logLines[16], MESSAGE_WARN_BAR_LOGFMT);
-    validateLog(logLines[17], MESSAGE_INFO_BAR_LOGFMT);
+    test:assertEquals(logLines.length(), 15, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[6], MESSAGE_ERROR_MAIN_LOGFMT);
+    validateLog(logLines[7], MESSAGE_WARN_MAIN_LOGFMT);
+    validateLog(logLines[8], MESSAGE_INFO_MAIN_LOGFMT);
+    validateLog(logLines[9], MESSAGE_ERROR_FOO_LOGFMT);
+    validateLog(logLines[10], MESSAGE_WARN_FOO_LOGFMT);
+    validateLog(logLines[11], MESSAGE_INFO_FOO_LOGFMT);
+    validateLog(logLines[12], MESSAGE_ERROR_BAR_LOGFMT);
+    validateLog(logLines[13], MESSAGE_WARN_BAR_LOGFMT);
+    validateLog(logLines[14], MESSAGE_INFO_BAR_LOGFMT);
 }
 
 @test:Config {}
@@ -232,13 +231,13 @@ public function testProjectWithGlobalLogLevelLogfmt() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 15, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[9], MESSAGE_ERROR_MAIN_LOGFMT);
-    validateLog(logLines[10], MESSAGE_WARN_MAIN_LOGFMT);
-    validateLog(logLines[11], MESSAGE_ERROR_FOO_LOGFMT);
-    validateLog(logLines[12], MESSAGE_WARN_FOO_LOGFMT);
-    validateLog(logLines[13], MESSAGE_ERROR_BAR_LOGFMT);
-    validateLog(logLines[14], MESSAGE_WARN_BAR_LOGFMT);
+    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[6], MESSAGE_ERROR_MAIN_LOGFMT);
+    validateLog(logLines[7], MESSAGE_WARN_MAIN_LOGFMT);
+    validateLog(logLines[8], MESSAGE_ERROR_FOO_LOGFMT);
+    validateLog(logLines[9], MESSAGE_WARN_FOO_LOGFMT);
+    validateLog(logLines[10], MESSAGE_ERROR_BAR_LOGFMT);
+    validateLog(logLines[11], MESSAGE_WARN_BAR_LOGFMT);
 }
 
 @test:Config {}
@@ -252,14 +251,14 @@ public function testProjectWithGlobalAndDefualtPackageLogLevelLogfmt() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 16, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[9], MESSAGE_ERROR_MAIN_LOGFMT);
-    validateLog(logLines[10], MESSAGE_WARN_MAIN_LOGFMT);
-    validateLog(logLines[11], MESSAGE_INFO_MAIN_LOGFMT);
-    validateLog(logLines[12], MESSAGE_DEBUG_MAIN_LOGFMT);
-    validateLog(logLines[13], MESSAGE_ERROR_FOO_LOGFMT);
-    validateLog(logLines[14], MESSAGE_ERROR_BAR_LOGFMT);
-    validateLog(logLines[15], MESSAGE_WARN_BAR_LOGFMT);
+    test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[6], MESSAGE_ERROR_MAIN_LOGFMT);
+    validateLog(logLines[7], MESSAGE_WARN_MAIN_LOGFMT);
+    validateLog(logLines[8], MESSAGE_INFO_MAIN_LOGFMT);
+    validateLog(logLines[9], MESSAGE_DEBUG_MAIN_LOGFMT);
+    validateLog(logLines[10], MESSAGE_ERROR_FOO_LOGFMT);
+    validateLog(logLines[11], MESSAGE_ERROR_BAR_LOGFMT);
+    validateLog(logLines[12], MESSAGE_WARN_BAR_LOGFMT);
 }
 
 @test:Config {}
@@ -273,14 +272,14 @@ public function testProjectWithGlobalAndModuleLogLevelsLogfmt() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 16, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[9], MESSAGE_ERROR_MAIN_LOGFMT);
-    validateLog(logLines[10], MESSAGE_WARN_MAIN_LOGFMT);
-    validateLog(logLines[11], MESSAGE_ERROR_FOO_LOGFMT);
-    validateLog(logLines[12], MESSAGE_WARN_FOO_LOGFMT);
-    validateLog(logLines[13], MESSAGE_INFO_FOO_LOGFMT);
-    validateLog(logLines[14], MESSAGE_DEBUG_FOO_LOGFMT);
-    validateLog(logLines[15], MESSAGE_ERROR_BAR_LOGFMT);
+    test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[6], MESSAGE_ERROR_MAIN_LOGFMT);
+    validateLog(logLines[7], MESSAGE_WARN_MAIN_LOGFMT);
+    validateLog(logLines[8], MESSAGE_ERROR_FOO_LOGFMT);
+    validateLog(logLines[9], MESSAGE_WARN_FOO_LOGFMT);
+    validateLog(logLines[10], MESSAGE_INFO_FOO_LOGFMT);
+    validateLog(logLines[11], MESSAGE_DEBUG_FOO_LOGFMT);
+    validateLog(logLines[12], MESSAGE_ERROR_BAR_LOGFMT);
 }
 
 isolated function validateLog(string log, string output) {
