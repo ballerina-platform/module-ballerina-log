@@ -62,7 +62,7 @@ configurable string temp_dir_path = ?;
 
 @test:Config {}
 public function testPrintDebugLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_DEBUG_LOGFMT}, (), "run", PRINT_DEBUG_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run", PRINT_DEBUG_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -81,7 +81,7 @@ public function testPrintDebugLogfmt() {
 
 @test:Config {}
 public function testPrintErrorLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_ERROR_LOGFMT}, (), "run", PRINT_ERROR_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_LOGFMT}, (), "run", PRINT_ERROR_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -100,7 +100,7 @@ public function testPrintErrorLogfmt() {
 
 @test:Config {}
 public function testPrintInfoLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_INFO_LOGFMT}, (), "run", PRINT_INFO_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_LOGFMT}, (), "run", PRINT_INFO_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -119,7 +119,7 @@ public function testPrintInfoLogfmt() {
 
 @test:Config {}
 public function testPrintWarnLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_WARN_LOGFMT}, (), "run", PRINT_WARN_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_LOGFMT}, (), "run", PRINT_WARN_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -138,7 +138,7 @@ public function testPrintWarnLogfmt() {
 
 @test:Config {}
 public function testErrorLevelLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_ERROR_LOGFMT}, (), "run", LOG_LEVEL_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_LOGFMT}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -152,7 +152,7 @@ public function testErrorLevelLogfmt() {
 
 @test:Config {}
 public function testWarnLevelLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_WARN_LOGFMT}, (), "run", LOG_LEVEL_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_LOGFMT}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -167,7 +167,7 @@ public function testWarnLevelLogfmt() {
 
 @test:Config {}
 public function testInfoLevelLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_INFO_LOGFMT}, (), "run", LOG_LEVEL_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_LOGFMT}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -183,7 +183,7 @@ public function testInfoLevelLogfmt() {
 
 @test:Config {}
 public function testDebugLevelLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_DEBUG_LOGFMT}, (), "run", LOG_LEVEL_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -200,7 +200,7 @@ public function testDebugLevelLogfmt() {
 
 @test:Config {}
 public function testProjectWithoutLogLevelLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_PROJECT_WITHOUT_LEVEL_LOGFMT}, (), "run", temp_dir_path
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_WITHOUT_LEVEL_LOGFMT}, (), "run", temp_dir_path
     + "/log-project");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
@@ -223,7 +223,7 @@ public function testProjectWithoutLogLevelLogfmt() {
 
 @test:Config {}
 public function testProjectWithGlobalLogLevelLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_PROJECT_GLOBAL_LEVEL_LOGFMT}, (),
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_LEVEL_LOGFMT}, (),
     "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
@@ -243,7 +243,7 @@ public function testProjectWithGlobalLogLevelLogfmt() {
 
 @test:Config {}
 public function testProjectWithGlobalAndDefualtPackageLogLevelLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_LOGFMT},
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_LOGFMT},
      (), "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
@@ -264,7 +264,7 @@ public function testProjectWithGlobalAndDefualtPackageLogLevelLogfmt() {
 
 @test:Config {}
 public function testProjectWithGlobalAndModuleLogLevelsLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_LOGFMT}, (),
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_LOGFMT}, (),
     "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();

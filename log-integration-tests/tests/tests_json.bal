@@ -50,7 +50,7 @@ const string MESSAGE_DEBUG_BAR_JSON = "\", \"level\": \"DEBUG\", \"module\": \"m
 
 @test:Config {}
 public function testPrintDebugJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_DEBUG_JSON}, (), "run", PRINT_DEBUG_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run", PRINT_DEBUG_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -69,7 +69,7 @@ public function testPrintDebugJson() {
 
 @test:Config {}
 public function testPrintErrorJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_ERROR_JSON}, (), "run", PRINT_ERROR_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_JSON}, (), "run", PRINT_ERROR_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -88,7 +88,7 @@ public function testPrintErrorJson() {
 
 @test:Config {}
 public function testPrintInfoJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_INFO_JSON}, (), "run", PRINT_INFO_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_JSON}, (), "run", PRINT_INFO_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -107,7 +107,7 @@ public function testPrintInfoJson() {
 
 @test:Config {}
 public function testPrintWarnJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_WARN_JSON}, (), "run", PRINT_WARN_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_JSON}, (), "run", PRINT_WARN_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -126,7 +126,7 @@ public function testPrintWarnJson() {
 
 @test:Config {}
 public function testErrorLevelJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_ERROR_JSON}, (), "run", LOG_LEVEL_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_JSON}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -140,7 +140,7 @@ public function testErrorLevelJson() {
 
 @test:Config {}
 public function testWarnLevelJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_WARN_JSON}, (), "run", LOG_LEVEL_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_JSON}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -155,7 +155,7 @@ public function testWarnLevelJson() {
 
 @test:Config {}
 public function testInfoLevelJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_INFO_JSON}, (), "run", LOG_LEVEL_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_JSON}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -171,7 +171,7 @@ public function testInfoLevelJson() {
 
 @test:Config {}
 public function testDebugLevelJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_DEBUG_JSON}, (), "run", LOG_LEVEL_FILE);
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -188,7 +188,7 @@ public function testDebugLevelJson() {
 
 @test:Config {}
 public function testProjectWithoutLogLevelJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_PROJECT_WITHOUT_LEVEL_JSON}, (), "run", temp_dir_path
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_WITHOUT_LEVEL_JSON}, (), "run", temp_dir_path
     + "/log-project");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
@@ -211,7 +211,7 @@ public function testProjectWithoutLogLevelJson() {
 
 @test:Config {}
 public function testProjectWithGlobalLogLevelJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_PROJECT_GLOBAL_LEVEL_JSON}, (),
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_LEVEL_JSON}, (),
     "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
@@ -231,7 +231,7 @@ public function testProjectWithGlobalLogLevelJson() {
 
 @test:Config {}
 public function testProjectWithGlobalAndDefualtPackageLogLevelJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_JSON},
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_JSON},
      (), "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
@@ -252,7 +252,7 @@ public function testProjectWithGlobalAndDefualtPackageLogLevelJson() {
 
 @test:Config {}
 public function testProjectWithGlobalAndModuleLogLevelsJson() {
-    Process|error execResult = exec(bal_exec_path, {BALCONFIGFILE: CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_JSON}, (),
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_JSON}, (),
     "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
