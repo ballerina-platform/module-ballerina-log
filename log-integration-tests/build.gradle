@@ -138,11 +138,21 @@ task revertTomlFile {
 }
 
 def setExecPath(configTOMLFile, distributionBinPath) {
-    configTOMLFile.text = configTOMLFile.text.replace("@exec.path@", distributionBinPath)
+    def distributionPath
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        distributionPath = (distributionBinPath + "/bal.bat").replace("/", "\\")
+        distributionPath = distributionPath.replace("\\", "\\\\")
+    } else {
+        distributionPath = distributionBinPath + "/bal"
+    }
+    configTOMLFile.text = configTOMLFile.text.replace("@exec.path@", distributionPath)
 }
 
 def setTempDirPath(configTOMLFile, tempDirPath) {
-    configTOMLFile.text = configTOMLFile.text.replace("@temp.path@/bal", tempDirPath)
+    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+        tempDirPath = tempDirPath.toString().replace("\\", "\\\\")
+    }
+    configTOMLFile.text = configTOMLFile.text.replace("@temp.path@", tempDirPath)
 }
 
 task copyTestResources(type: Copy) {
@@ -169,7 +179,7 @@ task ballerinaIntegrationTests {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/bal.bat test"
+                commandLine 'cmd', '/c', "$distributionBinPath/bal.bat test && exit %%ERRORLEVEL%%"
             } else {
                 commandLine 'sh', '-c', "$distributionBinPath/bal test --code-coverage --includes=*"
             }
