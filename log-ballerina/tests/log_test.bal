@@ -14,25 +14,3 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/test;
-
-@test:Config {}
-isolated function testAppendKeyValue() {
-    test:assertEquals(appendKeyValue("username", "Alex92"), " username = \"Alex92\"");
-    test:assertEquals(appendKeyValue("id", 845315), " id = 845315");
-    test:assertEquals(appendKeyValue("foo", true), " foo = true");
-}
-
-@test:Config {}
-isolated function testGetOutput() {
-    test:assertEquals(getOutput("Inside main function", " foo = true id = 845315 username = \"Alex92\""),
-    "message = \"Inside main function\" foo = true id = 845315 username = \"Alex92\"");
-    test:assertEquals(getOutput("Inside main function", " foo = true id = 845315 username = \"Alex92\"", error("bad sad")),
-        "message = \"Inside main function\" error = \"bad sad\" foo = true id = 845315 username = \"Alex92\"");
-}
-
-@test:Config {}
-isolated function testGetMessage() {
-    test:assertEquals(getMessage("Inside main function"), "\"Inside main function\"");
-    test:assertEquals(getMessage("Inside main function", error("bad sad")), "\"Inside main function\" error = \"bad sad\"");
-}

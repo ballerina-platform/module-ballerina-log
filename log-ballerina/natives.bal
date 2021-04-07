@@ -51,6 +51,13 @@ final configurable table<Module> key(name) & readonly modules = table [];
 
 const string JSON_OUTPUT_FORMAT = "json";
 
+type LogRecord record {
+    string time;
+    string level;
+    string module; 
+    string message;
+};
+
 # Prints debug logs.
 # ```ballerina
 # log:printDebug("debug message", id = 845315)
@@ -109,7 +116,15 @@ public isolated function printWarn(string msg, *KeyValues keyValues, error? 'err
 }
 
 isolated function print(string logLevel, string msg, *KeyValues keyValues, error? err = ()) {
-    string keyValuesString = "";
+    LogRecord logRecord = {
+        time: getCurrentTime(),
+        level: logLevel,
+        module: getModuleName() == "." ? "" : getModuleName(),
+        message: msg
+    };
+    if err is error {
+        logRecord["error"] = err.message();
+    }
     foreach [string, Value] [k, v] in keyValues.entries() {
         anydata value;
         if (v is Valuer) {
@@ -117,51 +132,13 @@ isolated function print(string logLevel, string msg, *KeyValues keyValues, error
         } else {
             value = v;
         }
-        keyValuesString += appendKeyValue(k, value);
+        logRecord[k] = value;
     }
-    printExtern(logLevel, getOutput(msg, keyValuesString, err), format);
-}
-
-isolated function printExtern(string logLevel, string msg, string outputFormat) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function appendKeyValue(string key, anydata value) returns string {
-    string k;
-    string v;
-    if (format == JSON_OUTPUT_FORMAT) {
-        k = string `, "${key}": `;
+    if format == "json" {
+        printJsonExtern(logRecord.toJsonString());
     } else {
-        k = string ` ${key} = `;
+        printLogFmtExtern(logRecord);
     }
-    if (value is string) {
-        v = string `"${value}"`;
-    } else {
-        v = value.toString();
-    }
-    return k + v;
-}
-
-isolated function getOutput(string msg, string keyValues, error? err = ()) returns string {
-    string output = "";
-    if (format == JSON_OUTPUT_FORMAT) {
-        output = string `"message": ${getMessage(msg, err)}${keyValues}`;
-    } else {
-        output = string `message = ${getMessage(msg, err)}${keyValues}`;
-    }
-    return output;
-}
-
-isolated function getMessage(string msg, error? err = ()) returns string {
-    string message =  string `"${msg}"`;
-    if (err is error) {
-        if (format == JSON_OUTPUT_FORMAT) {
-            message = string `"${msg}", "error": "${err.message()}"`;
-        } else {
-            message = string `"${msg}" error = "${err.message()}"`;
-        }
-    }
-    return message;
 }
 
 isolated function initializeLogLevels() {
@@ -180,5 +157,22 @@ isolated function setModuleLogLevelExtern(string module, string level) = @java:M
 } external;
 
 isolated function isLogLevelEnabledExtern(LogLevel logLevel) returns boolean = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+isolated function printJsonExtern(string msg) = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+isolated function printLogFmtExtern(LogRecord msg) = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+
+isolated function getModuleName() returns string = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+isolated function getCurrentTime() returns string = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;

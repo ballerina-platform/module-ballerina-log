@@ -18,9 +18,14 @@
 
 package org.ballerinalang.stdlib.log;
 
+import io.ballerina.runtime.api.utils.IdentifierUtils;
+import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 import org.ballerinalang.logging.util.BLogLevel;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,7 +34,7 @@ import java.util.Map;
  *
  * @since 1.1.0
  */
-public class Utils extends AbstractLogFunction {
+public class Utils {
 
     public static final String GLOBAL_PACKAGE_PATH = ".";
     private static String packagePath = GLOBAL_PACKAGE_PATH;
@@ -39,43 +44,39 @@ public class Utils extends AbstractLogFunction {
     /**
      * Prints the log message.
      *
-     * @param logLevel log level
      * @param msg log message
-     * @param format output format
      */
-    public static void printExtern(BString logLevel, BString msg, BString format) {
-        switch (BLogLevel.toBLogLevel(logLevel.getValue())) {
-            case DEBUG:
-                logMessage(msg, packagePath,
-                        (pkg, message) -> {
-                            getLogger(pkg).debug(message);
-                        },
-                        format.toString());
-                break;
-            case INFO:
-                logMessage(msg, packagePath,
-                        (pkg, message) -> {
-                            getLogger(pkg).info(message);
-                        },
-                        format.toString());
-                break;
-            case ERROR:
-                logMessage(msg, packagePath,
-                        (pkg, message) -> {
-                            getLogger(pkg).error(message);
-                        },
-                        format.toString());
-                break;
-            case WARN:
-                logMessage(msg, packagePath,
-                        (pkg, message) -> {
-                            getLogger(pkg).warn(message);
-                        },
-                        format.toString());
-                break;
-            default:
-                break;
+    public static void printJsonExtern(BString msg) {
+        System.err.println(msg.toString());
+    }
+
+    public static void printLogFmtExtern(BMap<BString, Object> msg) {
+        String message = "";
+        for (Map.Entry<BString, Object> entry : msg.entrySet()) {
+            String key = entry.getKey().toString();
+            String value = "";
+            if (entry.getKey().toString().equals("time")) {
+                value = entry.getValue().toString();
+            } else if (entry.getKey().toString().equals("level")) {
+                value = entry.getValue().toString();
+                if (value.equals("INFO") || value.equals("WARN")) {
+                    value = value + " ";
+                }
+            } else if (entry.getKey().toString().equals("module")) {
+                value = entry.getValue().toString();
+                if (value.equals("")) {
+                    value = "\"" + value + "\"";
+                }
+            } else {
+                if (entry.getValue() instanceof BString) {
+                    value = "\"" + escape(entry.getValue().toString()) + "\"";
+                } else {
+                    value = entry.getValue().toString();
+                }
+            }
+            message = message + key + " = " + value + " ";
         }
+        System.err.println(message);
     }
 
     /**
@@ -86,13 +87,13 @@ public class Utils extends AbstractLogFunction {
      */
     public static boolean isLogLevelEnabledExtern(BString logLevel) {
         if (isModuleLogLevelEnabled()) {
-            packagePath = getPackagePath();
+            packagePath = getModuleName().toString();
             return getPackageLogLevel(packagePath).value() <= BLogLevel.toBLogLevel(logLevel.getValue())
                     .value();
         } else {
             if (getPackageLogLevel(GLOBAL_PACKAGE_PATH).value() <=
                     BLogLevel.toBLogLevel(logLevel.getValue()).value()) {
-                packagePath = getPackagePath();
+                packagePath = getModuleName().toString();
                 return true;
             } else {
                 return false;
@@ -138,4 +139,32 @@ public class Utils extends AbstractLogFunction {
     private static BLogLevel getPackageLogLevel(String pkg) {
         return loggerLevels.containsKey(pkg) ? loggerLevels.get(pkg) : ballerinaUserLogLevel;
     }
+
+    public static BString getModuleName() {
+        String className = Thread.currentThread().getStackTrace()[5].getClassName();
+        String[] pkgData = className.split("\\.");
+        if (pkgData.length > 1) {
+            String module = IdentifierUtils.decodeIdentifier(pkgData[1]);
+            return StringUtils.fromString(pkgData[0] + "/" + module);
+        }
+        return StringUtils.fromString(".");
+    }
+
+    public static BString getCurrentTime() {
+        LocalDateTime localDateTime = LocalDateTime.now();
+        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+        return StringUtils.fromString(localDateTime.format(dateTimeFormatter));
+    }
+
+    private static String escape(String s){
+        return s.replace("\\", "\\\\")
+                .replace("\t", "\\t")
+                .replace("\b", "\\b")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\f", "\\f")
+                .replace("\'", "\\'")
+                .replace("\"", "\\\"");
+    }
+
 }

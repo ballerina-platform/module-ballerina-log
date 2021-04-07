@@ -28,25 +28,25 @@ const string CONFIG_PROJECT_GLOBAL_LEVEL_JSON = "tests/resources/config/json/log
 const string CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_JSON = "tests/resources/config/json/log-project/default/Config.toml";
 const string CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_JSON = "tests/resources/config/json/log-project/global-and-module/Config.toml";
 
-const string MESSAGE_ERROR_JSON = "\", \"level\": \"ERROR\", \"module\": \"\", \"message\": \"error log\"}";
-const string MESSAGE_WARN_JSON = "\", \"level\": \"WARN \", \"module\": \"\", \"message\": \"warn log\"}";
-const string MESSAGE_INFO_JSON = "\", \"level\": \"INFO \", \"module\": \"\", \"message\": \"info log\"}";
-const string MESSAGE_DEBUG_JSON = "\", \"level\": \"DEBUG\", \"module\": \"\", \"message\": \"debug log\"}";
+const string MESSAGE_ERROR_JSON = "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\"}";
+const string MESSAGE_WARN_JSON = "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\"}";
+const string MESSAGE_INFO_JSON = "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\"}";
+const string MESSAGE_DEBUG_JSON = "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\"}";
 
-const string MESSAGE_ERROR_MAIN_JSON = "\", \"level\": \"ERROR\", \"module\": \"myorg/myproject\", \"message\": \"error log\"}";
-const string MESSAGE_WARN_MAIN_JSON = "\", \"level\": \"WARN \", \"module\": \"myorg/myproject\", \"message\": \"warn log\"}";
-const string MESSAGE_INFO_MAIN_JSON = "\", \"level\": \"INFO \", \"module\": \"myorg/myproject\", \"message\": \"info log\"}";
-const string MESSAGE_DEBUG_MAIN_JSON = "\", \"level\": \"DEBUG\", \"module\": \"myorg/myproject\", \"message\": \"debug log\"}";
+const string MESSAGE_ERROR_MAIN_JSON = "\", \"level\":\"ERROR\", \"module\":\"myorg/myproject\", \"message\":\"error log\"}";
+const string MESSAGE_WARN_MAIN_JSON = "\", \"level\":\"WARN\", \"module\":\"myorg/myproject\", \"message\":\"warn log\"}";
+const string MESSAGE_INFO_MAIN_JSON = "\", \"level\":\"INFO\", \"module\":\"myorg/myproject\", \"message\":\"info log\"}";
+const string MESSAGE_DEBUG_MAIN_JSON = "\", \"level\":\"DEBUG\", \"module\":\"myorg/myproject\", \"message\":\"debug log\"}";
 
-const string MESSAGE_ERROR_FOO_JSON = "\", \"level\": \"ERROR\", \"module\": \"myorg/myproject.foo\", \"message\": \"error log\"}";
-const string MESSAGE_WARN_FOO_JSON = "\", \"level\": \"WARN \", \"module\": \"myorg/myproject.foo\", \"message\": \"warn log\"}";
-const string MESSAGE_INFO_FOO_JSON = "\", \"level\": \"INFO \", \"module\": \"myorg/myproject.foo\", \"message\": \"info log\"}";
-const string MESSAGE_DEBUG_FOO_JSON = "\", \"level\": \"DEBUG\", \"module\": \"myorg/myproject.foo\", \"message\": \"debug log\"}";
+const string MESSAGE_ERROR_FOO_JSON = "\", \"level\":\"ERROR\", \"module\":\"myorg/myproject.foo\", \"message\":\"error log\"}";
+const string MESSAGE_WARN_FOO_JSON = "\", \"level\":\"WARN\", \"module\":\"myorg/myproject.foo\", \"message\":\"warn log\"}";
+const string MESSAGE_INFO_FOO_JSON = "\", \"level\":\"INFO\", \"module\":\"myorg/myproject.foo\", \"message\":\"info log\"}";
+const string MESSAGE_DEBUG_FOO_JSON = "\", \"level\":\"DEBUG\", \"module\":\"myorg/myproject.foo\", \"message\":\"debug log\"}";
 
-const string MESSAGE_ERROR_BAR_JSON = "\", \"level\": \"ERROR\", \"module\": \"myorg/myproject.bar\", \"message\": \"error log\"}";
-const string MESSAGE_WARN_BAR_JSON = "\", \"level\": \"WARN \", \"module\": \"myorg/myproject.bar\", \"message\": \"warn log\"}";
-const string MESSAGE_INFO_BAR_JSON = "\", \"level\": \"INFO \", \"module\": \"myorg/myproject.bar\", \"message\": \"info log\"}";
-const string MESSAGE_DEBUG_BAR_JSON = "\", \"level\": \"DEBUG\", \"module\": \"myorg/myproject.bar\", \"message\": \"debug log\"}";
+const string MESSAGE_ERROR_BAR_JSON = "\", \"level\":\"ERROR\", \"module\":\"myorg/myproject.bar\", \"message\":\"error log\"}";
+const string MESSAGE_WARN_BAR_JSON = "\", \"level\":\"WARN\", \"module\":\"myorg/myproject.bar\", \"message\":\"warn log\"}";
+const string MESSAGE_INFO_BAR_JSON = "\", \"level\":\"INFO\", \"module\":\"myorg/myproject.bar\", \"message\":\"info log\"}";
+const string MESSAGE_DEBUG_BAR_JSON = "\", \"level\":\"DEBUG\", \"module\":\"myorg/myproject.bar\", \"message\":\"debug log\"}";
 
 @test:Config {}
 public function testPrintDebugJson() {
@@ -59,12 +59,12 @@ public function testPrintDebugJson() {
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[6], "\", \"level\": \"DEBUG\", \"module\": \"\", \"message\": \"debug log\"}");
-    validateLogJson(logLines[7], "\", \"level\": \"DEBUG\", \"module\": \"\", \"message\": \"debug log\", \"foo\": true, \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[8], "\", \"level\": \"DEBUG\", \"module\": \"\", \"message\": \"debug log\", \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[9], "\", \"level\": \"DEBUG\", \"module\": \"\", \"message\": \"debug log\", \"error\": \"bad sad\"}");
-    validateLogJson(logLines[10], "\", \"level\": \"DEBUG\", \"module\": \"\", \"message\": \"debug log\", \"error\": \"bad sad\", \"foo\": true, \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[11], "\", \"level\": \"DEBUG\", \"module\": \"\", \"message\": \"debug log\", \"stackTrace\": [{\"callableName\":\"f3\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":38},{\"callableName\":\"f2\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":34},{\"callableName\":\"f1\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":30},{\"callableName\":\"main\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":26}], \"id\": 845315, \"username\": \"Alex92\"}");
+    validateLogJson(logLines[6], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\"}");
+    validateLogJson(logLines[7], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"foo\":true, \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[8], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[9], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"error\":\"bad sad\"}");
+    validateLogJson(logLines[10], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"error\":\"bad sad\", \"foo\":true, \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[11], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"stackTrace\":[{\"callableName\":\"f3\", \"moduleName\":\"debug\", \"fileName\":\"debug.bal\", \"lineNumber\":38}, {\"callableName\":\"f2\", \"moduleName\":\"debug\", \"fileName\":\"debug.bal\", \"lineNumber\":34}, {\"callableName\":\"f1\", \"moduleName\":\"debug\", \"fileName\":\"debug.bal\", \"lineNumber\":30}, {\"callableName\":\"main\", \"moduleName\":\"debug\", \"fileName\":\"debug.bal\", \"lineNumber\":26}], \"id\":845315, \"username\":\"Alex92\"}");
 }
 
 @test:Config {}
@@ -78,12 +78,12 @@ public function testPrintErrorJson() {
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[6], "\", \"level\": \"ERROR\", \"module\": \"\", \"message\": \"error log\"}");
-    validateLogJson(logLines[7], "\", \"level\": \"ERROR\", \"module\": \"\", \"message\": \"error log\", \"foo\": true, \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[8], "\", \"level\": \"ERROR\", \"module\": \"\", \"message\": \"error log\", \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[9], "\", \"level\": \"ERROR\", \"module\": \"\", \"message\": \"error log\", \"error\": \"bad sad\"}");
-    validateLogJson(logLines[10], "\", \"level\": \"ERROR\", \"module\": \"\", \"message\": \"error log\", \"error\": \"bad sad\", \"foo\": true, \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[11], "\", \"level\": \"ERROR\", \"module\": \"\", \"message\": \"error log\", \"stackTrace\": [{\"callableName\":\"f3\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":38},{\"callableName\":\"f2\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":34},{\"callableName\":\"f1\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":30},{\"callableName\":\"main\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":26}], \"id\": 845315, \"username\": \"Alex92\"}");
+    validateLogJson(logLines[6], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\"}");
+    validateLogJson(logLines[7], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"foo\":true, \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[8], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[9], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"error\":\"bad sad\"}");
+    validateLogJson(logLines[10], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"error\":\"bad sad\", \"foo\":true, \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[11], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"stackTrace\":[{\"callableName\":\"f3\", \"moduleName\":\"error\", \"fileName\":\"error.bal\", \"lineNumber\":38}, {\"callableName\":\"f2\", \"moduleName\":\"error\", \"fileName\":\"error.bal\", \"lineNumber\":34}, {\"callableName\":\"f1\", \"moduleName\":\"error\", \"fileName\":\"error.bal\", \"lineNumber\":30}, {\"callableName\":\"main\", \"moduleName\":\"error\", \"fileName\":\"error.bal\", \"lineNumber\":26}], \"id\":845315, \"username\":\"Alex92\"}");
 }
 
 @test:Config {}
@@ -97,12 +97,12 @@ public function testPrintInfoJson() {
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[6], "\", \"level\": \"INFO \", \"module\": \"\", \"message\": \"info log\"}");
-    validateLogJson(logLines[7], "\", \"level\": \"INFO \", \"module\": \"\", \"message\": \"info log\", \"foo\": true, \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[8], "\", \"level\": \"INFO \", \"module\": \"\", \"message\": \"info log\", \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[9], "\", \"level\": \"INFO \", \"module\": \"\", \"message\": \"info log\", \"error\": \"bad sad\"}");
-    validateLogJson(logLines[10], "\", \"level\": \"INFO \", \"module\": \"\", \"message\": \"info log\", \"error\": \"bad sad\", \"foo\": true, \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[11], "\", \"level\": \"INFO \", \"module\": \"\", \"message\": \"info log\", \"stackTrace\": [{\"callableName\":\"f3\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":38},{\"callableName\":\"f2\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":34},{\"callableName\":\"f1\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":30},{\"callableName\":\"main\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":26}], \"id\": 845315, \"username\": \"Alex92\"}");
+    validateLogJson(logLines[6], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\"}");
+    validateLogJson(logLines[7], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"foo\":true, \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[8], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[9], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"error\":\"bad sad\"}");
+    validateLogJson(logLines[10], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"error\":\"bad sad\", \"foo\":true, \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[11], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"stackTrace\":[{\"callableName\":\"f3\", \"moduleName\":\"info\", \"fileName\":\"info.bal\", \"lineNumber\":38}, {\"callableName\":\"f2\", \"moduleName\":\"info\", \"fileName\":\"info.bal\", \"lineNumber\":34}, {\"callableName\":\"f1\", \"moduleName\":\"info\", \"fileName\":\"info.bal\", \"lineNumber\":30}, {\"callableName\":\"main\", \"moduleName\":\"info\", \"fileName\":\"info.bal\", \"lineNumber\":26}], \"id\":845315, \"username\":\"Alex92\"}");
 }
 
 @test:Config {}
@@ -116,12 +116,12 @@ public function testPrintWarnJson() {
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[6], "\", \"level\": \"WARN \", \"module\": \"\", \"message\": \"warn log\"}");
-    validateLogJson(logLines[7], "\", \"level\": \"WARN \", \"module\": \"\", \"message\": \"warn log\", \"foo\": true, \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[8], "\", \"level\": \"WARN \", \"module\": \"\", \"message\": \"warn log\", \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[9], "\", \"level\": \"WARN \", \"module\": \"\", \"message\": \"warn log\", \"error\": \"bad sad\"}");
-    validateLogJson(logLines[10], "\", \"level\": \"WARN \", \"module\": \"\", \"message\": \"warn log\", \"error\": \"bad sad\", \"foo\": true, \"id\": 845315, \"username\": \"Alex92\"}");
-    validateLogJson(logLines[11], "\", \"level\": \"WARN \", \"module\": \"\", \"message\": \"warn log\", \"stackTrace\": [{\"callableName\":\"f3\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":38},{\"callableName\":\"f2\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":34},{\"callableName\":\"f1\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":30},{\"callableName\":\"main\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":26}], \"id\": 845315, \"username\": \"Alex92\"}");
+    validateLogJson(logLines[6], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\"}");
+    validateLogJson(logLines[7], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"foo\":true, \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[8], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[9], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":\"bad sad\"}");
+    validateLogJson(logLines[10], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":\"bad sad\", \"foo\":true, \"id\":845315, \"username\":\"Alex92\"}");
+    validateLogJson(logLines[11], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"stackTrace\":[{\"callableName\":\"f3\", \"moduleName\":\"warn\", \"fileName\":\"warn.bal\", \"lineNumber\":38}, {\"callableName\":\"f2\", \"moduleName\":\"warn\", \"fileName\":\"warn.bal\", \"lineNumber\":34}, {\"callableName\":\"f1\", \"moduleName\":\"warn\", \"fileName\":\"warn.bal\", \"lineNumber\":30}, {\"callableName\":\"main\", \"moduleName\":\"warn\", \"fileName\":\"warn.bal\", \"lineNumber\":26}], \"id\":845315, \"username\":\"Alex92\"}");
 }
 
 @test:Config {}
@@ -272,7 +272,7 @@ public function testProjectWithGlobalAndModuleLogLevelsJson() {
 }
 
 isolated function validateLogJson(string log, string output) {
-    test:assertTrue(log.includes("{\"time\": \""), "log does not contain the time");
+    test:assertTrue(log.includes("{\"time\":\""), "log does not contain the time");
     test:assertTrue(log.includes(output), "log does not contain the required output");
     test:assertTrue(isValidJsonString(log), "log output is not a valid json string");
 }
