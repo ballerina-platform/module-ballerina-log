@@ -17,8 +17,8 @@
 import ballerina/log;
 
 public function hello() {
-    log:printError("error log");
-    log:printWarn("warn log");
-    log:printInfo("info log");
-    log:printDebug("debug log");
+    log:printError("error log\t\n\r\\\"");
+    log:printWarn("warn log\t\n\r\\\"");
+    log:printInfo("info log\t\n\r\\\"");
+    log:printDebug("debug log\t\n\r\\\"");
 }
