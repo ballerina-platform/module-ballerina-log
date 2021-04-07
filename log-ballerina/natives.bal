@@ -168,7 +168,6 @@ isolated function printLogFmtExtern(LogRecord msg) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
-
 isolated function getModuleName() returns string = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;

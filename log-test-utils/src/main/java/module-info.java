@@ -22,5 +22,6 @@ module io.ballerina.stdlib.log.testutils {
     requires java.logging;
     requires io.ballerina.stdlib.log;
     requires io.ballerina.stdlib.io;
-    exports org.ballerinalang.stdlib.log.testutils;
+    exports org.ballerinalang.stdlib.log.testutils.nativeimpl;
+    exports org.ballerinalang.stdlib.log.testutils.utils;
 }
