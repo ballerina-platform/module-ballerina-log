@@ -22,7 +22,6 @@ import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
-import org.ballerinalang.logging.util.BLogLevel;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -167,4 +166,29 @@ public class Utils {
                 .replace("\"", "\\\"");
     }
 
+    enum BLogLevel {
+        ERROR(1000),
+        WARN(900),
+        INFO(800),
+        DEBUG(700);
+
+        private int levelValue;
+
+        private BLogLevel(int levelValue) {
+            this.levelValue = levelValue;
+        }
+
+        public int value() {
+            return this.levelValue;
+        }
+
+        public static BLogLevel toBLogLevel(String logLevel) {
+            try {
+                BLogLevel level = valueOf(logLevel);
+                return level;
+            } catch (IllegalArgumentException var3) {
+                throw new RuntimeException("invalid log level: " + logLevel);
+            }
+        }
+    }
 }
