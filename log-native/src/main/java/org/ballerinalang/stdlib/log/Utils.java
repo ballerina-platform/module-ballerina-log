@@ -36,12 +36,11 @@ import java.util.Map;
 public class Utils {
 
     public static final String GLOBAL_PACKAGE_PATH = ".";
-    private static String packagePath = GLOBAL_PACKAGE_PATH;
-    private static Map<String, BLogLevel> loggerLevels = new HashMap<>();
+    private static final Map<String, BLogLevel> loggerLevels = new HashMap<>();
     private static BLogLevel ballerinaUserLogLevel = BLogLevel.INFO; // default to INFO
 
     /**
-     * Prints the log message.
+     * Prints the log message in json format.
      *
      * @param msg log message
      */
@@ -49,55 +48,43 @@ public class Utils {
         System.err.println(msg.toString());
     }
 
-    public static void printLogFmtExtern(BMap<BString, Object> msg) {
-        String message = "";
-        for (Map.Entry<BString, Object> entry : msg.entrySet()) {
+    /**
+     * Prints the log message in logFmt format.
+     *
+     * @param logRecord log record
+     */
+    public static void printLogFmtExtern(BMap<BString, Object> logRecord) {
+        StringBuilder message = new StringBuilder();
+        for (Map.Entry<BString, Object> entry : logRecord.entrySet()) {
             String key = entry.getKey().toString();
-            String value = "";
-            if (entry.getKey().toString().equals("time")) {
-                value = entry.getValue().toString();
-            } else if (entry.getKey().toString().equals("level")) {
-                value = entry.getValue().toString();
-                if (value.equals("INFO") || value.equals("WARN")) {
-                    value = value + " ";
-                }
-            } else if (entry.getKey().toString().equals("module")) {
-                value = entry.getValue().toString();
-                if (value.equals("")) {
-                    value = "\"" + value + "\"";
-                }
-            } else {
-                if (entry.getValue() instanceof BString) {
-                    value = "\"" + escape(entry.getValue().toString()) + "\"";
-                } else {
+            String value;
+            switch (entry.getKey().toString()) {
+                case "time":
                     value = entry.getValue().toString();
-                }
+                    break;
+                case "level":
+                    value = entry.getValue().toString();
+                    if (value.equals("INFO") || value.equals("WARN")) {
+                        value = value + " ";
+                    }
+                    break;
+                case "module":
+                    value = entry.getValue().toString();
+                    if (value.equals("")) {
+                        value = "\"" + value + "\"";
+                    }
+                    break;
+                default:
+                    if (entry.getValue() instanceof BString) {
+                        value = "\"" + escape(entry.getValue().toString()) + "\"";
+                    } else {
+                        value = entry.getValue().toString();
+                    }
+                    break;
             }
-            message = message + key + " = " + value + " ";
+            message.append(key).append(" = ").append(value).append(" ");
         }
         System.err.println(message);
-    }
-
-    /**
-     * Checks if the given log level is enabled.
-     *
-     * @param logLevel log level
-     * @return true if log level is enabled, false otherwise
-     */
-    public static boolean isLogLevelEnabledExtern(BString logLevel) {
-        if (isModuleLogLevelEnabled()) {
-            packagePath = getModuleName().toString();
-            return getPackageLogLevel(packagePath).value() <= BLogLevel.toBLogLevel(logLevel.getValue())
-                    .value();
-        } else {
-            if (getPackageLogLevel(GLOBAL_PACKAGE_PATH).value() <=
-                    BLogLevel.toBLogLevel(logLevel.getValue()).value()) {
-                packagePath = getModuleName().toString();
-                return true;
-            } else {
-                return false;
-            }
-        }
     }
 
     /**
@@ -121,24 +108,27 @@ public class Utils {
     }
 
     /**
-     * Checks if module log level has been enabled.
+     * Checks if the given log level is enabled.
      *
-     * @return true if module log level has been enabled, false if not.
+     * @param logLevel log level
+     * @return true if log level is enabled, false otherwise
      */
-    private static boolean isModuleLogLevelEnabled() {
-        return loggerLevels.size() > 1;
+    public static boolean isLogLevelEnabledExtern(BString logLevel) {
+        if (isModuleLogLevelEnabled()) {
+            String moduleName = getModuleName().toString();
+            return getPackageLogLevel(moduleName).value() <=
+                    BLogLevel.toBLogLevel(logLevel.getValue()).value();
+        } else {
+            return getPackageLogLevel(GLOBAL_PACKAGE_PATH).value() <=
+                    BLogLevel.toBLogLevel(logLevel.getValue()).value();
+        }
     }
 
     /**
-     * Get the log level of a given package.
+     * Get the name of the current module.
      *
-     * @param pkg package name
-     * @return the log level
+     * @return module name
      */
-    private static BLogLevel getPackageLogLevel(String pkg) {
-        return loggerLevels.containsKey(pkg) ? loggerLevels.get(pkg) : ballerinaUserLogLevel;
-    }
-
     public static BString getModuleName() {
         String className = Thread.currentThread().getStackTrace()[5].getClassName();
         String[] pkgData = className.split("\\.");
@@ -149,6 +139,11 @@ public class Utils {
         return StringUtils.fromString(".");
     }
 
+    /**
+     * Get the current time.
+     *
+     * @return current time in yyyy-MM-dd HH:mm:ss format
+     */
     public static BString getCurrentTime() {
         LocalDateTime localDateTime = LocalDateTime.now();
         DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -162,8 +157,16 @@ public class Utils {
                 .replace("\n", "\\n")
                 .replace("\r", "\\r")
                 .replace("\f", "\\f")
-                .replace("\'", "\\'")
+                .replace("'", "\\'")
                 .replace("\"", "\\\"");
+    }
+
+    private static boolean isModuleLogLevelEnabled() {
+        return loggerLevels.size() > 1;
+    }
+
+    private static BLogLevel getPackageLogLevel(String pkg) {
+        return loggerLevels.containsKey(pkg) ? loggerLevels.get(pkg) : ballerinaUserLogLevel;
     }
 
     enum BLogLevel {
@@ -172,9 +175,9 @@ public class Utils {
         INFO(800),
         DEBUG(700);
 
-        private int levelValue;
+        private final int levelValue;
 
-        private BLogLevel(int levelValue) {
+        BLogLevel(int levelValue) {
             this.levelValue = levelValue;
         }
 
@@ -184,8 +187,7 @@ public class Utils {
 
         public static BLogLevel toBLogLevel(String logLevel) {
             try {
-                BLogLevel level = valueOf(logLevel);
-                return level;
+                return valueOf(logLevel);
             } catch (IllegalArgumentException var3) {
                 throw new RuntimeException("invalid log level: " + logLevel);
             }

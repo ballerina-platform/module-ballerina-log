@@ -148,6 +148,14 @@ isolated function initializeLogLevels() {
     });
 }
 
+isolated function printJsonExtern(string msg) = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
+isolated function printLogFmtExtern(LogRecord msg) = @java:Method {
+    'class: "org.ballerinalang.stdlib.log.Utils"
+} external;
+
 isolated function setGlobalLogLevelExtern(string logLevel) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
@@ -157,14 +165,6 @@ isolated function setModuleLogLevelExtern(string module, string level) = @java:M
 } external;
 
 isolated function isLogLevelEnabledExtern(LogLevel logLevel) returns boolean = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function printJsonExtern(string msg) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function printLogFmtExtern(LogRecord msg) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
