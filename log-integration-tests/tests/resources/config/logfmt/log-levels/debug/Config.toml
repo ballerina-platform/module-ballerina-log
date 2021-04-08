@@ -1,2 +1,2 @@
-[log]
+[ballerina.log]
 level = "DEBUG"

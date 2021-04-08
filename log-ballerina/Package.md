@@ -25,7 +25,7 @@ $ ballerina run program.bal 2> b7a-user.log
 To set the output format to JSON, place the entry given below in the `Config.toml` file.
 
 ```
-[log]
+[ballerina.log]
 format = "json"
 ```
 
@@ -37,15 +37,15 @@ The log level can be configured via a Ballerina configuration file.
 To set the global log level, place the entry given below in the Config.toml file:
 
 ```
-[log]
+[ballerina.log]
 level = "[LOG_LEVEL]"
 ```
 
 Each module can also be assigned its own log level. To assign a log level to a module, provide the following entry in the Config.toml file:
 
 ```
-[[log.modules]]
-name = "[MODULE_NAME]"
+[[ballerina.log.modules]]
+name = "[ORG_NAME]/[MODULE_NAME]"
 level = "[LOG_LEVEL]"
 ```
 

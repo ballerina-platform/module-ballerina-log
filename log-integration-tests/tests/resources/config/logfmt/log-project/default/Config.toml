@@ -1,10 +1,10 @@
-[log]
+[ballerina.log]
 level = "WARN"
 
-[[log.modules]]
+[[ballerina.log.modules]]
 name = "myorg/myproject"
 level = "DEBUG"
 
-[[log.modules]]
+[[ballerina.log.modules]]
 name = "myorg/myproject.foo"
 level = "ERROR"
