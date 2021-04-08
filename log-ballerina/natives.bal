@@ -152,7 +152,7 @@ isolated function printJsonExtern(string msg) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
-isolated function printLogFmtExtern(LogRecord msg) = @java:Method {
+isolated function printLogFmtExtern(LogRecord logRecord) = @java:Method {
     'class: "org.ballerinalang.stdlib.log.Utils"
 } external;
 
