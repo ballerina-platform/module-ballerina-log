@@ -18,7 +18,6 @@ import ballerina/jballerina.java;
 
 isolated function init() {
     setModule();
-    initializeLogLevels();
 }
 
 isolated function setModule() = @java:Method {

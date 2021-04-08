@@ -13,7 +13,6 @@
 // KIND, either express or implied.  See the License for the
 // specific language governing permissions and limitations
 // under the License.
-
 import ballerina/jballerina.java;
 
 # Represents log level types.
@@ -28,7 +27,7 @@ enum LogLevel {
 public type Value anydata|Valuer;
 
 # A function that returns anydata type
-public type Valuer isolated function() returns anydata;
+public type Valuer isolated function () returns anydata;
 
 # Key-Value pairs that needs to be desplayed in the log.
 #
@@ -41,8 +40,8 @@ public type KeyValues record {|
 |};
 
 type Module record {
-  readonly string name;
-  string level;
+    readonly string name;
+    string level;
 };
 
 final configurable string format = "logfmt";
@@ -54,8 +53,15 @@ const string JSON_OUTPUT_FORMAT = "json";
 type LogRecord record {
     string time;
     string level;
-    string module; 
+    string module;
     string message;
+};
+
+final map<int> & readonly logLevelWeight = {
+    "ERROR": 1000,
+    "WARN": 900,
+    "INFO": 800,
+    "DEBUG": 700
 };
 
 # Prints debug logs.
@@ -67,7 +73,7 @@ type LogRecord record {
 # + keyValues - The key-value pairs to be logged
 # + 'error - The error struct to be logged
 public isolated function printDebug(string msg, *KeyValues keyValues, error? 'error = ()) {
-    if (isLogLevelEnabledExtern(DEBUG)) {
+    if (isLogLevelEnabled(DEBUG)) {
         print(DEBUG, msg, keyValues, 'error);
     }
 }
@@ -82,7 +88,7 @@ public isolated function printDebug(string msg, *KeyValues keyValues, error? 'er
 # + keyValues - The key-value pairs to be logged
 # + 'error - The error struct to be logged
 public isolated function printError(string msg, *KeyValues keyValues, error? 'error = ()) {
-    if (isLogLevelEnabledExtern(ERROR)) {
+    if (isLogLevelEnabled(ERROR)) {
         print(ERROR, msg, keyValues, 'error);
     }
 }
@@ -96,7 +102,7 @@ public isolated function printError(string msg, *KeyValues keyValues, error? 'er
 # + keyValues - The key-value pairs to be logged
 # + 'error - The error struct to be logged
 public isolated function printInfo(string msg, *KeyValues keyValues, error? 'error = ()) {
-    if (isLogLevelEnabledExtern(INFO)) {
+    if (isLogLevelEnabled(INFO)) {
         print(INFO, msg, keyValues, 'error);
     }
 }
@@ -110,7 +116,7 @@ public isolated function printInfo(string msg, *KeyValues keyValues, error? 'err
 # + keyValues - The key-value pairs to be logged
 # + 'error - The error struct to be logged
 public isolated function printWarn(string msg, *KeyValues keyValues, error? 'error = ()) {
-    if (isLogLevelEnabledExtern(WARN)) {
+    if (isLogLevelEnabled(WARN)) {
         print(WARN, msg, keyValues, 'error);
     }
 }
@@ -141,37 +147,22 @@ isolated function print(string logLevel, string msg, *KeyValues keyValues, error
     }
 }
 
-isolated function initializeLogLevels() {
-    var globalLevel = setGlobalLogLevelExtern(level);
-    modules.forEach(isolated function(Module module) {
-        var moduleLevel = setModuleLogLevelExtern(module.name, module.level);
-    });
+isolated function printJsonExtern(string msg) = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
+
+isolated function printLogFmtExtern(LogRecord logRecord) = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
+
+isolated function isLogLevelEnabled(string logLevel) returns boolean {
+    string moduleLogLevel = level;
+    if modules.length() > 0 {
+        string moduleName = getModuleName();
+        if modules.hasKey(moduleName) {
+            var moduleLevel = modules.get(moduleName);
+            moduleLogLevel = moduleLevel.level;
+        }
+    }
+    return logLevelWeight.get(logLevel) >= logLevelWeight.get(moduleLogLevel);
 }
 
-isolated function printJsonExtern(string msg) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
+isolated function getModuleName() returns string = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
 
-isolated function printLogFmtExtern(LogRecord logRecord) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function setGlobalLogLevelExtern(string logLevel) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function setModuleLogLevelExtern(string module, string level) = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function isLogLevelEnabledExtern(LogLevel logLevel) returns boolean = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function getModuleName() returns string = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
-
-isolated function getCurrentTime() returns string = @java:Method {
-    'class: "org.ballerinalang.stdlib.log.Utils"
-} external;
+isolated function getCurrentTime() returns string = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;

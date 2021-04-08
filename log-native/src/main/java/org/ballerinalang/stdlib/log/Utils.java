@@ -23,9 +23,8 @@ import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
 
 import static java.lang.System.err;
@@ -36,10 +35,6 @@ import static java.lang.System.err;
  * @since 1.1.0
  */
 public class Utils {
-
-    public static final String GLOBAL_PACKAGE_PATH = ".";
-    private static final Map<String, BLogLevel> loggerLevels = new HashMap<>();
-    private static BLogLevel ballerinaUserLogLevel = BLogLevel.INFO; // default to INFO
 
     /**
      * Prints the log message in json format.
@@ -90,43 +85,6 @@ public class Utils {
     }
 
     /**
-     * Sets the global log level.
-     *
-     * @param logLevel log level
-     */
-    public static void setGlobalLogLevelExtern(BString logLevel) {
-        ballerinaUserLogLevel = BLogLevel.toBLogLevel(logLevel.getValue());
-        loggerLevels.put(GLOBAL_PACKAGE_PATH, BLogLevel.toBLogLevel(logLevel.getValue()));
-    }
-
-    /**
-     * Sets the module log level.
-     *
-     * @param module module
-     * @param logLevel log level
-     */
-    public static void setModuleLogLevelExtern(BString module, BString logLevel) {
-        loggerLevels.put(module.getValue(), BLogLevel.toBLogLevel(logLevel.getValue()));
-    }
-
-    /**
-     * Checks if the given log level is enabled.
-     *
-     * @param logLevel log level
-     * @return true if log level is enabled, false otherwise
-     */
-    public static boolean isLogLevelEnabledExtern(BString logLevel) {
-        if (isModuleLogLevelEnabled()) {
-            String moduleName = getModuleName().toString();
-            return getPackageLogLevel(moduleName).value() <=
-                    BLogLevel.toBLogLevel(logLevel.getValue()).value();
-        } else {
-            return getPackageLogLevel(GLOBAL_PACKAGE_PATH).value() <=
-                    BLogLevel.toBLogLevel(logLevel.getValue()).value();
-        }
-    }
-
-    /**
      * Get the name of the current module.
      *
      * @return module name
@@ -144,12 +102,12 @@ public class Utils {
     /**
      * Get the current time.
      *
-     * @return current time in yyyy-MM-dd HH:mm:ss format
+     * @return current time in yyyy-MM-dd HH:mm:ss.SSS format
      */
     public static BString getCurrentTime() {
-        LocalDateTime localDateTime = LocalDateTime.now();
-        DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-        return StringUtils.fromString(localDateTime.format(dateTimeFormatter));
+        return StringUtils.fromString(
+                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+                        .format(new Date()));
     }
 
     private static String escape(String s) {
@@ -161,38 +119,5 @@ public class Utils {
                 .replace("\f", "\\f")
                 .replace("'", "\\'")
                 .replace("\"", "\\\"");
-    }
-
-    private static boolean isModuleLogLevelEnabled() {
-        return loggerLevels.size() > 1;
-    }
-
-    private static BLogLevel getPackageLogLevel(String pkg) {
-        return loggerLevels.containsKey(pkg) ? loggerLevels.get(pkg) : ballerinaUserLogLevel;
-    }
-
-    enum BLogLevel {
-        ERROR(1000),
-        WARN(900),
-        INFO(800),
-        DEBUG(700);
-
-        private final int levelValue;
-
-        BLogLevel(int levelValue) {
-            this.levelValue = levelValue;
-        }
-
-        public int value() {
-            return this.levelValue;
-        }
-
-        public static BLogLevel toBLogLevel(String logLevel) {
-            try {
-                return valueOf(logLevel);
-            } catch (IllegalArgumentException var3) {
-                throw new RuntimeException("invalid log level: " + logLevel);
-            }
-        }
     }
 }
