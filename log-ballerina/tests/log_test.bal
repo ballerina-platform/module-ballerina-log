@@ -38,8 +38,12 @@ function testFunc() {
 
 public isolated function main() {
     error err = error("bad sad");
-    printDebug("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315, attempts = isolated function() returns int { return 3;});
-    printError("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315, attempts = isolated function() returns int { return 3;});
-    printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315, attempts = isolated function() returns int { return 3;});
-    printWarn("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315, attempts = isolated function() returns int { return 3;});
+    printDebug("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+    attempts = isolated function() returns int { return 3;});
+    printError("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+    attempts = isolated function() returns int { return 3;});
+    printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+    attempts = isolated function() returns int { return 3;});
+    printWarn("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+    attempts = isolated function() returns int { return 3;});
 }

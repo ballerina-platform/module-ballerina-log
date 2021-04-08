@@ -25,7 +25,6 @@ plugins {
 ext.ballerinaLangVersion = project.ballerinaLangVersion
 ext.puppycrawlCheckstyleVersion = project.puppycrawlCheckstyleVersion
 ext.testngVersion = project.testngVersion
-ext.slf4jVersion = project.slf4jVersion
 ext.stdlibIoVersion = project.stdlibIoVersion
 ext.stdlibRegexVersion = project.stdlibRegexVersion
 

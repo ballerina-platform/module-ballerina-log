@@ -28,6 +28,8 @@ import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.lang.System.err;
+
 /**
  * Native function implementations of the log-api module.
  *
@@ -45,7 +47,7 @@ public class Utils {
      * @param msg log message
      */
     public static void printJsonExtern(BString msg) {
-        System.err.println(msg.toString());
+        err.println(msg.toString());
     }
 
     /**
@@ -84,7 +86,7 @@ public class Utils {
             }
             message.append(key).append(" = ").append(value).append(" ");
         }
-        System.err.println(message);
+        err.println(message);
     }
 
     /**
@@ -150,7 +152,7 @@ public class Utils {
         return StringUtils.fromString(localDateTime.format(dateTimeFormatter));
     }
 
-    private static String escape(String s){
+    private static String escape(String s) {
         return s.replace("\\", "\\\\")
                 .replace("\t", "\\t")
                 .replace("\b", "\\b")

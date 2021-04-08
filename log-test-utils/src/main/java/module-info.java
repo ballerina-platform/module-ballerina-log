@@ -18,7 +18,6 @@
 
 module io.ballerina.stdlib.log.testutils {
     requires io.ballerina.runtime;
-    requires io.ballerina.logging;
     requires java.logging;
     requires io.ballerina.stdlib.log;
     requires io.ballerina.stdlib.io;
