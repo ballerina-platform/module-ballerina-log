@@ -141,14 +141,10 @@ isolated function print(string logLevel, string msg, *KeyValues keyValues, error
         logRecord[k] = value;
     }
     if format == "json" {
-        printJsonExtern(logRecord.toJsonString());
+        println(stderrStream(), java:fromString(logRecord.toJsonString()));
     } else {
         printLogFmtExtern(logRecord);
     }
-}
-
-public isolated function printJsonExtern(string msg) {
-    println(err(), java:fromString(msg));
 }
 
 isolated function println(handle receiver, handle msg) = @java:Method {
@@ -157,7 +153,7 @@ isolated function println(handle receiver, handle msg) = @java:Method {
     paramTypes: ["java.lang.String"]
 } external;
 
-isolated function err() returns handle = @java:FieldGet {
+isolated function stderrStream() returns handle = @java:FieldGet {
     name: "err",
     'class: "java/lang/System"
 } external;

@@ -91,13 +91,13 @@ public class Utils {
     }
 
     /**
-     * Get the current time.
+     * Get the current local time.
      *
-     * @return current time in yyyy-MM-dd HH:mm:ss.SSS format
+     * @return current local time in RFC3339 format
      */
     public static BString getCurrentTime() {
         return StringUtils.fromString(
-                new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS")
+                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
                         .format(new Date()));
     }
 
