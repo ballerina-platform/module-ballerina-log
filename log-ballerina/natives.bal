@@ -147,7 +147,20 @@ isolated function print(string logLevel, string msg, *KeyValues keyValues, error
     }
 }
 
-isolated function printJsonExtern(string msg) = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
+public isolated function printJsonExtern(string msg) {
+    println(err(), java:fromString(msg));
+}
+
+isolated function println(handle receiver, handle msg) = @java:Method {
+    name: "println",
+    'class: "java.io.PrintStream",
+    paramTypes: ["java.lang.String"]
+} external;
+
+isolated function err() returns handle = @java:FieldGet {
+    name: "err",
+    'class: "java/lang/System"
+} external;
 
 isolated function printLogFmtExtern(LogRecord logRecord) = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
 
@@ -156,8 +169,7 @@ isolated function isLogLevelEnabled(string logLevel) returns boolean {
     if modules.length() > 0 {
         string moduleName = getModuleName();
         if modules.hasKey(moduleName) {
-            var moduleLevel = modules.get(moduleName);
-            moduleLogLevel = moduleLevel.level;
+            moduleLogLevel = modules.get(moduleName).level;
         }
     }
     return logLevelWeight.get(logLevel) >= logLevelWeight.get(moduleLogLevel);

@@ -37,15 +37,6 @@ import static java.lang.System.err;
 public class Utils {
 
     /**
-     * Prints the log message in json format.
-     *
-     * @param msg log message
-     */
-    public static void printJsonExtern(BString msg) {
-        err.println(msg.toString());
-    }
-
-    /**
      * Prints the log message in logFmt format.
      *
      * @param logRecord log record
