@@ -32,7 +32,7 @@ public function testInvalidGlobalLogLevel() {
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
-    test:assertEquals(logLines[6], "error: invalid log level: debug {}");
+    test:assertTrue(logLines[6].includes("error: invalid log level: debug {}"), "global log level is not validated");
 }
 
 @test:Config {}
@@ -46,5 +46,5 @@ public function testInvalidModuleLogLevel() {
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
-    test:assertEquals(logLines[6], "error: invalid log level: debug for module: myorg/myproject.foo {}");
+    test:assertTrue(logLines[6].includes("error: invalid log level: debug for module: myorg/myproject.foo {}"), "module log level is not validated");
 }
