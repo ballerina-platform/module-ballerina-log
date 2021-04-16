@@ -23,6 +23,7 @@ public function main() {
     log:printInfo("info log", username = isolated function() returns string { return "Alex92";}, id = isolated function() returns int { return 845315;});
     log:printInfo("info log", 'error = e);
     log:printInfo("info log", 'error = e, username = "Alex92", id = 845315, foo = true);
+    log:printInfo("info log\t\n\r\\\"", username = "Alex92\t\n\r\\\"");
     f1();
 }
 

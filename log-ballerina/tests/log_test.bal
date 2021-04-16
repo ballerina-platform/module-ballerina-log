@@ -16,23 +16,34 @@
 
 import ballerina/test;
 
-@test:Config {}
-isolated function testAppendKeyValue() {
-    test:assertEquals(appendKeyValue("username", "Alex92"), " username = \"Alex92\"");
-    test:assertEquals(appendKeyValue("id", 845315), " id = 845315");
-    test:assertEquals(appendKeyValue("foo", true), " foo = true");
+string logMessage = "";
+
+@test:Mock {
+    moduleName: "ballerina/log",
+    functionName: "printLogFmtExtern"
+}
+test:MockFunction mock_printLogFmtExtern = new();
+
+function mockPrintLogFmtExtern(LogRecord msg) {
+    logMessage = msg.message;
 }
 
 @test:Config {}
-isolated function testGetOutput() {
-    test:assertEquals(getOutput("Inside main function", " foo = true id = 845315 username = \"Alex92\""),
-    "message = \"Inside main function\" foo = true id = 845315 username = \"Alex92\"");
-    test:assertEquals(getOutput("Inside main function", " foo = true id = 845315 username = \"Alex92\"", error("bad sad")),
-        "message = \"Inside main function\" error = \"bad sad\" foo = true id = 845315 username = \"Alex92\"");
+function testFunc() {
+    test:when(mock_printLogFmtExtern).call("mockPrintLogFmtExtern");
+
+    main();
+    test:assertEquals(logMessage, "something went wrong");
 }
 
-@test:Config {}
-isolated function testGetMessage() {
-    test:assertEquals(getMessage("Inside main function"), "\"Inside main function\"");
-    test:assertEquals(getMessage("Inside main function", error("bad sad")), "\"Inside main function\" error = \"bad sad\"");
+public isolated function main() {
+    error err = error("bad sad");
+    printDebug("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+    attempts = isolated function() returns int { return 3;});
+    printError("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+    attempts = isolated function() returns int { return 3;});
+    printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+    attempts = isolated function() returns int { return 3;});
+    printWarn("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+    attempts = isolated function() returns int { return 3;});
 }

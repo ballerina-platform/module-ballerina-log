@@ -1,2 +1,2 @@
 [ballerina.log]
-format = "json"
+level = "debug"

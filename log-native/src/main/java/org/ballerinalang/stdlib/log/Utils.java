@@ -18,124 +18,97 @@
 
 package org.ballerinalang.stdlib.log;
 
+import io.ballerina.runtime.api.utils.IdentifierUtils;
+import io.ballerina.runtime.api.utils.StringUtils;
+import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
-import org.ballerinalang.logging.util.BLogLevel;
 
-import java.util.HashMap;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Map;
+
+import static java.lang.System.err;
 
 /**
  * Native function implementations of the log-api module.
  *
  * @since 1.1.0
  */
-public class Utils extends AbstractLogFunction {
-
-    public static final String GLOBAL_PACKAGE_PATH = ".";
-    private static String packagePath = GLOBAL_PACKAGE_PATH;
-    private static Map<String, BLogLevel> loggerLevels = new HashMap<>();
-    private static BLogLevel ballerinaUserLogLevel = BLogLevel.INFO; // default to INFO
+public class Utils {
 
     /**
-     * Prints the log message.
+     * Prints the log message in logFmt format.
      *
-     * @param logLevel log level
-     * @param msg log message
-     * @param format output format
+     * @param logRecord log record
      */
-    public static void printExtern(BString logLevel, BString msg, BString format) {
-        switch (BLogLevel.toBLogLevel(logLevel.getValue())) {
-            case DEBUG:
-                logMessage(msg, packagePath,
-                        (pkg, message) -> {
-                            getLogger(pkg).debug(message);
-                        },
-                        format.toString());
-                break;
-            case INFO:
-                logMessage(msg, packagePath,
-                        (pkg, message) -> {
-                            getLogger(pkg).info(message);
-                        },
-                        format.toString());
-                break;
-            case ERROR:
-                logMessage(msg, packagePath,
-                        (pkg, message) -> {
-                            getLogger(pkg).error(message);
-                        },
-                        format.toString());
-                break;
-            case WARN:
-                logMessage(msg, packagePath,
-                        (pkg, message) -> {
-                            getLogger(pkg).warn(message);
-                        },
-                        format.toString());
-                break;
-            default:
-                break;
-        }
-    }
-
-    /**
-     * Checks if the given log level is enabled.
-     *
-     * @param logLevel log level
-     * @return true if log level is enabled, false otherwise
-     */
-    public static boolean isLogLevelEnabledExtern(BString logLevel) {
-        if (isModuleLogLevelEnabled()) {
-            packagePath = getPackagePath();
-            return getPackageLogLevel(packagePath).value() <= BLogLevel.toBLogLevel(logLevel.getValue())
-                    .value();
-        } else {
-            if (getPackageLogLevel(GLOBAL_PACKAGE_PATH).value() <=
-                    BLogLevel.toBLogLevel(logLevel.getValue()).value()) {
-                packagePath = getPackagePath();
-                return true;
-            } else {
-                return false;
+    public static void printLogFmtExtern(BMap<BString, Object> logRecord) {
+        StringBuilder message = new StringBuilder();
+        for (Map.Entry<BString, Object> entry : logRecord.entrySet()) {
+            String key = entry.getKey().toString();
+            String value;
+            switch (entry.getKey().toString()) {
+                case "time":
+                    value = entry.getValue().toString();
+                    break;
+                case "level":
+                    value = entry.getValue().toString();
+                    if (value.equals("INFO") || value.equals("WARN")) {
+                        value = value + " ";
+                    }
+                    break;
+                case "module":
+                    value = entry.getValue().toString();
+                    if (value.equals("")) {
+                        value = "\"" + value + "\"";
+                    }
+                    break;
+                default:
+                    if (entry.getValue() instanceof BString) {
+                        value = "\"" + escape(entry.getValue().toString()) + "\"";
+                    } else {
+                        value = entry.getValue().toString();
+                    }
+                    break;
             }
+            message.append(key).append(" = ").append(value).append(" ");
         }
+        err.println(message);
     }
 
     /**
-     * Sets the global log level.
+     * Get the name of the current module.
      *
-     * @param logLevel log level
+     * @return module name
      */
-    public static void setGlobalLogLevelExtern(BString logLevel) {
-        ballerinaUserLogLevel = BLogLevel.toBLogLevel(logLevel.getValue());
-        loggerLevels.put(GLOBAL_PACKAGE_PATH, BLogLevel.toBLogLevel(logLevel.getValue()));
+    public static BString getModuleName() {
+        String className = Thread.currentThread().getStackTrace()[5].getClassName();
+        String[] pkgData = className.split("\\.");
+        if (pkgData.length > 1) {
+            String module = IdentifierUtils.decodeIdentifier(pkgData[1]);
+            return StringUtils.fromString(pkgData[0] + "/" + module);
+        }
+        return StringUtils.fromString(".");
     }
 
     /**
-     * Sets the module log level.
+     * Get the current local time.
      *
-     * @param module module
-     * @param logLevel log level
+     * @return current local time in RFC3339 format
      */
-    public static void setModuleLogLevelExtern(BString module, BString logLevel) {
-        loggerLevels.put(module.getValue(), BLogLevel.toBLogLevel(logLevel.getValue()));
+    public static BString getCurrentTime() {
+        return StringUtils.fromString(
+                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+                        .format(new Date()));
     }
 
-    /**
-     * Checks if module log level has been enabled.
-     *
-     * @return true if module log level has been enabled, false if not.
-     */
-    private static boolean isModuleLogLevelEnabled() {
-        return loggerLevels.size() > 1;
-    }
-
-    /**
-     * Get the log level of a given package.
-     *
-     * @param pkg package name
-     * @return the log level
-     */
-    private static BLogLevel getPackageLogLevel(String pkg) {
-        return loggerLevels.containsKey(pkg) ? loggerLevels.get(pkg) : ballerinaUserLogLevel;
+    private static String escape(String s) {
+        return s.replace("\\", "\\\\")
+                .replace("\t", "\\t")
+                .replace("\b", "\\b")
+                .replace("\n", "\\n")
+                .replace("\r", "\\r")
+                .replace("\f", "\\f")
+                .replace("'", "\\'")
+                .replace("\"", "\\\"");
     }
 }
