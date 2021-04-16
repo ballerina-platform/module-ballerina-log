@@ -97,7 +97,7 @@ public class Utils {
      */
     public static BString getCurrentTime() {
         return StringUtils.fromString(
-                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX")
+                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
                         .format(new Date()));
     }
 
