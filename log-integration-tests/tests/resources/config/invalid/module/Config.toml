@@ -1,0 +1,11 @@
+[ballerina.log]
+level = "WARN"
+format = "json"
+
+[[ballerina.log.modules]]
+name = "myorg/myproject.foo"
+level = "debug"
+
+[[ballerina.log.modules]]
+name = "myorg/myproject.bar"
+level = "ERROR"
