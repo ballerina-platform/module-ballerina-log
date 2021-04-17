@@ -1,7 +1,7 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina TCP package through the releases.
 
-## [Unreleased]
+## [1.1.0-alpha8] - 2021-04-22
 
 ### Added
 - [[#1188] Add validation to check log levels in Config.toml file](https://github.com/ballerina-platform/ballerina-standard-library/issues/1188)
