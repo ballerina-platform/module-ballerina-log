@@ -1,5 +1,6 @@
 [ballerina.log]
 level = "DEBUG"
+format = "json"
 
 [[ballerina.log.modules]]
 name = "myorg/myproject"

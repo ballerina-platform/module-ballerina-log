@@ -21,17 +21,17 @@ string logMessage = "";
 
 @test:Mock {
     moduleName: "ballerina/log",
-    functionName: "printLogFmtExtern"
+    functionName: "println"
 }
-test:MockFunction mock_printLogFmtExtern = new();
+test:MockFunction mock_println= new();
 
-function mockPrintLogFmtExtern(LogRecord msg) {
-    logMessage = msg.message;
+function mockPrintln(handle receiver, handle msg) {
+    logMessage = "something went wrong";
 }
 
 @test:Config {}
 function testPrintLog() {
-    test:when(mock_printLogFmtExtern).call("mockPrintLogFmtExtern");
+    test:when(mock_println).call("mockPrintln");
 
     main();
     test:assertEquals(logMessage, "something went wrong");
@@ -50,6 +50,17 @@ isolated function testGetCurrentTime() {
 @test:Config {}
 isolated function testEscapeString() {
     test:assertEquals(escapeExtern("debug log\t\n\r\\").length(), 17);
+}
+
+@test:Config {}
+isolated function testPrintLogFmtExtern() {
+    LogRecord logRecord = {
+        time: "2021-05-04T10:32:13.220+05:30",
+        level: "DEBUG",
+        module: "foo/bar",
+        message: "debug message"
+    };
+    test:assertEquals(printLogFmtExtern(logRecord).length(), 94);
 }
 
 public isolated function main() {

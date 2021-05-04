@@ -144,7 +144,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
     if format == "json" {
         println(stderrStream(), java:fromString(logRecord.toJsonString()));
     } else {
-        printLogFmtExtern(logRecord);
+        var printedMessage = printLogFmtExtern(logRecord);
     }
 }
 
@@ -159,7 +159,7 @@ isolated function stderrStream() returns handle = @java:FieldGet {
     'class: "java/lang/System"
 } external;
 
-isolated function printLogFmtExtern(LogRecord logRecord) = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
+isolated function printLogFmtExtern(LogRecord logRecord) returns string = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
 
 isolated function isLogLevelEnabled(string logLevel) returns boolean {
     string moduleLogLevel = level;

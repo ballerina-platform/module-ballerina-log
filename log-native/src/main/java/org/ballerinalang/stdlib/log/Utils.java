@@ -41,7 +41,7 @@ public class Utils {
      *
      * @param logRecord log record
      */
-    public static void printLogFmtExtern(BMap<BString, Object> logRecord) {
+    public static BString printLogFmtExtern(BMap<BString, Object> logRecord) {
         StringBuilder message = new StringBuilder();
         for (Map.Entry<BString, Object> entry : logRecord.entrySet()) {
             String key = entry.getKey().toString();
@@ -73,6 +73,7 @@ public class Utils {
             message.append(key).append(" = ").append(value).append(" ");
         }
         err.println(message);
+        return StringUtils.fromString(String.valueOf(message));
     }
 
     /**
