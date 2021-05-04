@@ -111,4 +111,14 @@ public class Utils {
                 .replace("'", "\\'")
                 .replace("\"", "\\\"");
     }
+
+    /**
+     * Escapes a String.
+     *
+     * @param s String to escape
+     * @return escaped String
+     */
+    public static BString escapeExtern(BString s) {
+        return StringUtils.fromString(escape(s.getValue()));
+    }
 }

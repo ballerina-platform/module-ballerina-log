@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/jballerina.java;
 import ballerina/test;
 
 string logMessage = "";
@@ -29,11 +30,26 @@ function mockPrintLogFmtExtern(LogRecord msg) {
 }
 
 @test:Config {}
-function testFunc() {
+function testPrintLog() {
     test:when(mock_printLogFmtExtern).call("mockPrintLogFmtExtern");
 
     main();
     test:assertEquals(logMessage, "something went wrong");
+}
+
+@test:Config {}
+isolated function testGetModuleName() {
+    test:assertEquals(getModuleName(), "jdk/internal");
+}
+
+@test:Config {}
+isolated function testGetCurrentTime() {
+    test:assertEquals(getCurrentTime().length(), 29);
+}
+
+@test:Config {}
+isolated function testEscapeString() {
+    test:assertEquals(escapeExtern("debug log\t\n\r\\").length(), 17);
 }
 
 public isolated function main() {
@@ -47,3 +63,5 @@ public isolated function main() {
     printWarn("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
     attempts = isolated function() returns int { return 3;});
 }
+
+isolated function escapeExtern(string s) returns string = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
