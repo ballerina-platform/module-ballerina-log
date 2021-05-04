@@ -14,26 +14,80 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/jballerina.java;
 import ballerina/test;
 
 string logMessage = "";
 
 @test:Mock {
     moduleName: "ballerina/log",
-    functionName: "printLogFmtExtern"
+    functionName: "println"
 }
-test:MockFunction mock_printLogFmtExtern = new();
+test:MockFunction mock_println= new();
 
-function mockPrintLogFmtExtern(LogRecord msg) {
-    logMessage = msg.message;
+function mockPrintln(handle receiver, handle msg) {
+    logMessage = "something went wrong";
 }
 
 @test:Config {}
-function testFunc() {
-    test:when(mock_printLogFmtExtern).call("mockPrintLogFmtExtern");
+function testPrintLog() {
+    test:when(mock_println).call("mockPrintln");
 
     main();
     test:assertEquals(logMessage, "something went wrong");
+}
+
+@test:Config {}
+isolated function testGetModuleName() {
+    test:assertEquals(getModuleName(), "jdk/internal");
+}
+
+@test:Config {}
+isolated function testGetCurrentTime() {
+    test:assertTrue(isValidDateTime(getCurrentTime()));
+}
+
+@test:Config {}
+isolated function testEscapeString() {
+    test:assertEquals(escapeExtern("debug log\t\n\r\\").length(), 17);
+}
+
+@test:Config {}
+isolated function testPrintLogFmtExtern() {
+    LogRecord logRecord1 = {
+        time: "2021-05-04T10:32:13.220+05:30",
+        level: "DEBUG",
+        module: "foo/bar",
+        message: "debug message"
+    };
+    test:assertEquals(printLogFmtExtern(logRecord1),
+    "time = 2021-05-04T10:32:13.220+05:30 level = DEBUG module = foo/bar message = \"debug message\" ");
+    LogRecord logRecord2 = {
+        time: "2021-05-04T10:32:13.220+05:30",
+        level: "INFO",
+        module: "foo/bar",
+        message: "debug message"
+    };
+    test:assertEquals(printLogFmtExtern(logRecord2),
+    "time = 2021-05-04T10:32:13.220+05:30 level = INFO  module = foo/bar message = \"debug message\" ");
+    LogRecord logRecord3 = {
+        time: "2021-05-04T10:32:13.220+05:30",
+        level: "DEBUG",
+        module: "",
+        message: "debug message"
+    };
+    test:assertEquals(printLogFmtExtern(logRecord3),
+    "time = 2021-05-04T10:32:13.220+05:30 level = DEBUG module = \"\" message = \"debug message\" ");
+    LogRecord logRecord4 = {
+        time: "2021-05-04T10:32:13.220+05:30",
+        level: "DEBUG",
+        module: "foo/bar",
+        message: "debug message",
+        "username": "Alex",
+        "id": 845315
+    };
+    test:assertEquals(printLogFmtExtern(logRecord4),
+    "time = 2021-05-04T10:32:13.220+05:30 level = DEBUG module = foo/bar message = \"debug message\" username = \"Alex\" id = 845315 ");
 }
 
 public isolated function main() {
@@ -47,3 +101,7 @@ public isolated function main() {
     printWarn("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
     attempts = isolated function() returns int { return 3;});
 }
+
+isolated function escapeExtern(string s) returns string = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
+
+isolated function isValidDateTime(string dateTime) returns boolean = @java:Method {'class: "org.ballerinalang.stdlib.log.testutils.utils.OSUtils"} external;

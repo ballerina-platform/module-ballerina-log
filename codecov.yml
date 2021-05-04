@@ -3,3 +3,4 @@ fixes:
 
 ignore:
   - "**/tests"
+  - "log-test-utils"

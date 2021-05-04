@@ -36,12 +36,16 @@ import static java.lang.System.err;
  */
 public class Utils {
 
+    private Utils() {
+
+    }
+
     /**
      * Prints the log message in logFmt format.
      *
      * @param logRecord log record
      */
-    public static void printLogFmtExtern(BMap<BString, Object> logRecord) {
+    public static BString printLogFmtExtern(BMap<BString, Object> logRecord) {
         StringBuilder message = new StringBuilder();
         for (Map.Entry<BString, Object> entry : logRecord.entrySet()) {
             String key = entry.getKey().toString();
@@ -73,6 +77,7 @@ public class Utils {
             message.append(key).append(" = ").append(value).append(" ");
         }
         err.println(message);
+        return StringUtils.fromString(String.valueOf(message));
     }
 
     /**
@@ -110,5 +115,15 @@ public class Utils {
                 .replace("\f", "\\f")
                 .replace("'", "\\'")
                 .replace("\"", "\\\"");
+    }
+
+    /**
+     * Escapes a String.
+     *
+     * @param s String to escape
+     * @return escaped String
+     */
+    public static BString escapeExtern(BString s) {
+        return StringUtils.fromString(escape(s.getValue()));
     }
 }
