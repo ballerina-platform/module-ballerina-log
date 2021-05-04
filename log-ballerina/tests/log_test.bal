@@ -44,7 +44,7 @@ isolated function testGetModuleName() {
 
 @test:Config {}
 isolated function testGetCurrentTime() {
-    test:assertEquals(getCurrentTime().length(), 29);
+    test:assertTrue(isValidDateTime(getCurrentTime()));
 }
 
 @test:Config {}
@@ -65,3 +65,5 @@ public isolated function main() {
 }
 
 isolated function escapeExtern(string s) returns string = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
+
+isolated function isValidDateTime(string dateTime) returns boolean = @java:Method {'class: "org.ballerinalang.stdlib.log.testutils.utils.OSUtils"} external;

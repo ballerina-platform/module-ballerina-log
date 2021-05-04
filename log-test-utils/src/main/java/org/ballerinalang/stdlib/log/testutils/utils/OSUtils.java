@@ -74,4 +74,8 @@ public class OSUtils {
     public static Process processFromObject(BObject objVal) {
         return (Process) objVal.getNativeData(PROCESS_FIELD);
     }
+
+    public static boolean isValidDateTime(BString dateTime) {
+        return dateTime.substring(0, 23).getValue().matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}");
+    }
 }
