@@ -36,6 +36,10 @@ import static java.lang.System.err;
  */
 public class Utils {
 
+    private Utils() {
+
+    }
+
     /**
      * Prints the log message in logFmt format.
      *

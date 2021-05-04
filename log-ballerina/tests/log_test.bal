@@ -54,13 +54,36 @@ isolated function testEscapeString() {
 
 @test:Config {}
 isolated function testPrintLogFmtExtern() {
-    LogRecord logRecord = {
+    LogRecord logRecord1 = {
         time: "2021-05-04T10:32:13.220+05:30",
         level: "DEBUG",
         module: "foo/bar",
         message: "debug message"
     };
-    test:assertEquals(printLogFmtExtern(logRecord).length(), 94);
+    test:assertEquals(printLogFmtExtern(logRecord1).length(), 94);
+    LogRecord logRecord2 = {
+        time: "2021-05-04T10:32:13.220+05:30",
+        level: "INFO",
+        module: "foo/bar",
+        message: "debug message"
+    };
+    test:assertEquals(printLogFmtExtern(logRecord2).length(), 94);
+    LogRecord logRecord3 = {
+        time: "2021-05-04T10:32:13.220+05:30",
+        level: "DEBUG",
+        module: "",
+        message: "debug message"
+    };
+    test:assertEquals(printLogFmtExtern(logRecord3).length(), 89);
+    LogRecord logRecord4 = {
+        time: "2021-05-04T10:32:13.220+05:30",
+        level: "DEBUG",
+        module: "foo/bar",
+        message: "debug message",
+        "username": "Alex",
+        "id": 845315
+    };
+    test:assertEquals(printLogFmtExtern(logRecord4).length(), 124);
 }
 
 public isolated function main() {
