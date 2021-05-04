@@ -70,9 +70,9 @@ final map<int> & readonly logLevelWeight = {
 # ```
 #
 # + msg - The message to be logged
+# + 'error - The error struct to be logged#
 # + keyValues - The key-value pairs to be logged
-# + 'error - The error struct to be logged
-public isolated function printDebug(string msg, *KeyValues keyValues, error? 'error = ()) {
+public isolated function printDebug(string msg, error? 'error = (), *KeyValues keyValues) {
     if (isLogLevelEnabled(DEBUG)) {
         print(DEBUG, msg, keyValues, 'error);
     }
@@ -85,9 +85,9 @@ public isolated function printDebug(string msg, *KeyValues keyValues, error? 'er
 # ```
 #
 # + msg - The message to be logged
+# + 'error - The error struct to be logged#
 # + keyValues - The key-value pairs to be logged
-# + 'error - The error struct to be logged
-public isolated function printError(string msg, *KeyValues keyValues, error? 'error = ()) {
+public isolated function printError(string msg, error? 'error = (), *KeyValues keyValues) {
     if (isLogLevelEnabled(ERROR)) {
         print(ERROR, msg, keyValues, 'error);
     }
@@ -99,9 +99,9 @@ public isolated function printError(string msg, *KeyValues keyValues, error? 'er
 # ```
 #
 # + msg - The message to be logged
+# + 'error - The error struct to be logged#
 # + keyValues - The key-value pairs to be logged
-# + 'error - The error struct to be logged
-public isolated function printInfo(string msg, *KeyValues keyValues, error? 'error = ()) {
+public isolated function printInfo(string msg, error? 'error = (), *KeyValues keyValues) {
     if (isLogLevelEnabled(INFO)) {
         print(INFO, msg, keyValues, 'error);
     }
@@ -113,9 +113,9 @@ public isolated function printInfo(string msg, *KeyValues keyValues, error? 'err
 # ```
 #
 # + msg - The message to be logged
+# + 'error - The error struct to be logged#
 # + keyValues - The key-value pairs to be logged
-# + 'error - The error struct to be logged
-public isolated function printWarn(string msg, *KeyValues keyValues, error? 'error = ()) {
+public isolated function printWarn(string msg, error? 'error = (), *KeyValues keyValues) {
     if (isLogLevelEnabled(WARN)) {
         print(WARN, msg, keyValues, 'error);
     }
