@@ -70,11 +70,11 @@ final map<int> & readonly logLevelWeight = {
 # ```
 #
 # + msg - The message to be logged
-# + 'error - The error struct to be logged#
+# + 'error - The error struct to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printDebug(string msg, error? 'error = (), *KeyValues keyValues) {
     if (isLogLevelEnabled(DEBUG)) {
-        print(DEBUG, msg, keyValues, 'error);
+        print(DEBUG, msg, 'error, keyValues);
     }
 }
 
@@ -85,11 +85,11 @@ public isolated function printDebug(string msg, error? 'error = (), *KeyValues k
 # ```
 #
 # + msg - The message to be logged
-# + 'error - The error struct to be logged#
+# + 'error - The error struct to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printError(string msg, error? 'error = (), *KeyValues keyValues) {
     if (isLogLevelEnabled(ERROR)) {
-        print(ERROR, msg, keyValues, 'error);
+        print(ERROR, msg, 'error, keyValues);
     }
 }
 
@@ -99,11 +99,11 @@ public isolated function printError(string msg, error? 'error = (), *KeyValues k
 # ```
 #
 # + msg - The message to be logged
-# + 'error - The error struct to be logged#
+# + 'error - The error struct to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printInfo(string msg, error? 'error = (), *KeyValues keyValues) {
     if (isLogLevelEnabled(INFO)) {
-        print(INFO, msg, keyValues, 'error);
+        print(INFO, msg, 'error, keyValues);
     }
 }
 
@@ -113,15 +113,15 @@ public isolated function printInfo(string msg, error? 'error = (), *KeyValues ke
 # ```
 #
 # + msg - The message to be logged
-# + 'error - The error struct to be logged#
+# + 'error - The error struct to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printWarn(string msg, error? 'error = (), *KeyValues keyValues) {
     if (isLogLevelEnabled(WARN)) {
-        print(WARN, msg, keyValues, 'error);
+        print(WARN, msg, 'error, keyValues);
     }
 }
 
-isolated function print(string logLevel, string msg, *KeyValues keyValues, error? err = ()) {
+isolated function print(string logLevel, string msg, error? err = (), *KeyValues keyValues) {
     LogRecord logRecord = {
         time: getCurrentTime(),
         level: logLevel,
