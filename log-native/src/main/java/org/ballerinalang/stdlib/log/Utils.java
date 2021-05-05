@@ -47,18 +47,14 @@ public class Utils {
      */
     public static BString printLogFmtExtern(BMap<BString, Object> logRecord) {
         StringBuilder message = new StringBuilder();
+        int count = 0;
         for (Map.Entry<BString, Object> entry : logRecord.entrySet()) {
             String key = entry.getKey().toString();
             String value;
             switch (entry.getKey().toString()) {
                 case "time":
-                    value = entry.getValue().toString();
-                    break;
                 case "level":
                     value = entry.getValue().toString();
-                    if (value.equals("INFO") || value.equals("WARN")) {
-                        value = value + " ";
-                    }
                     break;
                 case "module":
                     value = entry.getValue().toString();
@@ -74,7 +70,12 @@ public class Utils {
                     }
                     break;
             }
-            message.append(key).append(" = ").append(value).append(" ");
+            if (count < logRecord.size() - 1) {
+                message.append(key).append(" = ").append(value).append(" ");
+            } else {
+                message.append(key).append(" = ").append(value);
+            }
+            count++;
         }
         err.println(message);
         return StringUtils.fromString(String.valueOf(message));
