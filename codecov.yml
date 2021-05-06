@@ -1,8 +1,4 @@
-fixes:
-  - "ballerina/log/*/::log-ballerina/"
-
 ignore:
-  - "**/tests"
   - "log-test-utils"
 
 coverage:
