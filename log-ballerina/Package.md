@@ -4,7 +4,6 @@ The Log library is one of the standard library packages of the <a target="_blank
 
 This package provides APIs to log information when running applications.
 
-For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
 
 ## Report Issues
 
