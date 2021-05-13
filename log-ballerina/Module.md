@@ -1,4 +1,4 @@
-## Module Overview
+## Overview
 
 This module provides APIs to log information when running applications.
 
