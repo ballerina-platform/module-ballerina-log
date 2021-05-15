@@ -45,9 +45,9 @@ type Module record {
     string level;
 };
 
-final configurable string format = "logfmt";
-final configurable string level = "INFO";
-final configurable table<Module> key(name) & readonly modules = table [];
+configurable string format = "logfmt";
+configurable string level = "INFO";
+configurable table<Module> key(name) & readonly modules = table [];
 
 const string JSON_OUTPUT_FORMAT = "json";
 
