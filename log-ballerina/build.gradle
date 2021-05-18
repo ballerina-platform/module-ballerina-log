@@ -33,7 +33,6 @@ description = 'Ballerina - Log Ballerina Generator'
 
 def packageName = "log"
 def packageOrg = "ballerina"
-def platform = "java11"
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def ballerinaConfigFile = new File("${project.projectDir}/Ballerina.toml")
 def originalConfig = ballerinaConfigFile.text
@@ -55,12 +54,13 @@ def stripBallerinaExtensionVersion(String extVersion) {
 apply plugin: 'io.ballerina.plugin'
 
 ballerina {
+    packageOrganization = packageOrg
     module = packageName
     langVersion = ballerinaLangVersion
     testCoverageParam = "--code-coverage --jacoco-xml --includes=org.ballerinalang.stdlib.log.*:ballerina.log.*"
 }
 
-task updateTomlVersions {
+task updateTomlFiles {
     doLast {
         def newConfig = ballerinaConfigFile.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
@@ -68,7 +68,7 @@ task updateTomlVersions {
     }
 }
 
-task revertTomlFile {
+task revertTomlFiles {
     doLast {
         ballerinaConfigFile.text = originalConfig
     }
@@ -93,7 +93,7 @@ publishing {
     }
 }
 
-updateTomlVersions.dependsOn copyStdlibs
+updateTomlFiles.dependsOn copyStdlibs
 
 build.finalizedBy ':log-integration-tests:build'
 build.dependsOn ":${packageName}-native:build"
