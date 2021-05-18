@@ -9,7 +9,7 @@ time = 2021-05-12T11:20:29.362+05:30 level = ERROR module = myorg/foo message = 
 
 ### Log Levels
 
-The log module provides APIs to log at four levels, which are `DEBUG`, `ERROR`, `INFO`, and `WARN`. By default, all log messages are  logged to the console at the `INFO` level.
+The `log` module provides APIs to log at four levels, which are `DEBUG`, `ERROR`, `INFO`, and `WARN`. By default, all log messages are logged to the console at the `INFO` level.
 
 The log level can be configured via a Ballerina configuration file.
 To set the global log level, place the entry given below in the `Config.toml` file:
@@ -36,7 +36,7 @@ To publish the logs to a file, redirect the `stderr` stream to a file as follows
 $ bal run program.bal 2> b7a-user.log
 ```
 
-By default, logs are printed in the LogFmt format. To set the output format to JSON, place the entry given below in the `Config.toml` file.
+By default, logs are printed in the `LogFmt` format. To set the output format to JSON, place the entry given below in the `Config.toml` file.
 
 ```
 [ballerina.log]
