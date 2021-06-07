@@ -31,8 +31,8 @@ public function testInvalidGlobalLogLevel() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
-    test:assertTrue(logLines[6].includes("error: invalid log level: debug {}"), "global log level is not validated");
+    test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
+    test:assertTrue(logLines[5].includes("error: invalid log level: debug {}"), "global log level is not validated");
 }
 
 @test:Config {}
@@ -45,6 +45,6 @@ public function testInvalidModuleLogLevel() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
-    test:assertTrue(logLines[6].includes("error: invalid log level: debug for module: myorg/myproject.foo {}"), "module log level is not validated");
+    test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
+    test:assertTrue(logLines[5].includes("error: invalid log level: debug for module: myorg/myproject.foo {}"), "module log level is not validated");
 }
