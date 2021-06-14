@@ -306,12 +306,12 @@ public function testObservabilityLogfmt() {
     string[] ioLines = regex:split(outText2, "\n");
     string traceId = ioLines[1];
     string spanId = ioLines[2];
-    io:println("traceId: " + traceId + " spanId: " + spanId);
-    io:println(logLines[5]);
-    validateLog(logLines[5], string ` level = ERROR module = myorg/myproject message = "error log" traceId = "${traceId}" spanId = "${spanId}"`);
-    validateLog(logLines[6], string ` level = WARN module = myorg/myproject message = "warn log" traceId = "${traceId}" spanId = "${spanId}"`);
-    validateLog(logLines[7], string ` level = INFO module = myorg/myproject message = "info log" traceId = "${traceId}" spanId = "${spanId}"`);
-    validateLog(logLines[8], string ` level = DEBUG module = myorg/myproject message = "debug log" traceId = "${traceId}" spanId = "${spanId}"`);
+    if (!isWindowsEnvironment()) {
+        validateLog(logLines[5], string ` level = ERROR module = myorg/myproject message = "error log" traceId = "${traceId}" spanId = "${spanId}"`);
+        validateLog(logLines[6], string ` level = WARN module = myorg/myproject message = "warn log" traceId = "${traceId}" spanId = "${spanId}"`);
+        validateLog(logLines[7], string ` level = INFO module = myorg/myproject message = "info log" traceId = "${traceId}" spanId = "${spanId}"`);
+        validateLog(logLines[8], string ` level = DEBUG module = myorg/myproject message = "debug log" traceId = "${traceId}" spanId = "${spanId}"`);
+    }
 }
 
 isolated function validateLog(string log, string output) {
@@ -322,5 +322,10 @@ isolated function validateLog(string log, string output) {
 function exec(@untainted string command, @untainted map<string> env = {},
                      @untainted string? dir = (), @untainted string... args) returns Process|error = @java:Method {
     name: "exec",
+    'class: "org.ballerinalang.stdlib.log.testutils.nativeimpl.Exec"
+} external;
+
+isolated function isWindowsEnvironment() returns boolean = @java:Method {
+    name: "isWindowsEnvironment",
     'class: "org.ballerinalang.stdlib.log.testutils.nativeimpl.Exec"
 } external;
