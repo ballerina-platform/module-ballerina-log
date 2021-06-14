@@ -293,12 +293,14 @@ public function testObservabilityJson() {
     io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
     string outText2 = checkpanic sc2.read(100000);
     string[] ioLines = regex:split(outText2, "\n");
+    string traceId = ioLines[1];
+    string spanId = ioLines[2];
+    io:println("traceId: " + traceId + " spanId: " + spanId);
     io:println(logLines[5]);
-    io:println("\", \"level\":\"ERROR\", \"module\":\"myorg/myproject\", \"message\":\"error log\", \"traceId\":\"" + ioLines[1] + "\", \"spanId\":\"" + ioLines[2] + "\"}");
-    validateLogJson(logLines[5], string `", "level":"ERROR", "module":"myorg/myproject", "message":"error log", "traceId":"${ioLines[1]}", "spanId":"${ioLines[2]}"}`);
-    validateLogJson(logLines[6], string `", "level":"WARN", "module":"myorg/myproject", "message":"warn log", "traceId":"${ioLines[1]}", "spanId":"${ioLines[2]}"}`);
-    validateLogJson(logLines[7], string `", "level":"INFO", "module":"myorg/myproject", "message":"info log", "traceId":"${ioLines[1]}", "spanId":"${ioLines[2]}"}`);
-    validateLogJson(logLines[8], string `", "level":"DEBUG", "module":"myorg/myproject", "message":"debug log", "traceId":"${ioLines[1]}", "spanId":"${ioLines[2]}"}`);
+    validateLogJson(logLines[5], string `", "level":"ERROR", "module":"myorg/myproject", "message":"error log", "traceId":"${traceId}", "spanId":"${spanId}"}`);
+    validateLogJson(logLines[6], string `", "level":"WARN", "module":"myorg/myproject", "message":"warn log", "traceId":"${traceId}", "spanId":"${spanId}"}`);
+    validateLogJson(logLines[7], string `", "level":"INFO", "module":"myorg/myproject", "message":"info log", "traceId":"${traceId}", "spanId":"${spanId}"}`);
+    validateLogJson(logLines[8], string `", "level":"DEBUG", "module":"myorg/myproject", "message":"debug log", "traceId":"${traceId}", "spanId":"${spanId}"}`);
 }
 
 isolated function validateLogJson(string log, string output) {
