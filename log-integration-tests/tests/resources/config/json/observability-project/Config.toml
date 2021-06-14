@@ -1,0 +1,7 @@
+[ballerina.observe]
+enabled=true
+provider="mock"
+
+[ballerina.log]
+format = "json"
+level = "DEBUG"
