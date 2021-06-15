@@ -3,4 +3,4 @@ enabled=true
 provider="mock"
 
 [ballerina.log]
-level = "DEBUG"
+level="DEBUG"

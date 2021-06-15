@@ -3,5 +3,5 @@ enabled=true
 provider="mock"
 
 [ballerina.log]
-format = "json"
-level = "DEBUG"
+format="json"
+level="DEBUG"
