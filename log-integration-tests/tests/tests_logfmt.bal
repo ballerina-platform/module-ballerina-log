@@ -290,7 +290,7 @@ public function testProjectWithGlobalAndModuleLogLevelsLogfmt() {
 @test:Config {}
 public function testObservabilityLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_OBSERVABILITY_PROJECT_LOGFMT}, (),
-    "run", temp_dir_path + "/observability-project");
+    "run", temp_dir_path + "/observability-project-logfmt");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -304,14 +304,11 @@ public function testObservabilityLogfmt() {
     io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
     string outText2 = checkpanic sc2.read(100000);
     string[] ioLines = regex:split(outText2, "\n");
-    string traceId = ioLines[1];
-    string spanId = ioLines[2];
-    if (!isWindowsEnvironment()) {
-        validateLog(logLines[5], string ` level = ERROR module = myorg/myproject message = "error log" traceId = "${traceId}" spanId = "${spanId}"`);
-        validateLog(logLines[6], string ` level = WARN module = myorg/myproject message = "warn log" traceId = "${traceId}" spanId = "${spanId}"`);
-        validateLog(logLines[7], string ` level = INFO module = myorg/myproject message = "info log" traceId = "${traceId}" spanId = "${spanId}"`);
-        validateLog(logLines[8], string ` level = DEBUG module = myorg/myproject message = "debug log" traceId = "${traceId}" spanId = "${spanId}"`);
-    }
+    string spanContext = ioLines[1];
+    validateLog(logLines[5], string ` level = ERROR module = myorg/myproject message = "error log" ${spanContext}`);
+    validateLog(logLines[6], string ` level = WARN module = myorg/myproject message = "warn log" ${spanContext}`);
+    validateLog(logLines[7], string ` level = INFO module = myorg/myproject message = "info log" ${spanContext}`);
+    validateLog(logLines[8], string ` level = DEBUG module = myorg/myproject message = "debug log" ${spanContext}`);
 }
 
 isolated function validateLog(string log, string output) {
@@ -322,10 +319,5 @@ isolated function validateLog(string log, string output) {
 function exec(@untainted string command, @untainted map<string> env = {},
                      @untainted string? dir = (), @untainted string... args) returns Process|error = @java:Method {
     name: "exec",
-    'class: "org.ballerinalang.stdlib.log.testutils.nativeimpl.Exec"
-} external;
-
-isolated function isWindowsEnvironment() returns boolean = @java:Method {
-    name: "isWindowsEnvironment",
     'class: "org.ballerinalang.stdlib.log.testutils.nativeimpl.Exec"
 } external;

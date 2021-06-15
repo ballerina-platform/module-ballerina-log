@@ -22,8 +22,7 @@ import ballerina/observe.mockextension;
 public function main() {
     foo();
     var spans = mockextension:getFinishedSpans("Ballerina");
-    io:println(spans[0].traceId);
-    io:println(spans[0].spanId);
+    io:print("traceId = \"" + spans[0].traceId + "\" spanId = \"" + spans[0].spanId + "\"");
 }
 
 @observe:Observable
