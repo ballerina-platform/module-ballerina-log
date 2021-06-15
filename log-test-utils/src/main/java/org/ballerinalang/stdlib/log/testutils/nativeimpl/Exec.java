@@ -28,6 +28,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -55,5 +56,9 @@ public class Exec {
         } catch (IOException e) {
             return OSUtils.getBallerinaError(OSConstants.PROCESS_EXEC_ERROR, e);
         }
+    }
+
+    public static boolean isWindowsEnvironment() {
+        return System.getProperty("os.name").toLowerCase(Locale.ENGLISH).contains("win");
     }
 }

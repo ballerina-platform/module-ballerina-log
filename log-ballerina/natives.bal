@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/observe;
 import ballerina/jballerina.java;
 
 # Represents log level types.
@@ -140,6 +141,12 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
             value = v;
         }
         logRecord[k] = value;
+    }
+    if (observe:isTracingEnabled()) {
+        map<string> spanContext = observe:getSpanContext();
+        foreach [string, string] [k, v] in spanContext.entries() {
+            logRecord[k] = v;
+        }
     }
     if format == "json" {
         println(stderrStream(), java:fromString(logRecord.toJsonString()));

@@ -35,6 +35,7 @@ const string CONFIG_WARN_LOGFMT = "tests/resources/config/logfmt/log-levels/warn
 const string CONFIG_PROJECT_GLOBAL_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/global/Config.toml";
 const string CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/default/Config.toml";
 const string CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/global-and-module/Config.toml";
+const string CONFIG_OBSERVABILITY_PROJECT_LOGFMT = "tests/resources/config/logfmt/observability-project/Config.toml";
 
 const string MESSAGE_ERROR_LOGFMT = " level = ERROR module = \"\" message = \"error log\"";
 const string MESSAGE_WARN_LOGFMT = " level = WARN module = \"\" message = \"warn log\"";
@@ -286,6 +287,33 @@ public function testProjectWithGlobalAndModuleLogLevelsLogfmt() {
     validateLog(logLines[11], MESSAGE_ERROR_BAR_LOGFMT);
 }
 
+@test:Config {}
+public function testObservabilityLogfmt() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_OBSERVABILITY_PROJECT_LOGFMT}, (),
+    "run", temp_dir_path + "/observability-project");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+
+    io:ReadableByteChannel readableOutResult = result.stdout();
+    io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
+    string outText2 = checkpanic sc2.read(100000);
+    string[] ioLines = regex:split(outText2, "\n");
+    string traceId = ioLines[1];
+    string spanId = ioLines[2];
+    if (!isWindowsEnvironment()) {
+        validateLog(logLines[5], string ` level = ERROR module = myorg/myproject message = "error log" traceId = "${traceId}" spanId = "${spanId}"`);
+        validateLog(logLines[6], string ` level = WARN module = myorg/myproject message = "warn log" traceId = "${traceId}" spanId = "${spanId}"`);
+        validateLog(logLines[7], string ` level = INFO module = myorg/myproject message = "info log" traceId = "${traceId}" spanId = "${spanId}"`);
+        validateLog(logLines[8], string ` level = DEBUG module = myorg/myproject message = "debug log" traceId = "${traceId}" spanId = "${spanId}"`);
+    }
+}
+
 isolated function validateLog(string log, string output) {
     test:assertTrue(log.includes("time ="), "log does not contain the time");
     test:assertTrue(log.includes(output), "log does not contain the required output");
@@ -294,5 +322,10 @@ isolated function validateLog(string log, string output) {
 function exec(@untainted string command, @untainted map<string> env = {},
                      @untainted string? dir = (), @untainted string... args) returns Process|error = @java:Method {
     name: "exec",
+    'class: "org.ballerinalang.stdlib.log.testutils.nativeimpl.Exec"
+} external;
+
+isolated function isWindowsEnvironment() returns boolean = @java:Method {
+    name: "isWindowsEnvironment",
     'class: "org.ballerinalang.stdlib.log.testutils.nativeimpl.Exec"
 } external;
