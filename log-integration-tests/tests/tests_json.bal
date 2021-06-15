@@ -279,7 +279,7 @@ public function testProjectWithGlobalAndModuleLogLevelsJson() {
 @test:Config {}
 public function testObservabilityJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_OBSERVABILITY_PROJECT_JSON}, (),
-    "run", temp_dir_path + "/observability-project");
+    "run", temp_dir_path + "/observability-project-json");
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
@@ -293,14 +293,11 @@ public function testObservabilityJson() {
     io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
     string outText2 = checkpanic sc2.read(100000);
     string[] ioLines = regex:split(outText2, "\n");
-    string traceId = ioLines[1];
-    string spanId = ioLines[2];
-    if (!isWindowsEnvironment()) {
-        validateLogJson(logLines[5], string `", "level":"ERROR", "module":"myorg/myproject", "message":"error log", "traceId":"${traceId}", "spanId":"${spanId}"}`);
-        validateLogJson(logLines[6], string `", "level":"WARN", "module":"myorg/myproject", "message":"warn log", "traceId":"${traceId}", "spanId":"${spanId}"}`);
-        validateLogJson(logLines[7], string `", "level":"INFO", "module":"myorg/myproject", "message":"info log", "traceId":"${traceId}", "spanId":"${spanId}"}`);
-        validateLogJson(logLines[8], string `", "level":"DEBUG", "module":"myorg/myproject", "message":"debug log", "traceId":"${traceId}", "spanId":"${spanId}"}`);
-    }
+    string spanContext = ioLines[1];
+    validateLogJson(logLines[5], string `", "level":"ERROR", "module":"myorg/myproject", "message":"error log", ${spanContext}}`);
+    validateLogJson(logLines[6], string `", "level":"WARN", "module":"myorg/myproject", "message":"warn log", ${spanContext}}`);
+    validateLogJson(logLines[7], string `", "level":"INFO", "module":"myorg/myproject", "message":"info log", ${spanContext}}`);
+    validateLogJson(logLines[8], string `", "level":"DEBUG", "module":"myorg/myproject", "message":"debug log", ${spanContext}}`);
 }
 
 isolated function validateLogJson(string log, string output) {
