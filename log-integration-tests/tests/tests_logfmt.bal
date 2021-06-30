@@ -35,7 +35,6 @@ const string CONFIG_WARN_LOGFMT = "tests/resources/config/logfmt/log-levels/warn
 const string CONFIG_PROJECT_GLOBAL_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/global/Config.toml";
 const string CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/default/Config.toml";
 const string CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/global-and-module/Config.toml";
-const string CONFIG_OBSERVABILITY_PROJECT_LOGFMT = "tests/resources/config/logfmt/observability-project/Config.toml";
 
 const string MESSAGE_ERROR_LOGFMT = " level = ERROR module = \"\" message = \"error log\"";
 const string MESSAGE_WARN_LOGFMT = " level = WARN module = \"\" message = \"warn log\"";
@@ -285,30 +284,6 @@ public function testProjectWithGlobalAndModuleLogLevelsLogfmt() {
     validateLog(logLines[9], MESSAGE_INFO_FOO_LOGFMT);
     validateLog(logLines[10], MESSAGE_DEBUG_FOO_LOGFMT);
     validateLog(logLines[11], MESSAGE_ERROR_BAR_LOGFMT);
-}
-
-@test:Config {}
-public function testObservabilityLogfmt() {
-    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_OBSERVABILITY_PROJECT_LOGFMT}, (),
-    "run", temp_dir_path + "/observability-project-logfmt");
-    Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
-    io:ReadableByteChannel readableResult = result.stderr();
-    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
-    string outText = checkpanic sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
-
-    io:ReadableByteChannel readableOutResult = result.stdout();
-    io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
-    string outText2 = checkpanic sc2.read(100000);
-    string[] ioLines = regex:split(outText2, "\n");
-    string spanContext = ioLines[1];
-    validateLog(logLines[5], string ` level = ERROR module = myorg/myproject message = "error log" ${spanContext}`);
-    validateLog(logLines[6], string ` level = WARN module = myorg/myproject message = "warn log" ${spanContext}`);
-    validateLog(logLines[7], string ` level = INFO module = myorg/myproject message = "info log" ${spanContext}`);
-    validateLog(logLines[8], string ` level = DEBUG module = myorg/myproject message = "debug log" ${spanContext}`);
 }
 
 isolated function validateLog(string log, string output) {
