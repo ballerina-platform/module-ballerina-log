@@ -175,12 +175,6 @@ task copyTestResources(type: Copy) {
     into("log-project") {
         from "tests/resources/samples/log-project"
     }
-    into("observability-project-logfmt") {
-        from "tests/resources/samples/observability-project-logfmt"
-    }
-    into("observability-project-json") {
-        from "tests/resources/samples/observability-project-json"
-    }
 }
 
 task ballerinaIntegrationTests {
