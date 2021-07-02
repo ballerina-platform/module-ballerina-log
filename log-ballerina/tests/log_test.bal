@@ -48,11 +48,6 @@ isolated function testGetCurrentTime() {
 }
 
 @test:Config {}
-isolated function testEscapeString() {
-    test:assertEquals(escapeExtern("debug log\t\n\r\\").length(), 17);
-}
-
-@test:Config {}
 isolated function testPrintLogFmtExtern() {
     LogRecord logRecord1 = {
         time: "2021-05-04T10:32:13.220+05:30",
@@ -101,7 +96,5 @@ public isolated function main() {
     printWarn("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
     attempts = isolated function() returns int { return 3;});
 }
-
-isolated function escapeExtern(string s) returns string = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
 
 isolated function isValidDateTime(string dateTime) returns boolean = @java:Method {'class: "org.ballerinalang.stdlib.log.testutils.utils.OSUtils"} external;

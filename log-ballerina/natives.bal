@@ -144,7 +144,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
     if format == "json" {
         println(stderrStream(), java:fromString(logRecord.toJsonString()));
     } else {
-        var printedMessage = printLogFmtExtern(logRecord);
+        println(stderrStream(), java:fromString(printLogFmtExtern(logRecord)));
     }
 }
 
@@ -159,7 +159,52 @@ isolated function stderrStream() returns handle = @java:FieldGet {
     'class: "java/lang/System"
 } external;
 
-isolated function printLogFmtExtern(LogRecord logRecord) returns string = @java:Method {'class: "org.ballerinalang.stdlib.log.Utils"} external;
+isolated function printLogFmtExtern(LogRecord logRecord) returns string {
+    string message = "";
+    foreach [string, anydata] [k, v] in logRecord.entries() {
+        string value;
+        match k {
+            "time"|"level" => {
+                value = v.toString();
+            }
+            "module" => {
+                value = v.toString();
+                if value == "" {
+                    value = "\"\"";
+                }
+            }
+            _ => {
+                if v is string {
+                    value = string `${escape(v.toString())}`;
+                } else {
+                    value = v.toString();
+                }
+            }
+        }
+        if message == "" {
+            message = message + string `${k} = ${value}`;
+        } else {
+            message = message + string ` ${k} = ${value}`;
+        }
+    }
+    return message;
+}
+
+isolated function escape(string msg) returns string {
+    handle temp = escapseExternal(java:fromString(msg), java:fromString("\\"), java:fromString("\\\\"));
+    temp = escapseExternal(temp, java:fromString("\t"), java:fromString("\\t"));
+    temp = escapseExternal(temp, java:fromString("\n"), java:fromString("\\n"));
+    temp = escapseExternal(temp, java:fromString("\r"), java:fromString("\\r"));
+    temp = escapseExternal(temp, java:fromString("'"), java:fromString("\\'"));
+    temp = escapseExternal(temp, java:fromString("\""), java:fromString("\\\""));
+    string? updatedString = java:toString(temp);
+    return updatedString.toBalString();
+}
+
+public isolated function escapseExternal(handle receiver, handle target, handle replacement) returns handle = @java:Method {
+    'class: "java.lang.String",
+    name: "replace"
+} external;
 
 isolated function isLogLevelEnabled(string logLevel) returns boolean {
     string moduleLogLevel = level;

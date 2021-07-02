@@ -20,14 +20,10 @@ package org.ballerinalang.stdlib.log;
 
 import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
-import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Map;
-
-import static java.lang.System.err;
 
 /**
  * Native function implementations of the log-api module.
@@ -38,47 +34,6 @@ public class Utils {
 
     private Utils() {
 
-    }
-
-    /**
-     * Prints the log message in logFmt format.
-     *
-     * @param logRecord log record
-     */
-    public static BString printLogFmtExtern(BMap<BString, Object> logRecord) {
-        StringBuilder message = new StringBuilder();
-        int count = 0;
-        for (Map.Entry<BString, Object> entry : logRecord.entrySet()) {
-            String key = entry.getKey().toString();
-            String value;
-            switch (entry.getKey().toString()) {
-                case "time":
-                case "level":
-                    value = entry.getValue().toString();
-                    break;
-                case "module":
-                    value = entry.getValue().toString();
-                    if (value.equals("")) {
-                        value = "\"" + value + "\"";
-                    }
-                    break;
-                default:
-                    if (entry.getValue() instanceof BString) {
-                        value = "\"" + escape(entry.getValue().toString()) + "\"";
-                    } else {
-                        value = entry.getValue().toString();
-                    }
-                    break;
-            }
-            if (count < logRecord.size() - 1) {
-                message.append(key).append(" = ").append(value).append(" ");
-            } else {
-                message.append(key).append(" = ").append(value);
-            }
-            count++;
-        }
-        err.println(message);
-        return StringUtils.fromString(String.valueOf(message));
     }
 
     /**
@@ -105,26 +60,5 @@ public class Utils {
         return StringUtils.fromString(
                 new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
                         .format(new Date()));
-    }
-
-    private static String escape(String s) {
-        return s.replace("\\", "\\\\")
-                .replace("\t", "\\t")
-                .replace("\b", "\\b")
-                .replace("\n", "\\n")
-                .replace("\r", "\\r")
-                .replace("\f", "\\f")
-                .replace("'", "\\'")
-                .replace("\"", "\\\"");
-    }
-
-    /**
-     * Escapes a String.
-     *
-     * @param s String to escape
-     * @return escaped String
-     */
-    public static BString escapeExtern(BString s) {
-        return StringUtils.fromString(escape(s.getValue()));
     }
 }
