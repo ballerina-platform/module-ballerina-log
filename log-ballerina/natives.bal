@@ -144,7 +144,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
     if format == "json" {
         println(stderrStream(), java:fromString(logRecord.toJsonString()));
     } else {
-        println(stderrStream(), java:fromString(printLogFmtExtern(logRecord)));
+        println(stderrStream(), java:fromString(printLogFmt(logRecord)));
     }
 }
 
@@ -159,7 +159,7 @@ isolated function stderrStream() returns handle = @java:FieldGet {
     'class: "java/lang/System"
 } external;
 
-isolated function printLogFmtExtern(LogRecord logRecord) returns string {
+isolated function printLogFmt(LogRecord logRecord) returns string {
     string message = "";
     foreach [string, anydata] [k, v] in logRecord.entries() {
         string value;
@@ -191,17 +191,17 @@ isolated function printLogFmtExtern(LogRecord logRecord) returns string {
 }
 
 isolated function escape(string msg) returns string {
-    handle temp = escapseExternal(java:fromString(msg), java:fromString("\\"), java:fromString("\\\\"));
-    temp = escapseExternal(temp, java:fromString("\t"), java:fromString("\\t"));
-    temp = escapseExternal(temp, java:fromString("\n"), java:fromString("\\n"));
-    temp = escapseExternal(temp, java:fromString("\r"), java:fromString("\\r"));
-    temp = escapseExternal(temp, java:fromString("'"), java:fromString("\\'"));
-    temp = escapseExternal(temp, java:fromString("\""), java:fromString("\\\""));
+    handle temp = replaceString(java:fromString(msg), java:fromString("\\"), java:fromString("\\\\"));
+    temp = replaceString(temp, java:fromString("\t"), java:fromString("\\t"));
+    temp = replaceString(temp, java:fromString("\n"), java:fromString("\\n"));
+    temp = replaceString(temp, java:fromString("\r"), java:fromString("\\r"));
+    temp = replaceString(temp, java:fromString("'"), java:fromString("\\'"));
+    temp = replaceString(temp, java:fromString("\""), java:fromString("\\\""));
     string? updatedString = java:toString(temp);
     return updatedString.toBalString();
 }
 
-public isolated function escapseExternal(handle receiver, handle target, handle replacement) returns handle = @java:Method {
+isolated function replaceString(handle receiver, handle target, handle replacement) returns handle = @java:Method {
     'class: "java.lang.String",
     name: "replace"
 } external;
