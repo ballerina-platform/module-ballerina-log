@@ -51,14 +51,14 @@ configurations {
 }
 
 dependencies {
-    compile group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
+    implementation group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
     jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
         transitive = false
     }
     externalJars (group: 'org.ballerinalang', name: 'io-native', version: "${stdlibIoVersion}") {
         transitive = false
     }
-    compile project(':log-native')
+    implementation project(':log-native')
 }
 
 clean {
