@@ -117,11 +117,11 @@ task copyLogStdlib {
     doLast {
         /* Copy Log module */
         copy {
-            from "$project.rootDir/log-ballerina/build/cache_parent/bala"
+            from "$project.rootDir/ballerina/build/cache_parent/bala"
             into "${ballerinaDist}/repo/bala"
         }
         copy {
-            from "$project.rootDir/log-ballerina/build/cache_parent/cache"
+            from "$project.rootDir/ballerina/build/cache_parent/cache"
             into "${ballerinaDist}/repo/cache"
         }
     }
