@@ -23,7 +23,7 @@ plugins {
 }
 
 allprojects {
-    group = 'org.ballerinalang'
+    group = 'project.group'
     version = project.version
 
     apply plugin: 'jacoco'
@@ -65,8 +65,8 @@ subprojects {
     }
     dependencies {
         /* Standard libraries */
-        ballerinaStdLibs "org.ballerinalang:io-ballerina:${stdlibIoVersion}"
-        ballerinaStdLibs "org.ballerinalang:regex-ballerina:${stdlibRegexVersion}"
+        ballerinaStdLibs "io.ballerina.stdlib:io-ballerina:${stdlibIoVersion}"
+        ballerinaStdLibs "io.ballerina.stdlib:regex-ballerina:${stdlibRegexVersion}"
     }
 }
 

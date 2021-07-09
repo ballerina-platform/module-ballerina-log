@@ -12,8 +12,20 @@ plugins {
 }
 
 rootProject.name = 'log'
-include(':build-config:checkstyle')
+include(':checkstyle')
 include ':log-native', ':log-test-utils', ':log-ballerina', ':log-integration-tests'
+
+include ':checkstyle'
+include ':log-native'
+include ':log-test-utils'
+include ':log-ballerina'
+include ':log-integration-tests'
+
+project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
+project(':log-native').projectDir = file('native')
+project(':log-test-utils').projectDir = file('test-utils')
+project(':log-ballerina').projectDir = file('ballerina')
+project(':log-integration-tests').projectDir = file('integration-tests')
 
 gradleEnterprise {
     buildScan {

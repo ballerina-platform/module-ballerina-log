@@ -3,7 +3,7 @@ fixes:
 
 ignore:
   - "**/tests"
-  - "log-test-utils"
+  - "test-utils"
 
 coverage:
   precision: 2
