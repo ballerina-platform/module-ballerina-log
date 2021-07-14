@@ -71,12 +71,12 @@ public function testPrintDebugLogfmt() {
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], " level = DEBUG module = \"\" message = \"debug log\"");
-    validateLog(logLines[6], " level = DEBUG module = \"\" message = \"debug log\" foo = true id = 845315 username = \"Alex92\"");
-    validateLog(logLines[7], " level = DEBUG module = \"\" message = \"debug log\" id = 845315 username = \"Alex92\"");
+    validateLog(logLines[6], " level = DEBUG module = \"\" message = \"debug log\" username = \"Alex92\" id = 845315 foo = true");
+    validateLog(logLines[7], " level = DEBUG module = \"\" message = \"debug log\" username = \"Alex92\" id = 845315");
     validateLog(logLines[8], " level = DEBUG module = \"\" message = \"debug log\" error = \"bad sad\"");
-    validateLog(logLines[9], " level = DEBUG module = \"\" message = \"debug log\" error = \"bad sad\" foo = true id = 845315 username = \"Alex92\"");
+    validateLog(logLines[9], " level = DEBUG module = \"\" message = \"debug log\" error = \"bad sad\" username = \"Alex92\" id = 845315 foo = true");
     validateLog(logLines[10], " level = DEBUG module = \"\" message = \"debug log\\t\\n\\r\\\\\\\"\" username = \"Alex92\\t\\n\\r\\\\\\\"\"");
-    validateLog(logLines[11], " level = DEBUG module = \"\" message = \"debug log\" stackTrace = [{\"callableName\":\"f3\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":39},{\"callableName\":\"f2\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":35},{\"callableName\":\"f1\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":31},{\"callableName\":\"main\",\"moduleName\":\"debug\",\"fileName\":\"debug.bal\",\"lineNumber\":27}] id = 845315 username = \"Alex92\"");
+    validateLog(logLines[11], " level = DEBUG module = \"\" message = \"debug log\" stackTrace = [{\"callableName\":\"f3\",\"fileName\":\"debug.bal\",\"lineNumber\":39},{\"callableName\":\"f2\",\"fileName\":\"debug.bal\",\"lineNumber\":35},{\"callableName\":\"f1\",\"fileName\":\"debug.bal\",\"lineNumber\":31},{\"callableName\":\"main\",\"fileName\":\"debug.bal\",\"lineNumber\":27}] username = \"Alex92\" id = 845315");
 }
 
 @test:Config {}
@@ -91,12 +91,12 @@ public function testPrintErrorLogfmt() {
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], " level = ERROR module = \"\" message = \"error log\"");
-    validateLog(logLines[6], " level = ERROR module = \"\" message = \"error log\" foo = true id = 845315 username = \"Alex92\"");
-    validateLog(logLines[7], " level = ERROR module = \"\" message = \"error log\" id = 845315 username = \"Alex92\"");
+    validateLog(logLines[6], " level = ERROR module = \"\" message = \"error log\" username = \"Alex92\" id = 845315 foo = true");
+    validateLog(logLines[7], " level = ERROR module = \"\" message = \"error log\" username = \"Alex92\" id = 845315");
     validateLog(logLines[8], " level = ERROR module = \"\" message = \"error log\" error = \"bad sad\"");
-    validateLog(logLines[9], " level = ERROR module = \"\" message = \"error log\" error = \"bad sad\" foo = true id = 845315 username = \"Alex92\"");
+    validateLog(logLines[9], " level = ERROR module = \"\" message = \"error log\" error = \"bad sad\" username = \"Alex92\" id = 845315 foo = true");
     validateLog(logLines[10], " level = ERROR module = \"\" message = \"error log\\t\\n\\r\\\\\\\"\" username = \"Alex92\\t\\n\\r\\\\\\\"\"");
-    validateLog(logLines[11], " level = ERROR module = \"\" message = \"error log\" stackTrace = [{\"callableName\":\"f3\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":39},{\"callableName\":\"f2\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":35},{\"callableName\":\"f1\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":31},{\"callableName\":\"main\",\"moduleName\":\"error\",\"fileName\":\"error.bal\",\"lineNumber\":27}] id = 845315 username = \"Alex92\"");
+    validateLog(logLines[11], " level = ERROR module = \"\" message = \"error log\" stackTrace = [{\"callableName\":\"f3\",\"fileName\":\"error.bal\",\"lineNumber\":39},{\"callableName\":\"f2\",\"fileName\":\"error.bal\",\"lineNumber\":35},{\"callableName\":\"f1\",\"fileName\":\"error.bal\",\"lineNumber\":31},{\"callableName\":\"main\",\"fileName\":\"error.bal\",\"lineNumber\":27}] username = \"Alex92\" id = 845315");
 }
 
 @test:Config {}
@@ -111,12 +111,12 @@ public function testPrintInfoLogfmt() {
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], " level = INFO module = \"\" message = \"info log\"");
-    validateLog(logLines[6], " level = INFO module = \"\" message = \"info log\" foo = true id = 845315 username = \"Alex92\"");
-    validateLog(logLines[7], " level = INFO module = \"\" message = \"info log\" id = 845315 username = \"Alex92\"");
+    validateLog(logLines[6], " level = INFO module = \"\" message = \"info log\" username = \"Alex92\" id = 845315 foo = true");
+    validateLog(logLines[7], " level = INFO module = \"\" message = \"info log\" username = \"Alex92\" id = 845315");
     validateLog(logLines[8], " level = INFO module = \"\" message = \"info log\" error = \"bad sad\"");
-    validateLog(logLines[9], " level = INFO module = \"\" message = \"info log\" error = \"bad sad\" foo = true id = 845315 username = \"Alex92\"");
+    validateLog(logLines[9], " level = INFO module = \"\" message = \"info log\" error = \"bad sad\" username = \"Alex92\" id = 845315 foo = true");
     validateLog(logLines[10], " level = INFO module = \"\" message = \"info log\\t\\n\\r\\\\\\\"\" username = \"Alex92\\t\\n\\r\\\\\\\"\"");
-    validateLog(logLines[11], " level = INFO module = \"\" message = \"info log\" stackTrace = [{\"callableName\":\"f3\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":39},{\"callableName\":\"f2\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":35},{\"callableName\":\"f1\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":31},{\"callableName\":\"main\",\"moduleName\":\"info\",\"fileName\":\"info.bal\",\"lineNumber\":27}] id = 845315 username = \"Alex92\"");
+    validateLog(logLines[11], " level = INFO module = \"\" message = \"info log\" stackTrace = [{\"callableName\":\"f3\",\"fileName\":\"info.bal\",\"lineNumber\":39},{\"callableName\":\"f2\",\"fileName\":\"info.bal\",\"lineNumber\":35},{\"callableName\":\"f1\",\"fileName\":\"info.bal\",\"lineNumber\":31},{\"callableName\":\"main\",\"fileName\":\"info.bal\",\"lineNumber\":27}] username = \"Alex92\" id = 845315");
 }
 
 @test:Config {}
@@ -131,12 +131,12 @@ public function testPrintWarnLogfmt() {
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], " level = WARN module = \"\" message = \"warn log\"");
-    validateLog(logLines[6], " level = WARN module = \"\" message = \"warn log\" foo = true id = 845315 username = \"Alex92\"");
-    validateLog(logLines[7], " level = WARN module = \"\" message = \"warn log\" id = 845315 username = \"Alex92\"");
+    validateLog(logLines[6], " level = WARN module = \"\" message = \"warn log\" username = \"Alex92\" id = 845315 foo = true");
+    validateLog(logLines[7], " level = WARN module = \"\" message = \"warn log\" username = \"Alex92\" id = 845315");
     validateLog(logLines[8], " level = WARN module = \"\" message = \"warn log\" error = \"bad sad\"");
-    validateLog(logLines[9], " level = WARN module = \"\" message = \"warn log\" error = \"bad sad\" foo = true id = 845315 username = \"Alex92\"");
+    validateLog(logLines[9], " level = WARN module = \"\" message = \"warn log\" error = \"bad sad\" username = \"Alex92\" id = 845315 foo = true");
     validateLog(logLines[10], " level = WARN module = \"\" message = \"warn log\\t\\n\\r\\\\\\\"\" username = \"Alex92\\t\\n\\r\\\\\\\"\"");
-    validateLog(logLines[11], " level = WARN module = \"\" message = \"warn log\" stackTrace = [{\"callableName\":\"f3\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":39},{\"callableName\":\"f2\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":35},{\"callableName\":\"f1\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":31},{\"callableName\":\"main\",\"moduleName\":\"warn\",\"fileName\":\"warn.bal\",\"lineNumber\":27}] id = 845315 username = \"Alex92\"");
+    validateLog(logLines[11], " level = WARN module = \"\" message = \"warn log\" stackTrace = [{\"callableName\":\"f3\",\"fileName\":\"warn.bal\",\"lineNumber\":39},{\"callableName\":\"f2\",\"fileName\":\"warn.bal\",\"lineNumber\":35},{\"callableName\":\"f1\",\"fileName\":\"warn.bal\",\"lineNumber\":31},{\"callableName\":\"main\",\"fileName\":\"warn.bal\",\"lineNumber\":27}] username = \"Alex92\" id = 845315");
 }
 
 @test:Config {}
