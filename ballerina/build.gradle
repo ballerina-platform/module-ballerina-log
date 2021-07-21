@@ -94,6 +94,7 @@ publishing {
 
 updateTomlFiles.dependsOn copyStdlibs
 
+build.dependsOn "generatePomFileForMavenPublication"
 build.finalizedBy ':log-integration-tests:build'
 build.dependsOn ":${packageName}-native:build"
 build.dependsOn ":${packageName}-test-utils:build"
