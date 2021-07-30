@@ -16,13 +16,13 @@
  * under the License.
  */
 
-package org.ballerinalang.stdlib.log.testutils.nativeimpl;
+package io.ballerina.stdlib.log.testutils.nativeimpl;
 
 import io.ballerina.runtime.api.values.BObject;
-import org.ballerinalang.stdlib.io.channels.AbstractNativeChannel;
-import org.ballerinalang.stdlib.io.channels.BlobChannel;
-import org.ballerinalang.stdlib.io.channels.BlobIOChannel;
-import org.ballerinalang.stdlib.log.testutils.utils.OSUtils;
+import io.ballerina.stdlib.io.channels.AbstractNativeChannel;
+import io.ballerina.stdlib.io.channels.BlobChannel;
+import io.ballerina.stdlib.io.channels.BlobIOChannel;
+import io.ballerina.stdlib.log.testutils.utils.OSUtils;
 
 import java.io.InputStream;
 import java.nio.channels.Channels;

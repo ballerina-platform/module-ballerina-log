@@ -83,5 +83,5 @@ isolated function nativeStderr(Process process) returns io:ReadableByteChannel =
 
 isolated function nativeStdout(Process process) returns io:ReadableByteChannel = @java:Method {
     name: "stdout",
-    'class: "org.ballerinalang.stdlib.log.testutils.nativeimpl.Stdout"
+    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.Stdout"
 } external;
