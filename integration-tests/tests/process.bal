@@ -54,6 +54,16 @@ public class Process {
     public isolated function stderr() returns io:ReadableByteChannel {
         return nativeStderr(self);
     }
+
+    # Provides a channel (to read from), which is made available as the 'standard out' of the process.
+    # ```ballerina
+    # io:ReadableByteChannel input = process.stdout();
+    # ```
+    #
+    # + return - The `io:ReadableByteChannel`, which represents the process's 'standard error'
+    public isolated function stdout() returns io:ReadableByteChannel {
+        return nativeStdout(self);
+    }
 }
 
 isolated function nativeWaitForExit(Process process) returns int | Error = @java:Method {
@@ -71,3 +81,7 @@ isolated function nativeStderr(Process process) returns io:ReadableByteChannel =
     'class: "io.ballerina.stdlib.log.testutils.nativeimpl.Stderr"
 } external;
 
+isolated function nativeStdout(Process process) returns io:ReadableByteChannel = @java:Method {
+    name: "stdout",
+    'class: "org.ballerinalang.stdlib.log.testutils.nativeimpl.Stdout"
+} external;
