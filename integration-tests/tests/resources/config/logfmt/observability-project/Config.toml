@@ -1,0 +1,6 @@
+[ballerina.observe]
+enabled=true
+provider="mock"
+
+[ballerina.log]
+level="DEBUG"

@@ -27,6 +27,7 @@ const string CONFIG_PROJECT_WITHOUT_LEVEL_JSON = "tests/resources/config/json/lo
 const string CONFIG_PROJECT_GLOBAL_LEVEL_JSON = "tests/resources/config/json/log-project/global/Config.toml";
 const string CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_JSON = "tests/resources/config/json/log-project/default/Config.toml";
 const string CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_JSON = "tests/resources/config/json/log-project/global-and-module/Config.toml";
+const string CONFIG_OBSERVABILITY_PROJECT_JSON = "tests/resources/config/json/observability-project/Config.toml";
 
 const string MESSAGE_ERROR_JSON = "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\"}";
 const string MESSAGE_WARN_JSON = "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\"}";
@@ -273,6 +274,30 @@ public function testProjectWithGlobalAndModuleLogLevelsJson() {
     validateLogJson(logLines[9], MESSAGE_INFO_FOO_JSON);
     validateLogJson(logLines[10], MESSAGE_DEBUG_FOO_JSON);
     validateLogJson(logLines[11], MESSAGE_ERROR_BAR_JSON);
+}
+
+@test:Config {}
+public function testObservabilityJson() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_OBSERVABILITY_PROJECT_JSON}, (),
+    "run", temp_dir_path + "/observability-project-json");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+
+    io:ReadableByteChannel readableOutResult = result.stdout();
+    io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
+    string outText2 = checkpanic sc2.read(100000);
+    string[] ioLines = regex:split(outText2, "\n");
+    string spanContext = ioLines[1];
+    validateLogJson(logLines[5], string `", "level":"ERROR", "module":"myorg/myproject", "message":"error log", ${spanContext}}`);
+    validateLogJson(logLines[6], string `", "level":"WARN", "module":"myorg/myproject", "message":"warn log", ${spanContext}}`);
+    validateLogJson(logLines[7], string `", "level":"INFO", "module":"myorg/myproject", "message":"info log", ${spanContext}}`);
+    validateLogJson(logLines[8], string `", "level":"DEBUG", "module":"myorg/myproject", "message":"debug log", ${spanContext}}`);
 }
 
 isolated function validateLogJson(string log, string output) {
