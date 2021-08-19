@@ -2,7 +2,6 @@
 org = "ballerina"
 name = "integration_tests"
 version = "@toml.version@"
-
 [[platform.java11.dependency]]
 path = "../native/build/libs/log-native-@project.version@.jar"
 
