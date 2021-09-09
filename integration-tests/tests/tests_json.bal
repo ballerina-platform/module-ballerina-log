@@ -315,12 +315,6 @@ public function testFileWriteOutputSingleFileOverwriteJson() {
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
-    io:ReadableByteChannel readableResult = result.stderr();
-    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
-    string outText = checkpanic sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
-    // Verify that there are no log output in the console
-    test:assertEquals(logLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_OUTPUT_FILE_JSON);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -340,12 +334,6 @@ public function testFileWriteOutputSingleFileAppendJson() {
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
-    io:ReadableByteChannel readableResult = result.stderr();
-    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
-    string outText = checkpanic sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
-    // Verify that there are no log output in the console
-    test:assertEquals(logLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_OUTPUT_FILE_JSON);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -366,12 +354,6 @@ public function testFileWriteOutputProjectOverwriteJson() {
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
-    io:ReadableByteChannel readableResult = result.stderr();
-    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
-    string outText = checkpanic sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
-    // Verify that there are no log output in the console
-    test:assertEquals(logLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_JSON);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -399,12 +381,6 @@ public function testFileWriteOutputProjectAppendJson() {
     Process result = checkpanic execResult;
     int waitForExit = checkpanic result.waitForExit();
     int exitCode = checkpanic result.exitCode();
-    io:ReadableByteChannel readableResult = result.stderr();
-    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
-    string outText = checkpanic sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
-    // Verify that there are no log output in the console
-    test:assertEquals(logLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_JSON);
     test:assertTrue(fileWriteOutputLines is string[]);
