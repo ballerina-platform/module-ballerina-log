@@ -28,6 +28,14 @@ const string PRINT_DEBUG_FILE = "tests/resources/samples/print-functions/debug.b
 const string PRINT_ERROR_FILE = "tests/resources/samples/print-functions/error.bal";
 const string LOG_LEVEL_FILE = "tests/resources/samples/log-levels/main.bal";
 
+const string FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_LOGFMT = "tests/resources/samples/file-write-output/single-file/overwrite-logfmt.bal";
+const string FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_LOGFMT = "tests/resources/samples/file-write-output/single-file/append-logfmt.bal";
+
+const string jsonFILE_WRITE_OUTPUT_OVERWRITE_OUTPUT_FILE_LOGFMT = "build/tmp/output/overwrite-logfmt.log";
+const string FILE_WRITE_OUTPUT_APPEND_OUTPUT_FILE_LOGFMT = "build/tmp/output/append-logfmt.log";
+const string FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_LOGFMT = "build/tmp/output/project-overwrite-logfmt.log";
+const string FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_LOGFMT = "build/tmp/output/project-append-logfmt.log";
+
 const string CONFIG_DEBUG_LOGFMT = "tests/resources/config/logfmt/log-levels/debug/Config.toml";
 const string CONFIG_ERROR_LOGFMT = "tests/resources/config/logfmt/log-levels/error/Config.toml";
 const string CONFIG_INFO_LOGFMT = "tests/resources/config/logfmt/log-levels/info/Config.toml";
@@ -309,6 +317,124 @@ public function testObservabilityLogfmt() {
     validateLog(logLines[6], string ` level = WARN module = myorg/myproject message = "warn log" ${spanContext}`);
     validateLog(logLines[7], string ` level = INFO module = myorg/myproject message = "info log" ${spanContext}`);
     validateLog(logLines[8], string ` level = DEBUG module = myorg/myproject message = "debug log" ${spanContext}`);
+}
+
+@test:Config {}
+public function testFileWriteOutputSingleFileOverwriteLogfmt() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
+    FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_LOGFMT);
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    // Verify that there are no log output in the console
+    test:assertEquals(logLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(jsonFILE_WRITE_OUTPUT_OVERWRITE_OUTPUT_FILE_LOGFMT);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
+        validateLog(fileWriteOutputLines[0], MESSAGE_ERROR_LOGFMT);
+        validateLog(fileWriteOutputLines[1], MESSAGE_WARN_LOGFMT);
+        validateLog(fileWriteOutputLines[2], MESSAGE_INFO_LOGFMT);
+        validateLog(fileWriteOutputLines[3], MESSAGE_DEBUG_LOGFMT);
+    }
+}
+
+@test:Config {}
+public function testFileWriteOutputSingleFileAppendLogfmt() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
+    FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_LOGFMT);
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    // Verify that there are no log output in the console
+    test:assertEquals(logLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_OUTPUT_FILE_LOGFMT);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 5, INCORRECT_NUMBER_OF_LINES);
+        validateLog(fileWriteOutputLines[0], " level = INFO module = \"\" message = \"info log 0\"");
+        validateLog(fileWriteOutputLines[1], MESSAGE_ERROR_LOGFMT);
+        validateLog(fileWriteOutputLines[2], MESSAGE_WARN_LOGFMT);
+        validateLog(fileWriteOutputLines[3], MESSAGE_INFO_LOGFMT);
+        validateLog(fileWriteOutputLines[4], MESSAGE_DEBUG_LOGFMT);
+    }
+}
+
+@test:Config {}
+public function testFileWriteOutputProjectOverwriteLogfmt() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
+    temp_dir_path + "/file-write-project/overwrite-logfmt");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    // Verify that there are no log output in the console
+    test:assertEquals(logLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_LOGFMT);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
+        validateLog(fileWriteOutputLines[0], MESSAGE_ERROR_MAIN_LOGFMT);
+        validateLog(fileWriteOutputLines[1], MESSAGE_WARN_MAIN_LOGFMT);
+        validateLog(fileWriteOutputLines[2], MESSAGE_INFO_MAIN_LOGFMT);
+        validateLog(fileWriteOutputLines[3], MESSAGE_DEBUG_MAIN_LOGFMT);
+        validateLog(fileWriteOutputLines[4], MESSAGE_ERROR_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[5], MESSAGE_WARN_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[6], MESSAGE_INFO_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[7], MESSAGE_DEBUG_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[8], MESSAGE_ERROR_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[9], MESSAGE_WARN_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[10], MESSAGE_INFO_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[11], MESSAGE_DEBUG_BAR_LOGFMT);
+    }
+}
+
+@test:Config {}
+public function testFileWriteOutputProjectAppendLogfmt() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
+    temp_dir_path + "/file-write-project/append-logfmt");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    // Verify that there are no log output in the console
+    test:assertEquals(logLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_LOGFMT);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
+        validateLog(fileWriteOutputLines[0], " level = INFO module = \"\" message = \"info log 0\"");
+        validateLog(fileWriteOutputLines[1], MESSAGE_ERROR_MAIN_LOGFMT);
+        validateLog(fileWriteOutputLines[2], MESSAGE_WARN_MAIN_LOGFMT);
+        validateLog(fileWriteOutputLines[3], MESSAGE_INFO_MAIN_LOGFMT);
+        validateLog(fileWriteOutputLines[4], MESSAGE_DEBUG_MAIN_LOGFMT);
+        validateLog(fileWriteOutputLines[5], MESSAGE_ERROR_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[6], MESSAGE_WARN_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[7], MESSAGE_INFO_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[8], MESSAGE_DEBUG_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[9], MESSAGE_ERROR_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[10], MESSAGE_WARN_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[11], MESSAGE_INFO_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[12], MESSAGE_DEBUG_BAR_LOGFMT);
+    }
 }
 
 isolated function validateLog(string log, string output) {

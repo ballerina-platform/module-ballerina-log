@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/observe;
 import ballerina/jballerina.java;
 
@@ -65,6 +66,19 @@ final map<int> & readonly logLevelWeight = {
     "INFO": 800,
     "DEBUG": 700
 };
+
+isolated string fileWriteOutputPath = "";
+isolated FileWriteOption fileWriteOutputOption = OVERWRITE;
+isolated boolean isEmptyLogFile = true;
+
+# Represents file opening options for writing.
+#
+# + OVERWRITE - Overwrite(truncate the existing content)
+# + APPEND - Append to the existing content
+public enum FileWriteOption {
+    OVERWRITE,
+    APPEND
+}
 
 # Prints debug logs.
 # ```ballerina
@@ -123,6 +137,23 @@ public isolated function printWarn(string msg, error? 'error = (), *KeyValues ke
     }
 }
 
+# Write log output to a file.
+# ```ballerina
+# log:fileWriteOutput("./resources/myfile.log");
+# log:fileWriteOutput("./resources/myfile.log", log:APPEND);
+# ```
+#
+# + path - The path of the file
+# + option - To indicate whether to overwrite or append the log output
+public isolated function fileWriteOutput(string path, FileWriteOption option = OVERWRITE) {
+    lock {
+        fileWriteOutputPath = path;
+    }
+    lock {
+        fileWriteOutputOption = option;
+    }
+}
+
 isolated function print(string logLevel, string msg, error? err = (), *KeyValues keyValues) {
     LogRecord logRecord = {
         time: getCurrentTime(),
@@ -148,10 +179,44 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
             logRecord[k] = v;
         }
     }
+    string logOutput = "";
     if format == "json" {
-        println(stderrStream(), java:fromString(logRecord.toJsonString()));
+        logOutput = logRecord.toJsonString();
     } else {
-        println(stderrStream(), java:fromString(printLogFmt(logRecord)));
+        logOutput = printLogFmt(logRecord);
+    }
+    lock {
+        if fileWriteOutputPath != "" {
+            fileWrite(logOutput);
+        } else {
+            println(stderrStream(), java:fromString(logOutput));
+        }
+    }
+}
+
+isolated function fileWrite(string logOutput) {
+    string output = logOutput;
+    boolean overWrite;
+    boolean isInitialLog;
+    lock {
+        overWrite = fileWriteOutputOption == OVERWRITE;
+    }
+    lock {
+        isInitialLog = isEmptyLogFile;
+    }
+    lock {
+        // If the option is OVERWRITE and is the initial log, cleanup the file.
+        if overWrite && isInitialLog {
+            io:Error? result = io:fileWriteString(fileWriteOutputPath, "");
+        }
+        string|io:Error content = io:fileReadString(fileWriteOutputPath);
+        if content != "" {
+            output = "\n" + output;
+        }
+        io:Error? result = io:fileWriteString(fileWriteOutputPath, output, io:APPEND);
+    }
+    lock {
+        isEmptyLogFile = false;
     }
 }
 
