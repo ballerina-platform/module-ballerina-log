@@ -35,38 +35,9 @@ org = "ballerina"
 name = "lang.value"
 version = "1.0.0"
 scope = "testOnly"
-transitive = false
+transitive = true
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "lang.value", moduleName = "lang.value"}
-]
-
-[[package]]
-org = "ballerina"
-name = "regex"
-version = "1.0.0"
-scope = "testOnly"
-transitive = false
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "regex", moduleName = "regex"}
-]
-
-[[package]]
-org = "ballerina"
-name = "test"
-version = "0.8.0"
-scope = "testOnly"
-transitive = false
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "test", moduleName = "test"}
 ]
 
 

@@ -23,7 +23,7 @@ string logMessage = "";
     moduleName: "ballerina/log",
     functionName: "println"
 }
-test:MockFunction mock_println= new();
+test:MockFunction mock_println = new ();
 
 function mockPrintln(handle receiver, handle msg) {
     logMessage = "something went wrong";
@@ -88,13 +88,37 @@ isolated function testPrintLogFmtExtern() {
 public isolated function main() {
     error err = error("bad sad");
     printDebug("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-    attempts = isolated function() returns int { return 3;});
+    attempts = isolated function() returns int {
+        return 3;
+    });
     printError("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-    attempts = isolated function() returns int { return 3;});
+    attempts = isolated function() returns int {
+        return 3;
+    });
     printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-    attempts = isolated function() returns int { return 3;});
+    attempts = isolated function() returns int {
+        return 3;
+    });
     printWarn("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-    attempts = isolated function() returns int { return 3;});
+    attempts = isolated function() returns int {
+        return 3;
+    });
+
+    fileWriteOutput("./foo/bar.log");
+    printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+    attempts = isolated function() returns int {
+        return 3;
+    });
+    fileWriteOutput("./foo/bar.log", APPEND);
+    printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+        attempts = isolated function() returns int {
+        return 3;
+    });
+    fileWriteOutput("./foo/bar.log", OVERWRITE);
+    printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+        attempts = isolated function() returns int {
+        return 3;
+    });
 }
 
 isolated function isValidDateTime(string dateTime) returns boolean = @java:Method {'class: "io.ballerina.stdlib.log.testutils.utils.OSUtils"} external;
