@@ -1,0 +1,11 @@
+[package]
+org = "ballerina"
+name = "log"
+version = "@toml.version@"
+distribution = "slbeta3"
+
+[[platform.java11.dependency]]
+path = "../native/build/libs/log-native-@project.version@.jar"
+
+[[platform.java11.dependency]]
+path = "../test-utils/build/libs/log-test-utils-@project.version@.jar"
