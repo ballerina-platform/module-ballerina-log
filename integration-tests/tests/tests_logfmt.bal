@@ -34,7 +34,9 @@ const string FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_LOGFMT = "tests/resources/sampl
 const string jsonFILE_WRITE_OUTPUT_OVERWRITE_OUTPUT_FILE_LOGFMT = "build/tmp/output/overwrite-logfmt.log";
 const string FILE_WRITE_OUTPUT_APPEND_OUTPUT_FILE_LOGFMT = "build/tmp/output/append-logfmt.log";
 const string FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_LOGFMT = "build/tmp/output/project-overwrite-logfmt.log";
+const string FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_LOGFMT2 = "build/tmp/output/project-overwrite-logfmt2.log";
 const string FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_LOGFMT = "build/tmp/output/project-append-logfmt.log";
+const string FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_LOGFMT2 = "build/tmp/output/project-append-logfmt2.log";
 
 const string CONFIG_DEBUG_LOGFMT = "tests/resources/config/logfmt/log-levels/debug/Config.toml";
 const string CONFIG_ERROR_LOGFMT = "tests/resources/config/logfmt/log-levels/error/Config.toml";
@@ -386,6 +388,29 @@ public function testFileWriteOutputProjectOverwriteLogfmt() {
 }
 
 @test:Config {}
+public function testFileWriteOutputProjectOverwriteLogfmt2() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
+    temp_dir_path + "/file-write-project/overwrite-logfmt2");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_LOGFMT2);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 8, INCORRECT_NUMBER_OF_LINES);
+        validateLog(fileWriteOutputLines[0], MESSAGE_ERROR_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[1], MESSAGE_WARN_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[2], MESSAGE_INFO_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[3], MESSAGE_DEBUG_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[4], MESSAGE_ERROR_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[5], MESSAGE_WARN_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[6], MESSAGE_INFO_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[7], MESSAGE_DEBUG_BAR_LOGFMT);
+    }
+}
+
+@test:Config {}
 public function testFileWriteOutputProjectAppendLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     temp_dir_path + "/file-write-project/append-logfmt");
@@ -410,6 +435,30 @@ public function testFileWriteOutputProjectAppendLogfmt() {
         validateLog(fileWriteOutputLines[10], MESSAGE_WARN_BAR_LOGFMT);
         validateLog(fileWriteOutputLines[11], MESSAGE_INFO_BAR_LOGFMT);
         validateLog(fileWriteOutputLines[12], MESSAGE_DEBUG_BAR_LOGFMT);
+    }
+}
+
+@test:Config {}
+public function testFileWriteOutputProjectAppendLogfmt2() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
+    temp_dir_path + "/file-write-project/append-logfmt2");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_LOGFMT2);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+        validateLog(fileWriteOutputLines[0], " level = INFO module = \"\" message = \"info log 0\"");
+        validateLog(fileWriteOutputLines[1], MESSAGE_ERROR_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[2], MESSAGE_WARN_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[3], MESSAGE_INFO_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[4], MESSAGE_DEBUG_FOO_LOGFMT);
+        validateLog(fileWriteOutputLines[5], MESSAGE_ERROR_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[6], MESSAGE_WARN_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[7], MESSAGE_INFO_BAR_LOGFMT);
+        validateLog(fileWriteOutputLines[8], MESSAGE_DEBUG_BAR_LOGFMT);
     }
 }
 

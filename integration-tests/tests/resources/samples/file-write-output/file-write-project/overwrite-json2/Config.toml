@@ -1,0 +1,10 @@
+[ballerina.log]
+level = "WARN"
+
+[[ballerina.log.modules]]
+name = "foo"
+level = "ERROR"
+
+[[ballerina.log.modules]]
+name = "bar"
+level = "DEBUG"
