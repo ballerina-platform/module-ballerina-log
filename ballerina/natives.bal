@@ -147,13 +147,10 @@ public isolated function setOutputFile(string path, FileWriteOption option = APP
     lock {
         outputFilePath = path;
     }
-    lock {
-        if option == OVERWRITE {
-            io:Error? result = io:fileWriteString(path, "");
-            if result is error {
-                printError("failed to set log output file", 'error = result);
-            }
-        }
+    if option == OVERWRITE {
+        io:Error? result = io:fileWriteString(path, "");
+        if result is error {
+            printError("failed to set log output file", 'error = result);            }
     }
 }
 
@@ -183,7 +180,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
         }
     }
     string logOutput = "";
-    if format == "json" {
+    if format == JSON_OUTPUT_FORMAT {
         logOutput = logRecord.toJsonString();
     } else {
         logOutput = printLogFmt(logRecord);
@@ -191,8 +188,6 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
     string? path = ();
     lock {
         path = outputFilePath;
-    }
-    lock {
         if path is string {
             fileWrite(logOutput);
         } else {
@@ -206,14 +201,8 @@ isolated function fileWrite(string logOutput) {
     string? path = ();
     lock {
         path = outputFilePath;
-    }
-    lock {
         if path is string {
-            string|io:Error content = io:fileReadString(path);
-            if content != "" {
-                output = "\n" + output;
-            }
-            io:Error? result = io:fileWriteString(path, output, io:APPEND);
+            io:Error? result = io:fileWriteString(path, output + "\n", io:APPEND);
             if result is error {
                 printError("failed to write log output to the file", 'error = result);
             }
