@@ -17,7 +17,7 @@
 import ballerina/log;
 
 public function main() {
-    log:setOutputFile("./build/tmp/output/append-logfmt.log", log:APPEND);
+    log:setOutputFile("./build/tmp/output/append-logfmt.log");
 
     log:printError("error log");
     log:printWarn("warn log");

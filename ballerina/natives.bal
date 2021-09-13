@@ -68,7 +68,6 @@ final map<int> & readonly logLevelWeight = {
 };
 
 isolated string outputFilePath = "";
-isolated FileWriteOption fileWriteOutputOption = OVERWRITE;
 
 # Represents file opening options for writing.
 #
@@ -139,17 +138,14 @@ public isolated function printWarn(string msg, error? 'error = (), *KeyValues ke
 # Set the log output to a file. Note that all the subsequent logs of the entire application will be written to this file.
 # ```ballerina
 # log:setOutputFile("./resources/myfile.log");
-# log:setOutputFile("./resources/myfile.log", log:APPEND);
+# log:setOutputFile("./resources/myfile.log", log:OVERWRITE);
 # ```
 #
 # + path - The path of the file
 # + option - To indicate whether to overwrite or append the log output
-public isolated function setOutputFile(string path, FileWriteOption option = OVERWRITE) {
+public isolated function setOutputFile(string path, FileWriteOption option = APPEND) {
     lock {
         outputFilePath = path;
-    }
-    lock {
-        fileWriteOutputOption = option;
     }
     lock {
         if option == OVERWRITE {

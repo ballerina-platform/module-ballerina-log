@@ -322,7 +322,7 @@ public function testObservabilityLogfmt() {
 }
 
 @test:Config {}
-public function testFileWriteOutputSingleFileOverwriteLogfmt() {
+public function testSetOutputFileSingleFileOverwriteLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_LOGFMT);
     Process result = checkpanic execResult;
@@ -341,7 +341,7 @@ public function testFileWriteOutputSingleFileOverwriteLogfmt() {
 }
 
 @test:Config {}
-public function testFileWriteOutputSingleFileAppendLogfmt() {
+public function testSetOutputFileSingleFileAppendLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_LOGFMT);
     Process result = checkpanic execResult;
@@ -361,7 +361,7 @@ public function testFileWriteOutputSingleFileAppendLogfmt() {
 }
 
 @test:Config {}
-public function testFileWriteOutputProjectOverwriteLogfmt() {
+public function testSetOutputFileProjectOverwriteLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     temp_dir_path + "/file-write-project/overwrite-logfmt");
     Process result = checkpanic execResult;
@@ -388,7 +388,7 @@ public function testFileWriteOutputProjectOverwriteLogfmt() {
 }
 
 @test:Config {}
-public function testFileWriteOutputProjectOverwriteLogfmt2() {
+public function testSetOutputFileProjectOverwriteLogfmt2() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     temp_dir_path + "/file-write-project/overwrite-logfmt2");
     Process result = checkpanic execResult;
@@ -411,7 +411,7 @@ public function testFileWriteOutputProjectOverwriteLogfmt2() {
 }
 
 @test:Config {}
-public function testFileWriteOutputProjectAppendLogfmt() {
+public function testSetOutputFileProjectAppendLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     temp_dir_path + "/file-write-project/append-logfmt");
     Process result = checkpanic execResult;
@@ -439,7 +439,7 @@ public function testFileWriteOutputProjectAppendLogfmt() {
 }
 
 @test:Config {}
-public function testFileWriteOutputProjectAppendLogfmt2() {
+public function testSetOutputFileProjectAppendLogfmt2() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     temp_dir_path + "/file-write-project/append-logfmt2");
     Process result = checkpanic execResult;

@@ -17,7 +17,7 @@
 import ballerina/log;
 
 public function hello() {
-    log:setOutputFile("./build/tmp/output/project-append-json2.log", log:APPEND);
+    log:setOutputFile("./build/tmp/output/project-append-json2.log");
 
     log:printError("error log\t\n\r\\\"");
     log:printWarn("warn log\t\n\r\\\"");

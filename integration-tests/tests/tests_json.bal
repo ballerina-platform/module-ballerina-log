@@ -311,7 +311,7 @@ public function testObservabilityJson() {
 }
 
 @test:Config {}
-public function testFileWriteOutputSingleFileOverwriteJson() {
+public function testSetOutputFileSingleFileOverwriteJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_JSON);
     Process result = checkpanic execResult;
@@ -330,7 +330,7 @@ public function testFileWriteOutputSingleFileOverwriteJson() {
 }
 
 @test:Config {}
-public function testFileWriteOutputSingleFileAppendJson() {
+public function testSetOutputFileSingleFileAppendJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_JSON);
     Process result = checkpanic execResult;
@@ -350,7 +350,7 @@ public function testFileWriteOutputSingleFileAppendJson() {
 }
 
 @test:Config {}
-public function testFileWriteOutputProjectOverwriteJson() {
+public function testSetOutputFileProjectOverwriteJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     temp_dir_path + "/file-write-project/overwrite-json");
     Process result = checkpanic execResult;
@@ -377,7 +377,7 @@ public function testFileWriteOutputProjectOverwriteJson() {
 }
 
 @test:Config {}
-public function testFileWriteOutputProjectOverwriteJson2() {
+public function testSetOutputFileProjectOverwriteJson2() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     temp_dir_path + "/file-write-project/overwrite-json2");
     Process result = checkpanic execResult;
@@ -400,7 +400,7 @@ public function testFileWriteOutputProjectOverwriteJson2() {
 }
 
 @test:Config {}
-public function testFileWriteOutputProjectAppendJson() {
+public function testSetOutputFileProjectAppendJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     temp_dir_path + "/file-write-project/append-json");
     Process result = checkpanic execResult;
@@ -428,7 +428,7 @@ public function testFileWriteOutputProjectAppendJson() {
 }
 
 @test:Config {}
-public function testFileWriteOutputProjectAppendJson2() {
+public function testSetOutputFileProjectAppendJson2() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     temp_dir_path + "/file-write-project/append-json2");
     Process result = checkpanic execResult;

@@ -17,7 +17,7 @@
 import ballerina/log;
 
 public function main() {
-    log:setOutputFile("./build/tmp/output/overwrite-json.log");
+    log:setOutputFile("./build/tmp/output/overwrite-json.log", log:OVERWRITE);
 
     log:printError("error log");
     log:printWarn("warn log");
