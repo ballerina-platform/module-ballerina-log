@@ -139,13 +139,13 @@ public isolated function printWarn(string msg, error? 'error = (), *KeyValues ke
 
 # Write log output to a file.
 # ```ballerina
-# log:fileWriteOutput("./resources/myfile.log");
-# log:fileWriteOutput("./resources/myfile.log", log:APPEND);
+# log:setOutputFile("./resources/myfile.log");
+# log:setOutputFile("./resources/myfile.log", log:APPEND);
 # ```
 #
 # + path - The path of the file
 # + option - To indicate whether to overwrite or append the log output
-public isolated function fileWriteOutput(string path, FileWriteOption option = OVERWRITE) {
+public isolated function setOutputFile(string path, FileWriteOption option = OVERWRITE) {
     lock {
         fileWriteOutputPath = path;
     }

@@ -19,7 +19,7 @@ import myorg/myproject.foo;
 import myorg/myproject.bar;
 
 public function main() {
-    log:fileWriteOutput("./build/tmp/output/project-overwrite-json.log");
+    log:setOutputFile("./build/tmp/output/project-overwrite-json.log");
 
     log:printError("error log\t\n\r\\\"");
     log:printWarn("warn log\t\n\r\\\"");

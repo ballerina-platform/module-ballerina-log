@@ -104,17 +104,17 @@ public isolated function main() {
         return 3;
     });
 
-    fileWriteOutput("./foo/bar.log");
+    setOutputFile("./foo/bar.log");
     printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
     attempts = isolated function() returns int {
         return 3;
     });
-    fileWriteOutput("./foo/bar.log", APPEND);
+    setOutputFile("./foo/bar.log", APPEND);
     printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
         attempts = isolated function() returns int {
         return 3;
     });
-    fileWriteOutput("./foo/bar.log", OVERWRITE);
+    setOutputFile("./foo/bar.log", OVERWRITE);
     printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
         attempts = isolated function() returns int {
         return 3;
