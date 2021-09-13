@@ -136,7 +136,7 @@ public isolated function printWarn(string msg, error? 'error = (), *KeyValues ke
     }
 }
 
-# Write log output to a file.
+# Set the log output to a file. Note that all the subsequent logs of the entire application will be written to this file.
 # ```ballerina
 # log:setOutputFile("./resources/myfile.log");
 # log:setOutputFile("./resources/myfile.log", log:APPEND);
