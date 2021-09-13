@@ -67,9 +67,8 @@ final map<int> & readonly logLevelWeight = {
     "DEBUG": 700
 };
 
-isolated string fileWriteOutputPath = "";
+isolated string outputFilePath = "";
 isolated FileWriteOption fileWriteOutputOption = OVERWRITE;
-isolated boolean isEmptyLogFile = true;
 
 # Represents file opening options for writing.
 #
@@ -147,10 +146,18 @@ public isolated function printWarn(string msg, error? 'error = (), *KeyValues ke
 # + option - To indicate whether to overwrite or append the log output
 public isolated function setOutputFile(string path, FileWriteOption option = OVERWRITE) {
     lock {
-        fileWriteOutputPath = path;
+        outputFilePath = path;
     }
     lock {
         fileWriteOutputOption = option;
+    }
+    lock {
+        if option == OVERWRITE {
+            io:Error? result = io:fileWriteString(path, "");
+            if result is error {
+                printError("failed to set log output file", 'error = result);
+            }
+        }
     }
 }
 
@@ -186,7 +193,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
         logOutput = printLogFmt(logRecord);
     }
     lock {
-        if fileWriteOutputPath != "" {
+        if outputFilePath != "" {
             fileWrite(logOutput);
         } else {
             println(stderrStream(), java:fromString(logOutput));
@@ -196,27 +203,15 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
 
 isolated function fileWrite(string logOutput) {
     string output = logOutput;
-    boolean overWrite;
-    boolean isInitialLog;
     lock {
-        overWrite = fileWriteOutputOption == OVERWRITE;
-    }
-    lock {
-        isInitialLog = isEmptyLogFile;
-    }
-    lock {
-        // If the option is OVERWRITE and is the initial log, cleanup the file.
-        if overWrite && isInitialLog {
-            io:Error? result = io:fileWriteString(fileWriteOutputPath, "");
-        }
-        string|io:Error content = io:fileReadString(fileWriteOutputPath);
+        string|io:Error content = io:fileReadString(outputFilePath);
         if content != "" {
             output = "\n" + output;
         }
-        io:Error? result = io:fileWriteString(fileWriteOutputPath, output, io:APPEND);
-    }
-    lock {
-        isEmptyLogFile = false;
+        io:Error? result = io:fileWriteString(outputFilePath, output, io:APPEND);
+        if result is error {
+            printError("failed to write log output to the file", 'error = result);
+        }
     }
 }
 
