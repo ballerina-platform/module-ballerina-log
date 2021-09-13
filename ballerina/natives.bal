@@ -67,7 +67,7 @@ final map<int> & readonly logLevelWeight = {
     "DEBUG": 700
 };
 
-isolated string outputFilePath = "";
+isolated string? outputFilePath = ();
 
 # Represents file opening options for writing.
 #
@@ -188,8 +188,12 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
     } else {
         logOutput = printLogFmt(logRecord);
     }
+    string? path = ();
     lock {
-        if outputFilePath != "" {
+        path = outputFilePath;
+    }
+    lock {
+        if path is string {
             fileWrite(logOutput);
         } else {
             println(stderrStream(), java:fromString(logOutput));
@@ -199,14 +203,20 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
 
 isolated function fileWrite(string logOutput) {
     string output = logOutput;
+    string? path = ();
     lock {
-        string|io:Error content = io:fileReadString(outputFilePath);
-        if content != "" {
-            output = "\n" + output;
-        }
-        io:Error? result = io:fileWriteString(outputFilePath, output, io:APPEND);
-        if result is error {
-            printError("failed to write log output to the file", 'error = result);
+        path = outputFilePath;
+    }
+    lock {
+        if path is string {
+            string|io:Error content = io:fileReadString(path);
+            if content != "" {
+                output = "\n" + output;
+            }
+            io:Error? result = io:fileWriteString(path, output, io:APPEND);
+            if result is error {
+                printError("failed to write log output to the file", 'error = result);
+            }
         }
     }
 }
