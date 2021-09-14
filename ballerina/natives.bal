@@ -137,20 +137,24 @@ public isolated function printWarn(string msg, error? 'error = (), *KeyValues ke
 
 # Set the log output to a file. Note that all the subsequent logs of the entire application will be written to this file.
 # ```ballerina
-# log:setOutputFile("./resources/myfile.log");
-# log:setOutputFile("./resources/myfile.log", log:OVERWRITE);
+# var result = log:setOutputFile("./resources/myfile.log");
+# var result = log:setOutputFile("./resources/myfile.log", log:OVERWRITE);
 # ```
 #
 # + path - The path of the file
 # + option - To indicate whether to overwrite or append the log output
-public isolated function setOutputFile(string path, FileWriteOption option = APPEND) {
+public isolated function setOutputFile(string path, FileWriteOption option = APPEND) returns Error? {
     lock {
+        if !path.endsWith(".log") {
+            return error Error("The given path is not valid. Should be a file with .log extension.");
+        }
         outputFilePath = path;
     }
     if option == OVERWRITE {
         io:Error? result = io:fileWriteString(path, "");
         if result is error {
-            printError("failed to set log output file", 'error = result);            }
+            return error Error("Failed to set log output file", result);
+        }
     }
 }
 

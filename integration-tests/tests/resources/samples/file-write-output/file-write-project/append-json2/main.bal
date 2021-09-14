@@ -18,12 +18,12 @@ import ballerina/log;
 import myorg/myproject.foo;
 import myorg/myproject.bar;
 
-public function main() {
+public function main() returns error? {
     log:printError("error log\t\n\r\\\"");
     log:printWarn("warn log\t\n\r\\\"");
     log:printInfo("info log\t\n\r\\\"");
     log:printDebug("debug log\t\n\r\\\"");
 
-    foo:hello();
+    check foo:hello();
     bar:hello();
 }

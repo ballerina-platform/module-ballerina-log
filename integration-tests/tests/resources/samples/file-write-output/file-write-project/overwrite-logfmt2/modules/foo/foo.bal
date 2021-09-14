@@ -16,8 +16,8 @@
 
 import ballerina/log;
 
-public function hello() {
-    log:setOutputFile("./build/tmp/output/project-overwrite-logfmt2.log", log:OVERWRITE);
+public function hello() returns error? {
+    check log:setOutputFile("./build/tmp/output/project-overwrite-logfmt2.log", log:OVERWRITE);
 
     log:printError("error log\t\n\r\\\"");
     log:printWarn("warn log\t\n\r\\\"");

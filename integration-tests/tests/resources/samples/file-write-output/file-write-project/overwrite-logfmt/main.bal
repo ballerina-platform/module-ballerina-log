@@ -18,8 +18,8 @@ import ballerina/log;
 import myorg/myproject.foo;
 import myorg/myproject.bar;
 
-public function main() {
-    log:setOutputFile("./build/tmp/output/project-overwrite-logfmt.log", log:OVERWRITE);
+public function main() returns error? {
+    check log:setOutputFile("./build/tmp/output/project-overwrite-logfmt.log", log:OVERWRITE);
 
     log:printError("error log\t\n\r\\\"");
     log:printWarn("warn log\t\n\r\\\"");

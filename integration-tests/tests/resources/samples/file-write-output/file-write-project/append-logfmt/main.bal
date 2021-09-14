@@ -18,8 +18,8 @@ import ballerina/log;
 import myorg/myproject.foo;
 import myorg/myproject.bar;
 
-public function main() {
-    log:setOutputFile("./build/tmp/output/project-append-logfmt.log");
+public function main() returns error? {
+    check log:setOutputFile("./build/tmp/output/project-append-logfmt.log");
 
     log:printError("error log\t\n\r\\\"");
     log:printWarn("warn log\t\n\r\\\"");

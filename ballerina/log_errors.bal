@@ -14,13 +14,5 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/log;
-
-public function main() returns error? {
-    check log:setOutputFile("./build/tmp/output/append-json.log");
-
-    log:printError("error log");
-    log:printWarn("warn log");
-    log:printInfo("info log");
-    log:printDebug("debug log");
-}
+# Represents Log module related errors.
+public type Error distinct error;
