@@ -146,17 +146,17 @@ public isolated function printWarn(string msg, error? 'error = (), *KeyValues ke
 #
 # + return - A `log:Error` if an invalid file path was provided
 public isolated function setOutputFile(string path, FileWriteOption option = APPEND) returns Error? {
-    lock {
-        if !path.endsWith(".log") {
-            return error Error("The given path is not valid. Should be a file with .log extension.");
-        }
-        outputFilePath = path;
+    if !path.endsWith(".log") {
+        return error Error("The given path is not valid. Should be a file with .log extension.");
     }
     if option == OVERWRITE {
         io:Error? result = io:fileWriteString(path, "");
         if result is error {
             return error Error("Failed to set log output file", result);
         }
+    }
+    lock {
+        outputFilePath = path;
     }
 }
 
@@ -171,12 +171,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
         logRecord["error"] = err.message();
     }
     foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata value;
-        if (v is Valuer) {
-            value = v();
-        } else {
-            value = v;
-        }
+        anydata value = v is Valuer ? v() : v;
         logRecord[k] = value;
     }
     if (observe:isTracingEnabled()) {
@@ -185,12 +180,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
             logRecord[k] = v;
         }
     }
-    string logOutput = "";
-    if format == JSON_OUTPUT_FORMAT {
-        logOutput = logRecord.toJsonString();
-    } else {
-        logOutput = printLogFmt(logRecord);
-    }
+    string logOutput = format == JSON_OUTPUT_FORMAT ? logRecord.toJsonString() : printLogFmt(logRecord);
     string? path = ();
     lock {
         path = outputFilePath;
@@ -242,11 +232,7 @@ isolated function printLogFmt(LogRecord logRecord) returns string {
                 }
             }
             _ => {
-                if v is string {
-                    value = string `${escape(v.toString())}`;
-                } else {
-                    value = v.toString();
-                }
+                value = v is string ? string `${escape(v.toString())}` : v.toString();
             }
         }
         if message == "" {
