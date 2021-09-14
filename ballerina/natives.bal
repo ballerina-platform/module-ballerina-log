@@ -143,6 +143,8 @@ public isolated function printWarn(string msg, error? 'error = (), *KeyValues ke
 #
 # + path - The path of the file
 # + option - To indicate whether to overwrite or append the log output
+#
+# + return - A `log:Error` if an invalid file path was provided
 public isolated function setOutputFile(string path, FileWriteOption option = APPEND) returns Error? {
     lock {
         if !path.endsWith(".log") {
