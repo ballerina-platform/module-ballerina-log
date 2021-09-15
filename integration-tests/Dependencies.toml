@@ -23,7 +23,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "jballerina.java"
-version = "0.9.0"
+version = "0.0.0"
 scope = "testOnly"
 transitive = false
 modules = [
@@ -33,7 +33,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "lang.value"
-version = "1.0.0"
+version = "0.0.0"
 scope = "testOnly"
 transitive = false
 dependencies = [
@@ -59,7 +59,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "test"
-version = "0.8.0"
+version = "0.0.0"
 scope = "testOnly"
 transitive = false
 dependencies = [

@@ -23,7 +23,7 @@ string logMessage = "";
     moduleName: "ballerina/log",
     functionName: "println"
 }
-test:MockFunction mock_println= new();
+test:MockFunction mock_println = new ();
 
 function mockPrintln(handle receiver, handle msg) {
     logMessage = "something went wrong";
@@ -88,13 +88,43 @@ isolated function testPrintLogFmtExtern() {
 public isolated function main() {
     error err = error("bad sad");
     printDebug("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-    attempts = isolated function() returns int { return 3;});
+    attempts = isolated function() returns int {
+        return 3;
+    });
     printError("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-    attempts = isolated function() returns int { return 3;});
+    attempts = isolated function() returns int {
+        return 3;
+    });
     printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-    attempts = isolated function() returns int { return 3;});
+    attempts = isolated function() returns int {
+        return 3;
+    });
     printWarn("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-    attempts = isolated function() returns int { return 3;});
+    attempts = isolated function() returns int {
+        return 3;
+    });
+
+    var result1 = setOutputFile("./foo/bar.log");
+    test:assertFalse(result1 is error);
+    printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+    attempts = isolated function() returns int {
+        return 3;
+    });
+    var result2 = setOutputFile("./foo/bar.log", APPEND);
+    test:assertFalse(result2 is error);
+    printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+        attempts = isolated function() returns int {
+        return 3;
+    });
+    var result3 = setOutputFile("./foo/bar.log", OVERWRITE);
+    test:assertFalse(result3 is error);
+    printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
+        attempts = isolated function() returns int {
+        return 3;
+    });
+
+    var result4 = setOutputFile("./foo/bar.bal", OVERWRITE);
+    test:assertTrue(result4 is error);
 }
 
 isolated function isValidDateTime(string dateTime) returns boolean = @java:Method {'class: "io.ballerina.stdlib.log.testutils.utils.OSUtils"} external;

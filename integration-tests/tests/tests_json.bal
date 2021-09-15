@@ -29,6 +29,16 @@ const string CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_JSON = "tests/resou
 const string CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_JSON = "tests/resources/config/json/log-project/global-and-module/Config.toml";
 const string CONFIG_OBSERVABILITY_PROJECT_JSON = "tests/resources/config/json/observability-project/Config.toml";
 
+const string FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_JSON = "tests/resources/samples/file-write-output/single-file/overwrite-json.bal";
+const string FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_JSON = "tests/resources/samples/file-write-output/single-file/append-json.bal";
+
+const string FILE_WRITE_OUTPUT_OVERWRITE_OUTPUT_FILE_JSON = "build/tmp/output/overwrite-json.log";
+const string FILE_WRITE_OUTPUT_APPEND_OUTPUT_FILE_JSON = "build/tmp/output/append-json.log";
+const string FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_JSON = "build/tmp/output/project-overwrite-json.log";
+const string FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_JSON2 = "build/tmp/output/project-overwrite-json2.log";
+const string FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_JSON = "build/tmp/output/project-append-json.log";
+const string FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_JSON2 = "build/tmp/output/project-append-json2.log";
+
 const string MESSAGE_ERROR_JSON = "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\"}";
 const string MESSAGE_WARN_JSON = "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\"}";
 const string MESSAGE_INFO_JSON = "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\"}";
@@ -298,6 +308,147 @@ public function testObservabilityJson() {
     validateLogJson(logLines[6], string `", "level":"WARN", "module":"myorg/myproject", "message":"warn log", ${spanContext}}`);
     validateLogJson(logLines[7], string `", "level":"INFO", "module":"myorg/myproject", "message":"info log", ${spanContext}}`);
     validateLogJson(logLines[8], string `", "level":"DEBUG", "module":"myorg/myproject", "message":"debug log", ${spanContext}}`);
+}
+
+@test:Config {}
+public function testSetOutputFileSingleFileOverwriteJson() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
+    FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_JSON);
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_OUTPUT_FILE_JSON);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
+        validateLogJson(fileWriteOutputLines[0], MESSAGE_ERROR_JSON);
+        validateLogJson(fileWriteOutputLines[1], MESSAGE_WARN_JSON);
+        validateLogJson(fileWriteOutputLines[2], MESSAGE_INFO_JSON);
+        validateLogJson(fileWriteOutputLines[3], MESSAGE_DEBUG_JSON);
+    }
+}
+
+@test:Config {}
+public function testSetOutputFileSingleFileAppendJson() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
+    FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_JSON);
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_OUTPUT_FILE_JSON);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 5, INCORRECT_NUMBER_OF_LINES);
+        validateLogJson(fileWriteOutputLines[0], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log 0\"}");
+        validateLogJson(fileWriteOutputLines[1], MESSAGE_ERROR_JSON);
+        validateLogJson(fileWriteOutputLines[2], MESSAGE_WARN_JSON);
+        validateLogJson(fileWriteOutputLines[3], MESSAGE_INFO_JSON);
+        validateLogJson(fileWriteOutputLines[4], MESSAGE_DEBUG_JSON);
+    }
+}
+
+@test:Config {}
+public function testSetOutputFileProjectOverwriteJson() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
+    temp_dir_path + "/file-write-project/overwrite-json");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_JSON);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
+        validateLogJson(fileWriteOutputLines[0], MESSAGE_ERROR_MAIN_JSON);
+        validateLogJson(fileWriteOutputLines[1], MESSAGE_WARN_MAIN_JSON);
+        validateLogJson(fileWriteOutputLines[2], MESSAGE_INFO_MAIN_JSON);
+        validateLogJson(fileWriteOutputLines[3], MESSAGE_DEBUG_MAIN_JSON);
+        validateLogJson(fileWriteOutputLines[4], MESSAGE_ERROR_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[5], MESSAGE_WARN_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[6], MESSAGE_INFO_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[7], MESSAGE_DEBUG_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[8], MESSAGE_ERROR_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[9], MESSAGE_WARN_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[10], MESSAGE_INFO_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[11], MESSAGE_DEBUG_BAR_JSON);
+    }
+}
+
+@test:Config {}
+public function testSetOutputFileProjectOverwriteJson2() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
+    temp_dir_path + "/file-write-project/overwrite-json2");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_JSON2);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 8, INCORRECT_NUMBER_OF_LINES);
+        validateLogJson(fileWriteOutputLines[0], MESSAGE_ERROR_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[1], MESSAGE_WARN_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[2], MESSAGE_INFO_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[3], MESSAGE_DEBUG_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[4], MESSAGE_ERROR_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[5], MESSAGE_WARN_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[6], MESSAGE_INFO_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[7], MESSAGE_DEBUG_BAR_JSON);
+    }
+}
+
+@test:Config {}
+public function testSetOutputFileProjectAppendJson() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
+    temp_dir_path + "/file-write-project/append-json");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_JSON);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
+        validateLogJson(fileWriteOutputLines[0], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log 0\"}");
+        validateLogJson(fileWriteOutputLines[1], MESSAGE_ERROR_MAIN_JSON);
+        validateLogJson(fileWriteOutputLines[2], MESSAGE_WARN_MAIN_JSON);
+        validateLogJson(fileWriteOutputLines[3], MESSAGE_INFO_MAIN_JSON);
+        validateLogJson(fileWriteOutputLines[4], MESSAGE_DEBUG_MAIN_JSON);
+        validateLogJson(fileWriteOutputLines[5], MESSAGE_ERROR_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[6], MESSAGE_WARN_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[7], MESSAGE_INFO_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[8], MESSAGE_DEBUG_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[9], MESSAGE_ERROR_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[10], MESSAGE_WARN_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[11], MESSAGE_INFO_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[12], MESSAGE_DEBUG_BAR_JSON);
+    }
+}
+
+@test:Config {}
+public function testSetOutputFileProjectAppendJson2() {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
+    temp_dir_path + "/file-write-project/append-json2");
+    Process result = checkpanic execResult;
+    int waitForExit = checkpanic result.waitForExit();
+    int exitCode = checkpanic result.exitCode();
+
+    string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_JSON2);
+    test:assertTrue(fileWriteOutputLines is string[]);
+    if fileWriteOutputLines is string[] {
+        test:assertEquals(fileWriteOutputLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+        validateLogJson(fileWriteOutputLines[0], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log 0\"}");
+        validateLogJson(fileWriteOutputLines[1], MESSAGE_ERROR_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[2], MESSAGE_WARN_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[3], MESSAGE_INFO_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[4], MESSAGE_DEBUG_FOO_JSON);
+        validateLogJson(fileWriteOutputLines[5], MESSAGE_ERROR_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[6], MESSAGE_WARN_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[7], MESSAGE_INFO_BAR_JSON);
+        validateLogJson(fileWriteOutputLines[8], MESSAGE_DEBUG_BAR_JSON);
+    }
 }
 
 isolated function validateLogJson(string log, string output) {

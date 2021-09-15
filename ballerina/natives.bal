@@ -14,6 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/observe;
 import ballerina/jballerina.java;
 
@@ -65,6 +66,17 @@ final map<int> & readonly logLevelWeight = {
     "INFO": 800,
     "DEBUG": 700
 };
+
+isolated string? outputFilePath = ();
+
+# Represents file opening options for writing.
+#
+# + OVERWRITE - Overwrite(truncate the existing content)
+# + APPEND - Append to the existing content
+public enum FileWriteOption {
+    OVERWRITE,
+    APPEND
+}
 
 # Prints debug logs.
 # ```ballerina
@@ -123,6 +135,31 @@ public isolated function printWarn(string msg, error? 'error = (), *KeyValues ke
     }
 }
 
+# Set the log output to a file. Note that all the subsequent logs of the entire application will be written to this file.
+# ```ballerina
+# var result = log:setOutputFile("./resources/myfile.log");
+# var result = log:setOutputFile("./resources/myfile.log", log:OVERWRITE);
+# ```
+#
+# + path - The path of the file
+# + option - To indicate whether to overwrite or append the log output
+#
+# + return - A `log:Error` if an invalid file path was provided
+public isolated function setOutputFile(string path, FileWriteOption option = APPEND) returns Error? {
+    if !path.endsWith(".log") {
+        return error Error("The given path is not valid. Should be a file with .log extension.");
+    }
+    if option == OVERWRITE {
+        io:Error? result = io:fileWriteString(path, "");
+        if result is error {
+            return error Error("Failed to set log output file", result);
+        }
+    }
+    lock {
+        outputFilePath = path;
+    }
+}
+
 isolated function print(string logLevel, string msg, error? err = (), *KeyValues keyValues) {
     LogRecord logRecord = {
         time: getCurrentTime(),
@@ -134,12 +171,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
         logRecord["error"] = err.message();
     }
     foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata value;
-        if (v is Valuer) {
-            value = v();
-        } else {
-            value = v;
-        }
+        anydata value = v is Valuer ? v() : v;
         logRecord[k] = value;
     }
     if (observe:isTracingEnabled()) {
@@ -148,10 +180,29 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
             logRecord[k] = v;
         }
     }
-    if format == "json" {
-        println(stderrStream(), java:fromString(logRecord.toJsonString()));
-    } else {
-        println(stderrStream(), java:fromString(printLogFmt(logRecord)));
+    string logOutput = format == JSON_OUTPUT_FORMAT ? logRecord.toJsonString() : printLogFmt(logRecord);
+    string? path = ();
+    lock {
+        path = outputFilePath;
+        if path is string {
+            fileWrite(logOutput);
+        } else {
+            println(stderrStream(), java:fromString(logOutput));
+        }
+    }
+}
+
+isolated function fileWrite(string logOutput) {
+    string output = logOutput;
+    string? path = ();
+    lock {
+        path = outputFilePath;
+        if path is string {
+            io:Error? result = io:fileWriteString(path, output + "\n", io:APPEND);
+            if result is error {
+                printError("failed to write log output to the file", 'error = result);
+            }
+        }
     }
 }
 
@@ -181,11 +232,7 @@ isolated function printLogFmt(LogRecord logRecord) returns string {
                 }
             }
             _ => {
-                if v is string {
-                    value = string `${escape(v.toString())}`;
-                } else {
-                    value = v.toString();
-                }
+                value = v is string ? string `${escape(v.toString())}` : v.toString();
             }
         }
         if message == "" {
