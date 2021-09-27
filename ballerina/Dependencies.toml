@@ -39,6 +39,21 @@ dependencies = [
 
 [[package]]
 org = "ballerina"
+name = "log"
+version = "2.0.0"
+transitive = false
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "observe"},
+	{org = "ballerina", name = "test"}
+]
+modules = [
+	{org = "ballerina", packageName = "log", moduleName = "log"}
+]
+
+[[package]]
+org = "ballerina"
 name = "observe"
 version = "0.9.0"
 transitive = false
