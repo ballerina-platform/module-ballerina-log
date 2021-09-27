@@ -69,14 +69,15 @@ public function testPrintDebugJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\"}");
     validateLogJson(logLines[6], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[7], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"username\":\"Alex92\", \"id\":845315}");
     validateLogJson(logLines[8], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"error\":\"bad sad\"}");
     validateLogJson(logLines[9], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"error\":\"bad sad\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[10], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\\t\\n\\r\\\\\\\"\", \"username\":\"Alex92\\t\\n\\r\\\\\\\"\"}");
-    validateLogJson(logLines[11], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"debug.bal\", \"lineNumber\":39}, {\"callableName\":\"f2\", \"fileName\":\"debug.bal\", \"lineNumber\":35}, {\"callableName\":\"f1\", \"fileName\":\"debug.bal\", \"lineNumber\":31}, {\"callableName\":\"main\", \"fileName\":\"debug.bal\", \"lineNumber\":27}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[11], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"debug.bal\", \"lineNumber\":48}, {\"callableName\":\"f2\", \"fileName\":\"debug.bal\", \"lineNumber\":44}, {\"callableName\":\"f1\", \"fileName\":\"debug.bal\", \"lineNumber\":40}, {\"callableName\":\"main\", \"fileName\":\"debug.bal\", \"lineNumber\":29}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[12], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
 @test:Config {}
@@ -89,14 +90,15 @@ public function testPrintErrorJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\"}");
     validateLogJson(logLines[6], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[7], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"username\":\"Alex92\", \"id\":845315}");
     validateLogJson(logLines[8], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"error\":\"bad sad\"}");
     validateLogJson(logLines[9], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"error\":\"bad sad\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[10], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\\t\\n\\r\\\\\\\"\", \"username\":\"Alex92\\t\\n\\r\\\\\\\"\"}");
-    validateLogJson(logLines[11], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"error.bal\", \"lineNumber\":39}, {\"callableName\":\"f2\", \"fileName\":\"error.bal\", \"lineNumber\":35}, {\"callableName\":\"f1\", \"fileName\":\"error.bal\", \"lineNumber\":31}, {\"callableName\":\"main\", \"fileName\":\"error.bal\", \"lineNumber\":27}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[11], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"error.bal\", \"lineNumber\":48}, {\"callableName\":\"f2\", \"fileName\":\"error.bal\", \"lineNumber\":44}, {\"callableName\":\"f1\", \"fileName\":\"error.bal\", \"lineNumber\":40}, {\"callableName\":\"main\", \"fileName\":\"error.bal\", \"lineNumber\":29}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[12], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
 @test:Config {}
@@ -109,14 +111,15 @@ public function testPrintInfoJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\"}");
     validateLogJson(logLines[6], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[7], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"username\":\"Alex92\", \"id\":845315}");
     validateLogJson(logLines[8], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"error\":\"bad sad\"}");
     validateLogJson(logLines[9], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"error\":\"bad sad\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[10], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\\t\\n\\r\\\\\\\"\", \"username\":\"Alex92\\t\\n\\r\\\\\\\"\"}");
-    validateLogJson(logLines[11], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"info.bal\", \"lineNumber\":39}, {\"callableName\":\"f2\", \"fileName\":\"info.bal\", \"lineNumber\":35}, {\"callableName\":\"f1\", \"fileName\":\"info.bal\", \"lineNumber\":31}, {\"callableName\":\"main\", \"fileName\":\"info.bal\", \"lineNumber\":27}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[11], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"info.bal\", \"lineNumber\":48}, {\"callableName\":\"f2\", \"fileName\":\"info.bal\", \"lineNumber\":44}, {\"callableName\":\"f1\", \"fileName\":\"info.bal\", \"lineNumber\":40}, {\"callableName\":\"main\", \"fileName\":\"info.bal\", \"lineNumber\":29}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[12], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
 @test:Config {}
@@ -129,14 +132,15 @@ public function testPrintWarnJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
+    test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\"}");
     validateLogJson(logLines[6], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[7], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"username\":\"Alex92\", \"id\":845315}");
     validateLogJson(logLines[8], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":\"bad sad\"}");
     validateLogJson(logLines[9], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":\"bad sad\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[10], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\\t\\n\\r\\\\\\\"\", \"username\":\"Alex92\\t\\n\\r\\\\\\\"\"}");
-    validateLogJson(logLines[11], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"warn.bal\", \"lineNumber\":39}, {\"callableName\":\"f2\", \"fileName\":\"warn.bal\", \"lineNumber\":35}, {\"callableName\":\"f1\", \"fileName\":\"warn.bal\", \"lineNumber\":31}, {\"callableName\":\"main\", \"fileName\":\"warn.bal\", \"lineNumber\":27}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[11], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"warn.bal\", \"lineNumber\":48}, {\"callableName\":\"f2\", \"fileName\":\"warn.bal\", \"lineNumber\":44}, {\"callableName\":\"f1\", \"fileName\":\"warn.bal\", \"lineNumber\":40}, {\"callableName\":\"main\", \"fileName\":\"warn.bal\", \"lineNumber\":29}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[12], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
 @test:Config {}
