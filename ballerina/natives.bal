@@ -193,7 +193,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
         if path is string {
             fileWrite(logOutput);
         } else {
-            println(stderrStream(), java:fromString(logOutput));
+            io:fprintln(io:stderr, logOutput);
         }
     }
 }
@@ -211,17 +211,6 @@ isolated function fileWrite(string logOutput) {
         }
     }
 }
-
-isolated function println(handle receiver, handle msg) = @java:Method {
-    name: "println",
-    'class: "java.io.PrintStream",
-    paramTypes: ["java.lang.String"]
-} external;
-
-isolated function stderrStream() returns handle = @java:FieldGet {
-    name: "err",
-    'class: "java/lang/System"
-} external;
 
 isolated function printLogFmt(LogRecord logRecord) returns string {
     string message = "";

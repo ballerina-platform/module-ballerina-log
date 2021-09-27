@@ -14,24 +14,25 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/test;
 
 string logMessage = "";
 
 @test:Mock {
-    moduleName: "ballerina/log",
-    functionName: "println"
+    moduleName: "ballerina/io",
+    functionName: "fprintln"
 }
-test:MockFunction mock_println = new ();
+test:MockFunction mock_fprintln = new ();
 
-function mockPrintln(handle receiver, handle msg) {
+function mockFprintln(io:FileOutputStream fileOutputStream, io:Printable... values) {
     logMessage = "something went wrong";
 }
 
 @test:Config {}
 function testPrintLog() {
-    test:when(mock_println).call("mockPrintln");
+    test:when(mock_fprintln).call("mockFprintln");
 
     main();
     test:assertEquals(logMessage, "something went wrong");
