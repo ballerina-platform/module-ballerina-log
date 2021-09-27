@@ -8,6 +8,22 @@ dependencies-toml-version = "2"
 
 [[package]]
 org = "ballerina"
+name = "integration_tests"
+version = "2.0.0"
+transitive = false
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.value"},
+	{org = "ballerina", name = "regex"},
+	{org = "ballerina", name = "test"}
+]
+modules = [
+	{org = "ballerina", packageName = "integration_tests", moduleName = "integration_tests"}
+]
+
+[[package]]
+org = "ballerina"
 name = "io"
 version = "1.0.0"
 scope = "testOnly"
