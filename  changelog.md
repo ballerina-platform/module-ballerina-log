@@ -4,6 +4,9 @@ This file contains all the notable changes done to the Ballerina TCP package thr
 ## [Unreleased]
 
 ### Added
+- [[1395] Add function to write log output to a file](https://github.com/ballerina-platform/ballerina-standard-library/issues/1395)
+
+### Added
 - [[#1342] Add Observability span context to log messages when Observability is enabled.](https://github.com/ballerina-platform/ballerina-standard-library/issues/1342)
 
 ## [1.1.0-alpha8] - 2021-04-22
