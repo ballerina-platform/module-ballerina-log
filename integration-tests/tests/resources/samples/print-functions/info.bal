@@ -16,6 +16,8 @@
 
 import ballerina/log;
 
+type HttpError error<map<anydata>>;
+
 public function main() {
     error e = error("bad sad");
     log:printInfo("info log");
@@ -25,6 +27,13 @@ public function main() {
     log:printInfo("info log", 'error = e, username = "Alex92", id = 845315, foo = true);
     log:printInfo("info log\t\n\r\\\"", username = "Alex92\t\n\r\\\"");
     f1();
+
+    map<anydata> httpError = {
+        "code": 403,
+        "details": "Authentication failed"
+    };
+    HttpError err = error(httpError.toJsonString());
+    log:printInfo("info log", 'error = err);
 }
 
 function f1() {

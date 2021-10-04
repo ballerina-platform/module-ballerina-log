@@ -16,6 +16,7 @@
 
 import ballerina/io;
 import ballerina/observe;
+import ballerina/lang.'value;
 import ballerina/jballerina.java;
 
 # Represents log level types.
@@ -168,7 +169,12 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
         message: msg
     };
     if err is error {
-        logRecord["error"] = err.message();
+        json|error errMessage = value:fromJsonString(err.message());
+        if errMessage is json {
+            logRecord["error"] = errMessage;
+        } else {
+            logRecord["error"] = err.message();   
+        }
     }
     foreach [string, Value] [k, v] in keyValues.entries() {
         anydata value = v is Valuer ? v() : v;
@@ -187,7 +193,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
         if path is string {
             fileWrite(logOutput);
         } else {
-            println(stderrStream(), java:fromString(logOutput));
+            io:fprintln(io:stderr, logOutput);
         }
     }
 }
@@ -205,17 +211,6 @@ isolated function fileWrite(string logOutput) {
         }
     }
 }
-
-isolated function println(handle receiver, handle msg) = @java:Method {
-    name: "println",
-    'class: "java.io.PrintStream",
-    paramTypes: ["java.lang.String"]
-} external;
-
-isolated function stderrStream() returns handle = @java:FieldGet {
-    name: "err",
-    'class: "java/lang/System"
-} external;
 
 isolated function printLogFmt(LogRecord logRecord) returns string {
     string message = "";
