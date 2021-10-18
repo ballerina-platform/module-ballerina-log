@@ -198,11 +198,11 @@ public function testDebugLevelJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
-    validateLogJson(logLines[6], MESSAGE_WARN_JSON);
-    validateLogJson(logLines[7], MESSAGE_INFO_JSON);
-    validateLogJson(logLines[8], MESSAGE_DEBUG_JSON);
+    test:assertEquals(logLines.length(), 14, INCORRECT_NUMBER_OF_LINES);
+    validateLogJson(logLines[10], MESSAGE_ERROR_JSON);
+    validateLogJson(logLines[11], MESSAGE_WARN_JSON);
+    validateLogJson(logLines[12], MESSAGE_INFO_JSON);
+    validateLogJson(logLines[13], MESSAGE_DEBUG_JSON);
 }
 
 @test:Config {}
