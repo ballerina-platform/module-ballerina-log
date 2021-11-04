@@ -70,7 +70,7 @@ const string MESSAGE_DEBUG_BAR_LOGFMT = " level = DEBUG module = myorg/myproject
 configurable string bal_exec_path = ?;
 configurable string temp_dir_path = ?;
 
-@test:Config {}
+@test:Config {enable: false}
 public function testPrintDebugLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run", PRINT_DEBUG_FILE);
     Process result = checkpanic execResult;
@@ -91,7 +91,7 @@ public function testPrintDebugLogfmt() {
     validateLog(logLines[12], " level = DEBUG module = \"\" message = \"debug log\" error = {\"code\":403,\"details\":\"Authentication failed\"}");
 }
 
-@test:Config {}
+@test:Config {enable: false}
 public function testPrintErrorLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_LOGFMT}, (), "run", PRINT_ERROR_FILE);
     Process result = checkpanic execResult;
@@ -112,7 +112,7 @@ public function testPrintErrorLogfmt() {
     validateLog(logLines[12], " level = ERROR module = \"\" message = \"error log\" error = {\"code\":403,\"details\":\"Authentication failed\"}");
 }
 
-@test:Config {}
+@test:Config {enable: false}
 public function testPrintInfoLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_LOGFMT}, (), "run", PRINT_INFO_FILE);
     Process result = checkpanic execResult;
@@ -133,7 +133,7 @@ public function testPrintInfoLogfmt() {
     validateLog(logLines[12], " level = INFO module = \"\" message = \"info log\" error = {\"code\":403,\"details\":\"Authentication failed\"}");
 }
 
-@test:Config {}
+@test:Config {enable: false}
 public function testPrintWarnLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_LOGFMT}, (), "run", PRINT_WARN_FILE);
     Process result = checkpanic execResult;

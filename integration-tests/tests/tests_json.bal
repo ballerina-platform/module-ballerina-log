@@ -59,7 +59,7 @@ const string MESSAGE_WARN_BAR_JSON = "\", \"level\":\"WARN\", \"module\":\"myorg
 const string MESSAGE_INFO_BAR_JSON = "\", \"level\":\"INFO\", \"module\":\"myorg/myproject.bar\", \"message\":\"info log\\t\\n\\r\\\\\\\"\"}";
 const string MESSAGE_DEBUG_BAR_JSON = "\", \"level\":\"DEBUG\", \"module\":\"myorg/myproject.bar\", \"message\":\"debug log\\t\\n\\r\\\\\\\"\"}";
 
-@test:Config {}
+@test:Config {enable: false}
 public function testPrintDebugJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run", PRINT_DEBUG_FILE);
     Process result = checkpanic execResult;
@@ -80,7 +80,7 @@ public function testPrintDebugJson() {
     validateLogJson(logLines[12], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
-@test:Config {}
+@test:Config {enable: false}
 public function testPrintErrorJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_JSON}, (), "run", PRINT_ERROR_FILE);
     Process result = checkpanic execResult;
@@ -101,7 +101,7 @@ public function testPrintErrorJson() {
     validateLogJson(logLines[12], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
-@test:Config {}
+@test:Config {enable: false}
 public function testPrintInfoJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_JSON}, (), "run", PRINT_INFO_FILE);
     Process result = checkpanic execResult;
@@ -122,7 +122,7 @@ public function testPrintInfoJson() {
     validateLogJson(logLines[12], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
-@test:Config {}
+@test:Config {enable: false}
 public function testPrintWarnJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_JSON}, (), "run", PRINT_WARN_FILE);
     Process result = checkpanic execResult;
@@ -198,11 +198,11 @@ public function testDebugLevelJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[7], MESSAGE_ERROR_JSON);
-    validateLogJson(logLines[8], MESSAGE_WARN_JSON);
-    validateLogJson(logLines[9], MESSAGE_INFO_JSON);
-    validateLogJson(logLines[10], MESSAGE_DEBUG_JSON);
+    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+    validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
+    validateLogJson(logLines[6], MESSAGE_WARN_JSON);
+    validateLogJson(logLines[7], MESSAGE_INFO_JSON);
+    validateLogJson(logLines[8], MESSAGE_DEBUG_JSON);
 }
 
 @test:Config {}
