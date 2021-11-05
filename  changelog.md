@@ -4,6 +4,11 @@ This file contains all the notable changes done to the Ballerina TCP package thr
 ## [Unreleased]
 
 ### Added
+- [[2360] Add `error:StackFrame[]` as a key-value pair type](https://github.com/ballerina-platform/ballerina-standard-library/issues/2360)
+
+## [2.0.0-beta3] - 2021-10-10
+
+### Added
 - [[1395] Add function to write log output to a file](https://github.com/ballerina-platform/ballerina-standard-library/issues/1395)
 
 ### Added
