@@ -76,7 +76,7 @@ public function testPrintDebugJson() {
     validateLogJson(logLines[8], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"error\":\"bad sad\"}");
     validateLogJson(logLines[9], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"error\":\"bad sad\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[10], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\\t\\n\\r\\\\\\\"\", \"username\":\"Alex92\\t\\n\\r\\\\\\\"\"}");
-    validateLogJson(logLines[11], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"debug.bal\", \"lineNumber\":48}, {\"callableName\":\"f2\", \"fileName\":\"debug.bal\", \"lineNumber\":44}, {\"callableName\":\"f1\", \"fileName\":\"debug.bal\", \"lineNumber\":40}, {\"callableName\":\"main\", \"fileName\":\"debug.bal\", \"lineNumber\":29}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[11], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"stackTrace\":[\"callableName: f3  fileName: debug.bal lineNumber: 48\", \"callableName: f2  fileName: debug.bal lineNumber: 44\", \"callableName: f1  fileName: debug.bal lineNumber: 40\", \"callableName: main  fileName: debug.bal lineNumber: 29\"], \"username\":\"Alex92\", \"id\":845315}");
     validateLogJson(logLines[12], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
@@ -97,7 +97,7 @@ public function testPrintErrorJson() {
     validateLogJson(logLines[8], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"error\":\"bad sad\"}");
     validateLogJson(logLines[9], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"error\":\"bad sad\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[10], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\\t\\n\\r\\\\\\\"\", \"username\":\"Alex92\\t\\n\\r\\\\\\\"\"}");
-    validateLogJson(logLines[11], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"error.bal\", \"lineNumber\":48}, {\"callableName\":\"f2\", \"fileName\":\"error.bal\", \"lineNumber\":44}, {\"callableName\":\"f1\", \"fileName\":\"error.bal\", \"lineNumber\":40}, {\"callableName\":\"main\", \"fileName\":\"error.bal\", \"lineNumber\":29}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[11], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"stackTrace\":[\"callableName: f3  fileName: error.bal lineNumber: 48\", \"callableName: f2  fileName: error.bal lineNumber: 44\", \"callableName: f1  fileName: error.bal lineNumber: 40\", \"callableName: main  fileName: error.bal lineNumber: 29\"], \"username\":\"Alex92\", \"id\":845315}");
     validateLogJson(logLines[12], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
@@ -118,7 +118,7 @@ public function testPrintInfoJson() {
     validateLogJson(logLines[8], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"error\":\"bad sad\"}");
     validateLogJson(logLines[9], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"error\":\"bad sad\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[10], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\\t\\n\\r\\\\\\\"\", \"username\":\"Alex92\\t\\n\\r\\\\\\\"\"}");
-    validateLogJson(logLines[11], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"info.bal\", \"lineNumber\":48}, {\"callableName\":\"f2\", \"fileName\":\"info.bal\", \"lineNumber\":44}, {\"callableName\":\"f1\", \"fileName\":\"info.bal\", \"lineNumber\":40}, {\"callableName\":\"main\", \"fileName\":\"info.bal\", \"lineNumber\":29}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[11], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"stackTrace\":[\"callableName: f3  fileName: info.bal lineNumber: 48\", \"callableName: f2  fileName: info.bal lineNumber: 44\", \"callableName: f1  fileName: info.bal lineNumber: 40\", \"callableName: main  fileName: info.bal lineNumber: 29\"], \"username\":\"Alex92\", \"id\":845315}");
     validateLogJson(logLines[12], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
@@ -139,7 +139,7 @@ public function testPrintWarnJson() {
     validateLogJson(logLines[8], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":\"bad sad\"}");
     validateLogJson(logLines[9], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":\"bad sad\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
     validateLogJson(logLines[10], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\\t\\n\\r\\\\\\\"\", \"username\":\"Alex92\\t\\n\\r\\\\\\\"\"}");
-    validateLogJson(logLines[11], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"stackTrace\":[{\"callableName\":\"f3\", \"fileName\":\"warn.bal\", \"lineNumber\":48}, {\"callableName\":\"f2\", \"fileName\":\"warn.bal\", \"lineNumber\":44}, {\"callableName\":\"f1\", \"fileName\":\"warn.bal\", \"lineNumber\":40}, {\"callableName\":\"main\", \"fileName\":\"warn.bal\", \"lineNumber\":29}], \"username\":\"Alex92\", \"id\":845315}");
+    validateLogJson(logLines[11], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"stackTrace\":[\"callableName: f3  fileName: warn.bal lineNumber: 48\", \"callableName: f2  fileName: warn.bal lineNumber: 44\", \"callableName: f1  fileName: warn.bal lineNumber: 40\", \"callableName: main  fileName: warn.bal lineNumber: 29\"], \"username\":\"Alex92\", \"id\":845315}");
     validateLogJson(logLines[12], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
@@ -198,11 +198,11 @@ public function testDebugLevelJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[7], MESSAGE_ERROR_JSON);
-    validateLogJson(logLines[8], MESSAGE_WARN_JSON);
-    validateLogJson(logLines[9], MESSAGE_INFO_JSON);
-    validateLogJson(logLines[10], MESSAGE_DEBUG_JSON);
+    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+    validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
+    validateLogJson(logLines[6], MESSAGE_WARN_JSON);
+    validateLogJson(logLines[7], MESSAGE_INFO_JSON);
+    validateLogJson(logLines[8], MESSAGE_DEBUG_JSON);
 }
 
 @test:Config {}
