@@ -28,7 +28,7 @@ enum LogLevel {
 }
 
 # A value of anydata type.
-public type Value anydata|Valuer;
+public type Value anydata|Valuer|error:StackFrame[];
 
 # A function that returns anydata type.
 public type Valuer isolated function () returns anydata;
@@ -173,12 +173,20 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
         if errMessage is json {
             logRecord["error"] = errMessage;
         } else {
-            logRecord["error"] = err.message();   
+            logRecord["error"] = err.message();
         }
     }
     foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata value = v is Valuer ? v() : v;
-        logRecord[k] = value;
+        if v is error:StackFrame[] {
+            json[] stackTrace = [];
+            foreach var element in v {
+                stackTrace.push(element.toString());
+            }
+            logRecord[k] = stackTrace;
+        } else {
+            anydata value = v is Valuer ? v() : v;
+            logRecord[k] = value;
+        }
     }
     if (observe:isTracingEnabled()) {
         map<string> spanContext = observe:getSpanContext();

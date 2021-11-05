@@ -59,7 +59,7 @@ const string MESSAGE_WARN_BAR_JSON = "\", \"level\":\"WARN\", \"module\":\"myorg
 const string MESSAGE_INFO_BAR_JSON = "\", \"level\":\"INFO\", \"module\":\"myorg/myproject.bar\", \"message\":\"info log\\t\\n\\r\\\\\\\"\"}";
 const string MESSAGE_DEBUG_BAR_JSON = "\", \"level\":\"DEBUG\", \"module\":\"myorg/myproject.bar\", \"message\":\"debug log\\t\\n\\r\\\\\\\"\"}";
 
-@test:Config {enable: false}
+@test:Config {}
 public function testPrintDebugJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run", PRINT_DEBUG_FILE);
     Process result = checkpanic execResult;
@@ -80,7 +80,7 @@ public function testPrintDebugJson() {
     validateLogJson(logLines[12], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
-@test:Config {enable: false}
+@test:Config {}
 public function testPrintErrorJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_JSON}, (), "run", PRINT_ERROR_FILE);
     Process result = checkpanic execResult;
@@ -101,7 +101,7 @@ public function testPrintErrorJson() {
     validateLogJson(logLines[12], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
-@test:Config {enable: false}
+@test:Config {}
 public function testPrintInfoJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_JSON}, (), "run", PRINT_INFO_FILE);
     Process result = checkpanic execResult;
@@ -122,7 +122,7 @@ public function testPrintInfoJson() {
     validateLogJson(logLines[12], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"error\":{\"code\":403, \"details\":\"Authentication failed\"}}");
 }
 
-@test:Config {enable: false}
+@test:Config {}
 public function testPrintWarnJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_JSON}, (), "run", PRINT_WARN_FILE);
     Process result = checkpanic execResult;
