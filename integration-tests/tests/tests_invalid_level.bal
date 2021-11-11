@@ -25,8 +25,8 @@ const string CONFIG_INVALID_MODULE_LOG_LEVEL = "tests/resources/config/invalid/m
 public function testInvalidGlobalLogLevel() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INVALID_GLOBAL_LOG_LEVEL}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -39,8 +39,8 @@ public function testInvalidGlobalLogLevel() {
 public function testInvalidModuleLogLevel() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INVALID_MODULE_LOG_LEVEL}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);

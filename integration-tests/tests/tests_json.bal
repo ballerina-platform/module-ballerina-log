@@ -63,8 +63,8 @@ const string MESSAGE_DEBUG_BAR_JSON = "\", \"level\":\"DEBUG\", \"module\":\"myo
 public function testPrintDebugJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run", PRINT_DEBUG_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -84,8 +84,8 @@ public function testPrintDebugJson() {
 public function testPrintErrorJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_JSON}, (), "run", PRINT_ERROR_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -105,8 +105,8 @@ public function testPrintErrorJson() {
 public function testPrintInfoJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_JSON}, (), "run", PRINT_INFO_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -126,8 +126,8 @@ public function testPrintInfoJson() {
 public function testPrintWarnJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_JSON}, (), "run", PRINT_WARN_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -147,8 +147,8 @@ public function testPrintWarnJson() {
 public function testErrorLevelJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_JSON}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -161,8 +161,8 @@ public function testErrorLevelJson() {
 public function testWarnLevelJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_JSON}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -176,8 +176,8 @@ public function testWarnLevelJson() {
 public function testInfoLevelJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_JSON}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -192,8 +192,8 @@ public function testInfoLevelJson() {
 public function testDebugLevelJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -210,8 +210,8 @@ public function testProjectWithoutLogLevelJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_WITHOUT_LEVEL_JSON}, (), "run", temp_dir_path
     + "/log-project");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -233,8 +233,8 @@ public function testProjectWithGlobalLogLevelJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_LEVEL_JSON}, (),
     "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -253,8 +253,8 @@ public function testProjectWithGlobalAndDefualtPackageLogLevelJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_JSON},
      (), "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -274,8 +274,8 @@ public function testProjectWithGlobalAndModuleLogLevelsJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_JSON}, (),
     "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -295,8 +295,8 @@ public function testObservabilityJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_OBSERVABILITY_PROJECT_JSON}, (),
     "run", temp_dir_path + "/observability-project-json");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -319,8 +319,8 @@ public function testSetOutputFileSingleFileOverwriteJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_JSON);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_OUTPUT_FILE_JSON);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -338,8 +338,8 @@ public function testSetOutputFileSingleFileAppendJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_JSON);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_OUTPUT_FILE_JSON);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -358,8 +358,8 @@ public function testSetOutputFileProjectOverwriteJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     temp_dir_path + "/file-write-project/overwrite-json");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_JSON);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -385,8 +385,8 @@ public function testSetOutputFileProjectOverwriteJson2() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     temp_dir_path + "/file-write-project/overwrite-json2");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_JSON2);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -408,8 +408,8 @@ public function testSetOutputFileProjectAppendJson() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     temp_dir_path + "/file-write-project/append-json");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_JSON);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -436,8 +436,8 @@ public function testSetOutputFileProjectAppendJson2() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
     temp_dir_path + "/file-write-project/append-json2");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_JSON2);
     test:assertTrue(fileWriteOutputLines is string[]);
