@@ -74,8 +74,8 @@ configurable string temp_dir_path = ?;
 public function testPrintDebugLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run", PRINT_DEBUG_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -95,8 +95,8 @@ public function testPrintDebugLogfmt() {
 public function testPrintErrorLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_LOGFMT}, (), "run", PRINT_ERROR_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -116,8 +116,8 @@ public function testPrintErrorLogfmt() {
 public function testPrintInfoLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_LOGFMT}, (), "run", PRINT_INFO_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -137,8 +137,8 @@ public function testPrintInfoLogfmt() {
 public function testPrintWarnLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_LOGFMT}, (), "run", PRINT_WARN_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -158,8 +158,8 @@ public function testPrintWarnLogfmt() {
 public function testErrorLevelLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_LOGFMT}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -172,8 +172,8 @@ public function testErrorLevelLogfmt() {
 public function testWarnLevelLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_LOGFMT}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -187,8 +187,8 @@ public function testWarnLevelLogfmt() {
 public function testInfoLevelLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_LOGFMT}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -203,8 +203,8 @@ public function testInfoLevelLogfmt() {
 public function testDebugLevelLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -221,8 +221,8 @@ public function testProjectWithoutLogLevelLogfmt() {
     Process|error execResult = exec(bal_exec_path, {}, (), "run", temp_dir_path
     + "/log-project");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -244,8 +244,8 @@ public function testProjectWithGlobalLogLevelLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_LEVEL_LOGFMT}, (),
     "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -264,8 +264,8 @@ public function testProjectWithGlobalAndDefualtPackageLogLevelLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_LOGFMT},
      (), "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -285,8 +285,8 @@ public function testProjectWithGlobalAndModuleLogLevelsLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_LOGFMT}, (),
     "run", temp_dir_path + "/log-project");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -306,8 +306,8 @@ public function testObservabilityLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_OBSERVABILITY_PROJECT_LOGFMT}, (),
     "run", temp_dir_path + "/observability-project-logfmt");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
@@ -330,8 +330,8 @@ public function testSetOutputFileSingleFileOverwriteLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_LOGFMT);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(jsonFILE_WRITE_OUTPUT_OVERWRITE_OUTPUT_FILE_LOGFMT);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -349,8 +349,8 @@ public function testSetOutputFileSingleFileAppendLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_LOGFMT);
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_OUTPUT_FILE_LOGFMT);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -369,8 +369,8 @@ public function testSetOutputFileProjectOverwriteLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     temp_dir_path + "/file-write-project/overwrite-logfmt");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_LOGFMT);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -396,8 +396,8 @@ public function testSetOutputFileProjectOverwriteLogfmt2() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     temp_dir_path + "/file-write-project/overwrite-logfmt2");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_OVERWRITE_PROJECT_OUTPUT_FILE_LOGFMT2);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -419,8 +419,8 @@ public function testSetOutputFileProjectAppendLogfmt() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     temp_dir_path + "/file-write-project/append-logfmt");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_LOGFMT);
     test:assertTrue(fileWriteOutputLines is string[]);
@@ -447,8 +447,8 @@ public function testSetOutputFileProjectAppendLogfmt2() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
     temp_dir_path + "/file-write-project/append-logfmt2");
     Process result = checkpanic execResult;
-    int waitForExit = checkpanic result.waitForExit();
-    int exitCode = checkpanic result.exitCode();
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
 
     string[]|io:Error fileWriteOutputLines = io:fileReadLines(FILE_WRITE_OUTPUT_APPEND_PROJECT_OUTPUT_FILE_LOGFMT2);
     test:assertTrue(fileWriteOutputLines is string[]);
