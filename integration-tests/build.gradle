@@ -21,7 +21,7 @@ apply plugin: 'java'
 
 description = 'Ballerina - Log Ballerina Integration Tests'
 
-def ballerinaDist = "build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}"
+def ballerinaDist = "$project.rootDir/target/ballerina-runtime"
 def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def originalConfig = ballerinaConfigFile.text
@@ -136,6 +136,19 @@ task updateTomlVerions {
     }
 }
 
+task commitTomlFiles {
+    doLast {
+        project.exec {
+            ignoreExitValue true
+            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
+            } else {
+                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml Dependencies.toml"
+            }
+        }
+    }
+}
+
 task revertTomlFile {
     doLast {
         ballerinaConfigFile.text = originalConfig
@@ -195,7 +208,7 @@ task ballerinaIntegrationTests {
     dependsOn(copyLogStdlib)
     finalizedBy(revertTomlFile)
     doLast {
-        def distributionBinPath =  project.projectDir.absolutePath + "/build/target/extracted-distributions/jballerina-tools-zip/jballerina-tools-${ballerinaLangVersion}/bin"
+        def distributionBinPath =  "$project.rootDir/target/ballerina-runtime/bin"
         setExecPath(configTOMLFile,distributionBinPath)
         setTempDirPath(configTOMLFile, "$tempDir")
         exec {
