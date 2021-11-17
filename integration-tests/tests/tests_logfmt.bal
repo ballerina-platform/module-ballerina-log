@@ -122,9 +122,6 @@ public function testPrintInfoLogfmt() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    foreach var item in logLines {
-        io:println(item);
-    }
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], " level = INFO module = \"\" message = \"info log\"");
     validateLog(logLines[6], " level = INFO module = \"\" message = \"info log\" username = \"Alex92\" id = 845315 foo = true");
