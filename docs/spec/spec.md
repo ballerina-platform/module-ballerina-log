@@ -17,10 +17,16 @@ The Log library is used to log information when running applications. It is part
 4. [Writing Logs to a File](#4-writing-logs-to-a-file)
 
 ## 1. Overview
-This specification elaborates on the functionalities available in the Log library.
+This specification elaborates on the functionalities available in the Log library. The Ballerina log module has four log levels with their priority in descending order as follows.
+```
+1. ERROR
+2. WARN
+3. INFO
+4. DEBUG
+```
 
 ## 2. Logging
-The Ballerina log API provides functions to log at four levels, which are `DEBUG`, `ERROR`, `INFO`, and `WARN`.
+The Ballerina log module has 4 functions to log at the 4 levels; `printDebug()`, `printError()`, `printInfo()`, and `printWarn()`.
 ```ballerina
 log:printDebug("debug log");
 log:printError("error log");
@@ -28,36 +34,29 @@ log:printInfo("info log");
 log:printWarn("warn log");
 ```
 
-Users can pass any number of key/value pairs, which need to be displayed in the log message. These can be of the `anydata` type including `int`, `string`, and `boolean`. It can also be a function pointer or an `error:StackFrame[]`.
+Optionally, an error can be passed to the functions.
+```ballerina
+error e = error("something went wrong!");
+log:printError("error log with cause", 'error = e);
+```
+
+This will print the error message. In order to print the complete error stack traces, users need to pass the error stack trace as a key-value pair which will be discussed in the next section.
+
+Users can pass any number of key/value pairs, which need to be displayed in the log message. The value can be of `anydata` type, a function pointer or an error stack trace.
 ```ballerina
 log:printInfo("info log", id = 845315, name = "foo", successful = true);
 ```
 
-Users can also pass an `error:StackFrame[]` as a key/value pair.
-```ballerina
-error e = error("bad sad");
-log:printError("error log", stackTrace = e.stackTrace(), username = "Alex92", id = 845315);
-```
-
-Optionally, an error can be passed to the functions.
-```ballerina
-error e = error("something went wrong!");
-log:printError("error log with cause", 'error = e, id = 845315, name = "foo");
-```
-
-Users can pass key/value pairs where the values are function pointers. These functions can return values, which change dynamically. The following log prints the current UTC time as a key/value pair.
 ```ballerina
 log:printInfo("info log", current_time = isolated function() returns string { return time:utcToString(time:utcNow());});
 ```
 
+```ballerina
+error e = error("bad sad");
+log:printError("error log", stackTrace = e.stackTrace());
+```
+
 ## 3. Configure Logging
-The Ballerina log module has four log levels with their priority in descending order as follows.
-```
-1. ERROR
-2. WARN
-3. INFO
-4. DEBUG
-```
 Only the `INFO` and higher level logs are logged by default. The log level can be configured via a Ballerina configuration file.
 To set the global log level to a different level (eg: `DEBUG`), place the entry given below in the `Config.toml` file.
 ```
