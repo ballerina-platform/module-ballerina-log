@@ -13,9 +13,8 @@ The Log library is used to log information when running applications. It is part
 
 1. [Overview](#1-overview)
 2. [Logging](#2-logging)
-3. [Logging with Context](#3-logging-with-context)
-4. [Configure Logging](#4-configure-logging)
-5. [Writing Logs to a File](#5-writing-logs-to-a-file)
+3. [Configure Logging](#3-configure-logging)
+4. [Writing Logs to a File](#4-writing-logs-to-a-file)
 
 ## 1. Overview
 This specification elaborates on the functionalities available in the Log library.
@@ -29,7 +28,7 @@ log:printInfo("info log");
 log:printWarn("warn log");
 ```
 
-Users can pass any number of key/value pairs, which need to be displayed in the log message. These can be of the `anydata` type including `int`, `string`, and `boolean`.
+Users can pass any number of key/value pairs, which need to be displayed in the log message. These can be of the `anydata` type including `int`, `string`, and `boolean`. It can also be a function pointer or an `error:StackFrame[]`.
 ```ballerina
 log:printInfo("info log", id = 845315, name = "foo", successful = true);
 ```
@@ -46,13 +45,12 @@ error e = error("something went wrong!");
 log:printError("error log with cause", 'error = e, id = 845315, name = "foo");
 ```
 
-## 3. Logging with Context
 Users can pass key/value pairs where the values are function pointers. These functions can return values, which change dynamically. The following log prints the current UTC time as a key/value pair.
 ```ballerina
 log:printInfo("info log", current_time = isolated function() returns string { return time:utcToString(time:utcNow());});
 ```
 
-## 4. Configure Logging
+## 3. Configure Logging
 The Ballerina log module has four log levels with their priority in descending order as follows.
 ```
 1. ERROR
@@ -80,7 +78,7 @@ By default, log messages are logged to the console in the LogFmt format. To set 
 format = "json"
 ```
 
-## 5. Writing Logs to a File
+## 4. Writing Logs to a File
 By default, logs are printed to the console. Users can set the output to a log file by providing an output file (with `.log` extension) to `log:setOutputFile()` function.
 Note that all the subsequent logs of the entire application will be written to this file.
 ```ballerina
