@@ -153,9 +153,6 @@ public function testErrorLevelJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    foreach var item in logLines {
-        io:println(item);
-    }
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
 }
@@ -201,9 +198,6 @@ public function testDebugLevelJson() {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = checkpanic sc.read(100000);
     string[] logLines = regex:split(outText, "\n");
-    foreach var item in logLines {
-        io:println(item);
-    }
     test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
     validateLogJson(logLines[6], MESSAGE_WARN_JSON);
