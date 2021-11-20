@@ -27,7 +27,7 @@ enum LogLevel {
     WARN
 }
 
-# A value of anydata type.
+# A value of anydata type, a function pointer or an error stack trace.
 public type Value anydata|Valuer|error:StackFrame[];
 
 # A function that returns anydata type.
@@ -88,7 +88,7 @@ public enum FileWriteOption {
 # + 'error - The error struct to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printDebug(string msg, error? 'error = (), *KeyValues keyValues) {
-    if (isLogLevelEnabled(DEBUG)) {
+    if isLogLevelEnabled(DEBUG) {
         print(DEBUG, msg, 'error, keyValues);
     }
 }
@@ -103,7 +103,7 @@ public isolated function printDebug(string msg, error? 'error = (), *KeyValues k
 # + 'error - The error struct to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printError(string msg, error? 'error = (), *KeyValues keyValues) {
-    if (isLogLevelEnabled(ERROR)) {
+    if isLogLevelEnabled(ERROR) {
         print(ERROR, msg, 'error, keyValues);
     }
 }
@@ -117,7 +117,7 @@ public isolated function printError(string msg, error? 'error = (), *KeyValues k
 # + 'error - The error struct to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printInfo(string msg, error? 'error = (), *KeyValues keyValues) {
-    if (isLogLevelEnabled(INFO)) {
+    if isLogLevelEnabled(INFO) {
         print(INFO, msg, 'error, keyValues);
     }
 }
@@ -131,7 +131,7 @@ public isolated function printInfo(string msg, error? 'error = (), *KeyValues ke
 # + 'error - The error struct to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printWarn(string msg, error? 'error = (), *KeyValues keyValues) {
-    if (isLogLevelEnabled(WARN)) {
+    if isLogLevelEnabled(WARN) {
         print(WARN, msg, 'error, keyValues);
     }
 }
@@ -188,7 +188,7 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
             logRecord[k] = value;
         }
     }
-    if (observe:isTracingEnabled()) {
+    if observe:isTracingEnabled() {
         map<string> spanContext = observe:getSpanContext();
         foreach [string, string] [k, v] in spanContext.entries() {
             logRecord[k] = v;
