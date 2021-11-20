@@ -27,7 +27,7 @@ enum LogLevel {
     WARN
 }
 
-# A value of anydata type, a function pointer or an error stack trace.
+# A value of anydata type, a function pointer, or an error stack trace.
 public type Value anydata|Valuer|error:StackFrame[];
 
 # A function that returns anydata type.
