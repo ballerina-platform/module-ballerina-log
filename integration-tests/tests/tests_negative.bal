@@ -20,9 +20,10 @@ import ballerina/test;
 
 const string CONFIG_INVALID_GLOBAL_LOG_LEVEL = "tests/resources/config/invalid/global/Config.toml";
 const string CONFIG_INVALID_MODULE_LOG_LEVEL = "tests/resources/config/invalid/module/Config.toml";
+const string FILE_WRITE_OUTPUT_NEGATIVE = "tests/resources/samples/file-write-output/single-file/set-output-file-negative.bal";
 
 @test:Config {}
-public function testInvalidGlobalLogLevel() {
+public function testGlobalLogLevelNegative() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INVALID_GLOBAL_LOG_LEVEL}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
     int _ = checkpanic result.waitForExit();
@@ -36,7 +37,7 @@ public function testInvalidGlobalLogLevel() {
 }
 
 @test:Config {}
-public function testInvalidModuleLogLevel() {
+public function testModuleLogLevelNegative() {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INVALID_MODULE_LOG_LEVEL}, (), "run", LOG_LEVEL_FILE);
     Process result = checkpanic execResult;
     int _ = checkpanic result.waitForExit();
@@ -47,4 +48,18 @@ public function testInvalidModuleLogLevel() {
     string[] logLines = regex:split(outText, "\n");
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[5].includes("error: invalid log level: debug for module: myorg/myproject.foo {}"), "module log level is not validated");
+}
+
+@test:Config {}
+public function testSetOutputFileNegative() {
+    Process|error execResult = exec(bal_exec_path, {}, (), "run", FILE_WRITE_OUTPUT_NEGATIVE);
+    Process result = checkpanic execResult;
+    int _ = checkpanic result.waitForExit();
+    int _ = checkpanic result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = checkpanic sc.read(100000);
+    string[] logLines = regex:split(outText, "\n");
+    test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
+    test:assertTrue(logLines[5].includes("error: The given path is not valid. Should be a file with .log extension."), "module log level is not validated");
 }
