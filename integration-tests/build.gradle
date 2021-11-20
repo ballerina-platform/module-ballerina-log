@@ -21,12 +21,9 @@ apply plugin: 'java'
 
 description = 'Ballerina - Log Ballerina Integration Tests'
 
-def ballerinaDist = "$project.rootDir/target/ballerina-runtime"
 def ballerinaConfigFile = new File("$project.projectDir/Ballerina.toml")
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
-def originalConfig = ballerinaConfigFile.text
 def configTOMLFile = new File("$project.projectDir/tests/Config.toml")
-def initialTOMLcontent = configTOMLFile.text
 def tempDir = File.createTempDir()
 def tmpDir = "build/tmp";
 
@@ -50,10 +47,6 @@ configurations {
 }
 
 dependencies {
-    implementation group: 'org.ballerinalang', name: 'ballerina-runtime', version: "${ballerinaLangVersion}"
-    jbalTools ("org.ballerinalang:jballerina-tools:${ballerinaLangVersion}") {
-        transitive = false
-    }
     externalJars (group: 'io.ballerina.stdlib', name: 'io-native', version: "${stdlibIoVersion}") {
         transitive = false
     }
@@ -62,68 +55,11 @@ dependencies {
 
 clean {
     delete "$project.projectDir/target"
-    delete "$project.projectDir/Ballerina.lock"
-}
-
-jar {
-    manifest {
-        attributes('Implementation-Title': project.name,
-                'Implementation-Version': project.version)
-    }
-}
-
-task unpackJballerinaTools(type: Copy) {
-    configurations.jbalTools.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-        from zipTree(artifact.getFile())
-        into new File("${buildDir}/target/extracted-distributions", "jballerina-tools-zip")
-    }
-}
-
-task unpackStdLibs() {
-    doLast {
-        configurations.ballerinaStdLibs.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-            copy {
-                from project.zipTree(artifact.getFile())
-                into new File("${buildDir}/target/extracted-distributions", artifact.name + "-zip")
-            }
-        }
-    }
-}
-
-task copyStdlibs(type: Copy) {
-    into ballerinaDist
-
-    /* Standard Libraries */
-    configurations.ballerinaStdLibs.resolvedConfiguration.resolvedArtifacts.each { artifact ->
-        def artifactExtractedPath = "${buildDir}/target/extracted-distributions/" + artifact.name + "-zip"
-        into("repo/bala") {
-            from "${artifactExtractedPath}/bala/"
-        }
-        into("repo/cache") {
-            from "${artifactExtractedPath}/cache"
-        }
-    }
 }
 
 task copyToLib(type: Copy) {
     into "$project.projectDir/lib"
     from configurations.externalJars
-}
-
-task copyLogStdlib {
-    dependsOn(":log-ballerina:build")
-    dependsOn(copyStdlibs)
-    doLast {
-        /* Copy Log module */
-        copy {
-            from "$project.rootDir/ballerina/build/cache_parent/bala"
-            into "${ballerinaDist}/repo/bala"
-        }
-        copy {
-            from "$project.rootDir/ballerina/build/cache_parent/cache"
-            into "${ballerinaDist}/repo/cache"
-        }
-    }
 }
 
 task updateTomlVerions {
@@ -146,13 +82,6 @@ task commitTomlFiles {
                 commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml Dependencies.toml"
             }
         }
-    }
-}
-
-task revertTomlFile {
-    doLast {
-        ballerinaConfigFile.text = originalConfig
-        configTOMLFile.text = initialTOMLcontent
     }
 }
 
@@ -199,14 +128,11 @@ task copyTestOutputResources(type: Copy) {
 
 task ballerinaIntegrationTests {
     inputs.dir file(project.projectDir)
-    dependsOn(copyStdlibs)
     dependsOn(copyToLib)
     dependsOn(copyTestResources)
     dependsOn(copyTestOutputResources)
     dependsOn(":log-ballerina:build")
     dependsOn(updateTomlVerions)
-    dependsOn(copyLogStdlib)
-    finalizedBy(revertTomlFile)
     doLast {
         def distributionBinPath =  "$project.rootDir/target/ballerina-runtime/bin"
         setExecPath(configTOMLFile,distributionBinPath)
@@ -228,8 +154,5 @@ test {
 }
 
 ballerinaIntegrationTests.dependsOn ":log-ballerina:build"
-unpackStdLibs.dependsOn unpackJballerinaTools
-copyStdlibs.dependsOn unpackStdLibs
-ballerinaIntegrationTests.dependsOn copyStdlibs
 ballerinaIntegrationTests.dependsOn updateTomlVerions
 build.dependsOn test
