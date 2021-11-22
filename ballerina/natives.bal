@@ -33,7 +33,7 @@ public type Value anydata|Valuer|error:StackFrame[];
 # A function that returns anydata type.
 public type Valuer isolated function () returns anydata;
 
-# Key-Value pairs that needs to be desplayed in the log.
+# Key-Value pairs that needs to be displayed in the log.
 #
 # + msg - msg which cannot be a key
 # + 'error - 'error which cannot be a key
