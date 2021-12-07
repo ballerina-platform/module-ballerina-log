@@ -9,7 +9,7 @@ dependencies-toml-version = "2"
 [[package]]
 org = "ballerina"
 name = "integration_tests"
-version = "2.0.1"
+version = "2.0.2"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
@@ -24,7 +24,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "io"
-version = "1.0.1"
+version = "1.0.2"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
@@ -58,7 +58,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "regex"
-version = "1.0.1"
+version = "1.0.2"
 scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
