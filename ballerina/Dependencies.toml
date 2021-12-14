@@ -40,7 +40,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "log"
-version = "2.1.0"
+version = "2.1.1"
 dependencies = [
 	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
