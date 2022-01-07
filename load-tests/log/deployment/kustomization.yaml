@@ -1,0 +1,3 @@
+resources:
+  - log.yaml
+  - ingress.yaml
