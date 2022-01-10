@@ -91,6 +91,7 @@ public enum FileWriteOption {
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printDebug(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+    // Added `stackTrace` as an optional param due to https://github.com/ballerina-platform/ballerina-lang/issues/34572 
     if isLogLevelEnabled(DEBUG) {
         print(DEBUG, msg, 'error, stackTrace, keyValues);
     }
