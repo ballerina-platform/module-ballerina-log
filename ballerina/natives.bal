@@ -88,8 +88,8 @@ public enum FileWriteOption {
 #
 # + msg - The message to be logged
 # + 'error - The error struct to be logged
-# + keyValues - The key-value pairs to be logged
 # + stackTrace - The error stack trace to be logged
+# + keyValues - The key-value pairs to be logged
 public isolated function printDebug(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(DEBUG) {
         print(DEBUG, msg, 'error, stackTrace, keyValues);
@@ -104,8 +104,8 @@ public isolated function printDebug(string msg, error? 'error = (), error:StackF
 #
 # + msg - The message to be logged
 # + 'error - The error struct to be logged
-# + keyValues - The key-value pairs to be logged
 # + stackTrace - The error stack trace to be logged
+# + keyValues - The key-value pairs to be logged
 public isolated function printError(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(ERROR) {
         print(ERROR, msg, 'error, stackTrace, keyValues);
@@ -119,8 +119,8 @@ public isolated function printError(string msg, error? 'error = (), error:StackF
 #
 # + msg - The message to be logged
 # + 'error - The error struct to be logged
-# + keyValues - The key-value pairs to be logged
 # + stackTrace - The error stack trace to be logged
+# + keyValues - The key-value pairs to be logged
 public isolated function printInfo(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(INFO) {
         print(INFO, msg, 'error, stackTrace, keyValues);
@@ -134,8 +134,8 @@ public isolated function printInfo(string msg, error? 'error = (), error:StackFr
 #
 # + msg - The message to be logged
 # + 'error - The error struct to be logged
-# + keyValues - The key-value pairs to be logged
 # + stackTrace - The error stack trace to be logged
+# + keyValues - The key-value pairs to be logged
 public isolated function printWarn(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(WARN) {
         print(WARN, msg, 'error, stackTrace, keyValues);
