@@ -27,8 +27,8 @@ enum LogLevel {
     WARN
 }
 
-# A value of anydata type, a function pointer, or an error stack trace.
-public type Value anydata|Valuer|error:StackFrame[];
+# A value of anydata type, or a function pointer.
+public type Value anydata|Valuer;
 
 # A function that returns anydata type.
 public type Valuer isolated function () returns anydata;
@@ -37,9 +37,11 @@ public type Valuer isolated function () returns anydata;
 #
 # + msg - msg which cannot be a key
 # + 'error - 'error which cannot be a key
+# + stackTrace - error stack trace which cannot be a key
 public type KeyValues record {|
     never msg?;
     never 'error?;
+    never stackTrace?;
     Value...;
 |};
 
@@ -86,10 +88,12 @@ public enum FileWriteOption {
 #
 # + msg - The message to be logged
 # + 'error - The error struct to be logged
+# + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printDebug(string msg, error? 'error = (), *KeyValues keyValues) {
+public isolated function printDebug(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+    // Added `stackTrace` as an optional param due to https://github.com/ballerina-platform/ballerina-lang/issues/34572 
     if isLogLevelEnabled(DEBUG) {
-        print(DEBUG, msg, 'error, keyValues);
+        print(DEBUG, msg, 'error, stackTrace, keyValues);
     }
 }
 
@@ -101,10 +105,11 @@ public isolated function printDebug(string msg, error? 'error = (), *KeyValues k
 #
 # + msg - The message to be logged
 # + 'error - The error struct to be logged
+# + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printError(string msg, error? 'error = (), *KeyValues keyValues) {
+public isolated function printError(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(ERROR) {
-        print(ERROR, msg, 'error, keyValues);
+        print(ERROR, msg, 'error, stackTrace, keyValues);
     }
 }
 
@@ -115,10 +120,11 @@ public isolated function printError(string msg, error? 'error = (), *KeyValues k
 #
 # + msg - The message to be logged
 # + 'error - The error struct to be logged
+# + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printInfo(string msg, error? 'error = (), *KeyValues keyValues) {
+public isolated function printInfo(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(INFO) {
-        print(INFO, msg, 'error, keyValues);
+        print(INFO, msg, 'error, stackTrace, keyValues);
     }
 }
 
@@ -129,10 +135,11 @@ public isolated function printInfo(string msg, error? 'error = (), *KeyValues ke
 #
 # + msg - The message to be logged
 # + 'error - The error struct to be logged
+# + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printWarn(string msg, error? 'error = (), *KeyValues keyValues) {
+public isolated function printWarn(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(WARN) {
-        print(WARN, msg, 'error, keyValues);
+        print(WARN, msg, 'error, stackTrace, keyValues);
     }
 }
 
@@ -161,7 +168,7 @@ public isolated function setOutputFile(string path, FileWriteOption option = APP
     }
 }
 
-isolated function print(string logLevel, string msg, error? err = (), *KeyValues keyValues) {
+isolated function print(string logLevel, string msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     LogRecord logRecord = {
         time: getCurrentTime(),
         level: logLevel,
@@ -176,17 +183,16 @@ isolated function print(string logLevel, string msg, error? err = (), *KeyValues
             logRecord["error"] = err.message();
         }
     }
-    foreach [string, Value] [k, v] in keyValues.entries() {
-        if v is error:StackFrame[] {
-            json[] stackTrace = [];
-            foreach var element in v {
-                stackTrace.push(element.toString());
-            }
-            logRecord[k] = stackTrace;
-        } else {
-            anydata value = v is Valuer ? v() : v;
-            logRecord[k] = value;
+    if stackTrace is error:StackFrame[] {
+        json[] stackTraceArray = [];
+        foreach var element in stackTrace {
+            stackTraceArray.push(element.toString());
         }
+        logRecord["stackTrace"] = stackTraceArray;
+    }
+    foreach [string, Value] [k, v] in keyValues.entries() {
+        anydata value = v is Valuer ? v() : v;
+        logRecord[k] = value;
     }
     if observe:isTracingEnabled() {
         map<string> spanContext = observe:getSpanContext();
