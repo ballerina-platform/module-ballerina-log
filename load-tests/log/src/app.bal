@@ -17,9 +17,9 @@
 import ballerina/log;
 import ballerina/http;
 
-service http:Service /BalPerformance on new http:Listener(9090) {
+service /load_test on new http:Listener(9090) {
 
-    resource function get grpc() returns boolean {
+    resource function get log() returns boolean {
 
         foreach int i in 1...100 {
             log:printInfo("load test", index = i);        
