@@ -27,10 +27,10 @@ enum LogLevel {
     WARN
 }
 
-# A value of anydata type, or a function pointer.
+# A value of `anydata` type, or a function pointer.
 public type Value anydata|Valuer;
 
-# A function that returns anydata type.
+# A function that returns `anydata` type.
 public type Valuer isolated function () returns anydata;
 
 # Key-Value pairs that needs to be displayed in the log.
