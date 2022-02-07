@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/io;
+import ballerina/time;
 import ballerina/observe;
 import ballerina/lang.'value;
 import ballerina/jballerina.java;
@@ -169,8 +170,15 @@ public isolated function setOutputFile(string path, FileWriteOption option = APP
 }
 
 isolated function print(string logLevel, string msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+    string timeString = "";
+    string|error currentTime = getCurrentTime();
+    if currentTime is error {
+        printError("failed to get the current local time", currentTime);
+    } else {
+        timeString = currentTime;
+    } 
     LogRecord logRecord = {
-        time: getCurrentTime(),
+        time: timeString,
         level: logLevel,
         module: getModuleName() == "." ? "" : getModuleName(),
         message: msg
@@ -282,4 +290,24 @@ isolated function isLogLevelEnabled(string logLevel) returns boolean {
 
 isolated function getModuleName() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
 
-isolated function getCurrentTime() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
+isolated function getCurrentTime() returns string|error {
+    time:Zone systemZone = check time:loadSystemZone();
+    time:Civil currentSystemCivil = systemZone.utcToCivil(time:utcNow());
+
+    string year = currentSystemCivil.year.toString();
+    string month = getDoubleDigitValue(currentSystemCivil.month);
+    string date = getDoubleDigitValue(currentSystemCivil.day);
+    string hour = getDoubleDigitValue(currentSystemCivil.hour);
+    string minute = getDoubleDigitValue(currentSystemCivil.minute);
+    string seconds = getDoubleDigitValue(<int>currentSystemCivil.second);
+
+    return year + "-" + month + "-" + date + "T" + hour + ":" + minute + ":" + seconds;
+}
+
+isolated function getDoubleDigitValue(int value) returns string {
+    if value < 10 {
+        return "0" + value.toString();
+    } else {
+        return value.toString();
+    }
+}

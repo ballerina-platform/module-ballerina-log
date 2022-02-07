@@ -76,6 +76,6 @@ public class OSUtils {
     }
 
     public static boolean isValidDateTime(BString dateTime) {
-        return dateTime.substring(0, 23).getValue().matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}");
+        return dateTime.substring(0, 19).getValue().matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}");
     }
 }

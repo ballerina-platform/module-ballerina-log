@@ -45,7 +45,11 @@ isolated function testGetModuleName() {
 
 @test:Config {}
 isolated function testGetCurrentTime() {
-    test:assertTrue(isValidDateTime(getCurrentTime()));
+    string|error currentTime = getCurrentTime();
+    test:assertTrue(currentTime is string);
+    if currentTime is string {
+        test:assertTrue(isValidDateTime(currentTime));    
+    }
 }
 
 @test:Config {}
