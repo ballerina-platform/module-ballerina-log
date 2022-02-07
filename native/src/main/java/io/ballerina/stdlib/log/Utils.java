@@ -22,9 +22,6 @@ import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BString;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 /**
  * Native function implementations of the log-api module.
  *
