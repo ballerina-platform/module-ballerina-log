@@ -1,4 +1,4 @@
-Ballerina Log Package
+Ballerina Log Library
 ===================
 
   [![Build](https://github.com/ballerina-platform/module-ballerina-log/actions/workflows/build-timestamped-master.yml/badge.svg)](https://github.com/ballerina-platform/module-ballerina-log/actions/workflows/build-timestamped-master.yml)
@@ -7,9 +7,7 @@ Ballerina Log Package
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/log.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Flog)
   [![codecov](https://codecov.io/gh/ballerina-platform/module-ballerina-log/branch/master/graph/badge.svg)](https://codecov.io/gh/ballerina-platform/module-ballerina-log)
 
-The Log package is one of the standard library packages of the<a target="_blank" href="https://ballerina.io/"> Ballerina</a> language.
-
-This package provides APIs to log information when running applications.
+This library provides APIs to log information when running applications.
 
 A sample log message logged from the `foo` module would look as follows:
 ```bash
@@ -56,9 +54,6 @@ A sample log message logged from the `foo` module in JSON format would look as f
 ```bash
 {"time":"2021-05-12T11:26:00.021+05:30", "level":"INFO", "module":"myorg/foo", "message":"Authenticating user"}
 ```
-For more information go to the [`log` package](https://ballerina.io/learn/api-docs/ballerina/log/).
-
-For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/learn/by-example/).
 
 ## Issues and Projects
 
@@ -139,3 +134,5 @@ All contributors are encouraged to read the [Ballerina Code of Conduct](https://
 
 * Chat live with us via our [Slack channel](https://ballerina.io/community/slack/).
 * Post all technical questions on Stack Overflow with the [#ballerina](https://stackoverflow.com/questions/tagged/ballerina) tag.
+* For more information go to the [`log` library](https://lib.ballerina.io/ballerina/log/latest).
+* For example demonstrations of the usage, go to [Ballerina By Examples](https://ballerina.io/swan-lake/learn/by-example/).
