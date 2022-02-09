@@ -47,3 +47,5 @@ A sample log message logged from the `foo` module in JSON format would look as f
 ```bash
 {"time":"2021-05-12T11:26:00.021+05:30", "level":"INFO", "module":"myorg/foo", "message":"Authenticating user"}
 ```
+
+For information on the operations, which you can perform with the `log` module, see the below **Functions**.
