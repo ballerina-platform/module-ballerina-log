@@ -26,6 +26,8 @@ def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def configTOMLFile = new File("$project.projectDir/tests/Config.toml")
 def tempDir = File.createTempDir()
 def tmpDir = "build/tmp";
+def originalBallerinaTOMLFile = ballerinaConfigFile.text
+def originalConfigTOMLFile = configTOMLFile.text
 
 def stripBallerinaExtensionVersion(String extVersion) {
     if (extVersion.matches(project.ext.timestampedVersionRegex)) {
@@ -72,16 +74,10 @@ task updateTomlVerions {
     }
 }
 
-task commitTomlFiles {
+task revertTomlFile {
     doLast {
-        project.exec {
-            ignoreExitValue true
-            if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
-            } else {
-                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml Dependencies.toml"
-            }
-        }
+        ballerinaConfigFile.text = originalBallerinaTOMLFile
+        configTOMLFile.text = originalConfigTOMLFile
     }
 }
 
@@ -133,6 +129,7 @@ task ballerinaIntegrationTests {
     dependsOn(copyTestOutputResources)
     dependsOn(":log-ballerina:build")
     dependsOn(updateTomlVerions)
+    finalizedBy(revertTomlFile)
     doLast {
         def distributionBinPath =  "$project.rootDir/target/ballerina-runtime/bin"
         setExecPath(configTOMLFile,distributionBinPath)
