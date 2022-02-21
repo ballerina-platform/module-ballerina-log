@@ -10,11 +10,11 @@ _Issue_: [#2347](https://github.com/ballerina-platform/ballerina-standard-librar
 # Introduction
 This is the specification for the Log standard library of [Ballerina language](https://ballerina.io/), which provides APIs to log information when running applications.
 
-The Log library specification has evolved and may continue to evolve in the future. Released versions of the specification can be found under the relevant Github tag.
+The Log library specification has evolved and may continue to evolve in the future. The released versions of the specification can be found under the relevant Github tag.
 
-If you have any feedback or suggestions about the library, start a discussion via a [GitHub issue](https://github.com/ballerina-platform/ballerina-standard-library/issues) or in the [Slack channel](https://ballerina.io/community/). Based on the outcome of the discussion, specification and implementation can be updated. Community feedback is always welcome. Any accepted proposal which affects the specification is stored under `/docs/proposals`. Proposals under discussion can be found with the label `type/proposal` in Github.
+If you have any feedback or suggestions about the library, start a discussion via a [GitHub issue](https://github.com/ballerina-platform/ballerina-standard-library/issues) or in the [Slack channel](https://ballerina.io/community/). Based on the outcome of the discussion, the specification and implementation can be updated. Community feedback is always welcome. Any accepted proposal, which affects the specification is stored under `/docs/proposals`. Proposals under discussion can be found with the label `type/proposal` in Github.
 
-Conforming implementation of the specification is released and included in the distribution. Any deviation from the specification is considered a bug.
+The conforming implementation of the specification is released and included in the distribution. Any deviation from the specification is considered a bug.
 
 # Contents
 
