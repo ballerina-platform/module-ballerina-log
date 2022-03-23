@@ -1,4 +1,4 @@
-## Package Overview
+## Package overview
 
 This package provides APIs to log information when running applications.
 
@@ -7,7 +7,7 @@ A sample log message logged from the `foo` module would look as follows:
 time = 2021-05-12T11:20:29.362+05:30 level = ERROR module = myorg/foo message = "Something went wrong"
 ```
 
-### Log Levels
+### Log levels
 
 The `log` module provides APIs to log at four levels, which are `DEBUG`, `ERROR`, `INFO`, and `WARN`. By default, all log messages are logged to the console at the `INFO` level.
 
@@ -27,7 +27,7 @@ name = "[ORG_NAME]/[MODULE_NAME]"
 level = "[LOG_LEVEL]"
 ```
 
-### Log Output
+### Log output
 
 Logs are written to the `stderr` stream by default.
 
@@ -47,11 +47,11 @@ A sample log message logged from the `foo` module in JSON format would look as f
 ```bash
 {"time":"2021-05-12T11:26:00.021+05:30", "level":"INFO", "module":"myorg/foo", "message":"Authenticating user"}
 ```
-## Report Issues
+## Report issues
 
 To report bugs, request new features, start new discussions, view project boards, etc., go to the [Ballerina standard library parent repository](https://github.com/ballerina-platform/ballerina-standard-library).
 
-## Useful Links
+## Useful links
 
 - Chat live with us via our [Slack channel](https://ballerina.io/community/slack/).
 - Post all technical questions on Stack Overflow with the [#ballerina](https://stackoverflow.com/questions/tagged/ballerina) tag.
