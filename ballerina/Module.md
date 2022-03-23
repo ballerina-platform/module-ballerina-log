@@ -7,7 +7,7 @@ A sample log message logged from the `foo` module would look as follows:
 time = 2021-05-12T11:20:29.362+05:30 level = ERROR module = myorg/foo message = "Something went wrong"
 ```
 
-### Log Levels
+### Log levels
 
 The `log` module provides APIs to log at four levels, which are `DEBUG`, `ERROR`, `INFO`, and `WARN`. By default, all log messages are logged to the console at the `INFO` level.
 
@@ -27,7 +27,7 @@ name = "[ORG_NAME]/[MODULE_NAME]"
 level = "[LOG_LEVEL]"
 ```
 
-### Log Output
+### Log output
 
 Logs are written to the `stderr` stream by default.
 
