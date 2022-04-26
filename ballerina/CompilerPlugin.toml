@@ -1,0 +1,6 @@
+[plugin]
+id = "log-compiler-plugin"
+class = "io.ballerina.stdlib.log.plugin.LogCompilerPlugin"
+
+[[dependency]]
+path = "../compiler-plugin/build/libs/log-compiler-plugin-2.2.2-SNAPSHOT.jar"
