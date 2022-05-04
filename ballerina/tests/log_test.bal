@@ -39,11 +39,6 @@ function testPrintLog() {
 }
 
 @test:Config {}
-isolated function testGetModuleName() {
-    test:assertEquals(getModuleName(), "jdk/internal");
-}
-
-@test:Config {}
 isolated function testGetCurrentTime() {
     test:assertTrue(isValidDateTime(getCurrentTime()));
 }

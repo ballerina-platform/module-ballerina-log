@@ -37,7 +37,9 @@ def packageName = "log"
 def packageOrg = "ballerina"
 def tomlVersion = stripBallerinaExtensionVersion("${project.version}")
 def ballerinaTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/Ballerina.toml")
+def compilerPluginTomlFilePlaceHolder = new File("${project.rootDir}/build-config/resources/CompilerPlugin.toml")
 def ballerinaTomlFile = new File("$project.projectDir/Ballerina.toml")
+def compilerPluginTomlFile = new File("$project.projectDir/CompilerPlugin.toml")
 
 def stripBallerinaExtensionVersion(String extVersion) {
     if (extVersion.matches(project.ext.timestampedVersionRegex)) {
@@ -66,6 +68,9 @@ task updateTomlFiles {
         def newConfig = ballerinaTomlFilePlaceHolder.text.replace("@project.version@", project.version)
         newConfig = newConfig.replace("@toml.version@", tomlVersion)
         ballerinaTomlFile.text = newConfig
+
+        def newCompilerPluginToml = compilerPluginTomlFilePlaceHolder.text.replace("@project.version@", project.version)
+        compilerPluginTomlFile.text = newCompilerPluginToml
     }
 }
 
@@ -74,9 +79,9 @@ task commitTomlFiles {
         project.exec {
             ignoreExitValue true
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml"
+                commandLine 'cmd', '/c', "git commit -m \"[Automated] Update the native jar versions\" Ballerina.toml Dependencies.toml CompilerPlugin.toml"
             } else {
-                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml Dependencies.toml"
+                commandLine 'sh', '-c', "git commit -m '[Automated] Update the native jar versions' Ballerina.toml Dependencies.toml CompilerPlugin.toml"
             }
         }
     }
@@ -107,9 +112,11 @@ build.dependsOn "generatePomFileForMavenPublication"
 build.finalizedBy ':log-integration-tests:build'
 build.dependsOn ":${packageName}-native:build"
 build.dependsOn ":${packageName}-test-utils:build"
+build.dependsOn ":${packageName}-compiler-plugin:build"
 test.finalizedBy ':log-integration-tests:build'
 test.dependsOn ":${packageName}-native:build"
 test.dependsOn ":${packageName}-test-utils:build"
+test.dependsOn ":${packageName}-compiler-plugin:build"
 
 publishToMavenLocal.dependsOn build
 publish.dependsOn build
