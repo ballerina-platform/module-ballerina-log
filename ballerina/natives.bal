@@ -280,13 +280,8 @@ isolated function isLogLevelEnabled(string logLevel, string moduleName) returns 
 }
 
 isolated function getModuleName(KeyValues keyValues) returns string {
-    string name = "";
-    foreach [string, Value] [k, v] in keyValues.entries() {
-        if k == "module" {
-            return v.toString();
-        }
-    }
-    return name;
+    Value module = keyValues["module"];
+    return module is string ? module : "";
 }
 
 isolated function getCurrentTime() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
