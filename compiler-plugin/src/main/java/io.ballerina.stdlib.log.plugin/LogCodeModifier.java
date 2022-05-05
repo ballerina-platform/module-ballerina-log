@@ -33,6 +33,7 @@ import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.ModuleId;
 import io.ballerina.projects.Package;
+import io.ballerina.projects.ProjectKind;
 import io.ballerina.projects.plugins.CodeModifier;
 import io.ballerina.projects.plugins.CodeModifierContext;
 
@@ -52,8 +53,9 @@ public class LogCodeModifier extends CodeModifier {
 
             for (ModuleId moduleId : pkg.moduleIds()) {
                 Module module = pkg.module(moduleId);
-                String moduleName = module.moduleName().toString().equals(".") ?
-                        "" : pkg.packageOrg().toString() + "/" + module.moduleName().toString();
+
+                String moduleName = module.project().kind() == ProjectKind.SINGLE_FILE_PROJECT ?
+                        "" : module.descriptor().org().toString() + "/" + module.descriptor().name().toString();
 
                 for (DocumentId documentId : module.documentIds()) {
                     sourceModifierContext.modifySourceFile(getUpdatedSyntaxTree(
