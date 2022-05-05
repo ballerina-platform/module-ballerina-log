@@ -32,6 +32,7 @@ import io.ballerina.projects.Document;
 import io.ballerina.projects.DocumentId;
 import io.ballerina.projects.Module;
 import io.ballerina.projects.ModuleId;
+import io.ballerina.projects.Package;
 import io.ballerina.projects.plugins.CodeModifier;
 import io.ballerina.projects.plugins.CodeModifierContext;
 
@@ -47,21 +48,17 @@ public class LogCodeModifier extends CodeModifier {
     public void init(CodeModifierContext modifierContext) {
         modifierContext.addSourceModifierTask(sourceModifierContext -> {
 
-            for (ModuleId moduleId : sourceModifierContext.currentPackage().moduleIds()) {
-                Module module = sourceModifierContext.currentPackage().module(moduleId);
-                String moduleName;
-                if (sourceModifierContext.currentPackage().module(moduleId).moduleName().toString().equals(".")) {
-                    moduleName = "";
-                } else {
-                    moduleName = sourceModifierContext.currentPackage().packageOrg().toString() +
-                            "/" + sourceModifierContext.currentPackage().module(moduleId).moduleName().toString();
-                }
+            Package pkg = sourceModifierContext.currentPackage();
+
+            for (ModuleId moduleId : pkg.moduleIds()) {
+                Module module = pkg.module(moduleId);
+                String moduleName = module.moduleName().toString().equals(".") ?
+                        "" : pkg.packageOrg().toString() + "/" + module.moduleName().toString();
 
                 for (DocumentId documentId : module.documentIds()) {
                     sourceModifierContext.modifySourceFile(getUpdatedSyntaxTree(
                             module, documentId, moduleName).textDocument(), documentId);
                 }
-
                 for (DocumentId documentId : module.testDocumentIds()) {
                     sourceModifierContext.modifyTestSourceFile(getUpdatedSyntaxTree(
                             module, documentId, moduleName).textDocument(), documentId);
@@ -92,10 +89,12 @@ public class LogCodeModifier extends CodeModifier {
 
         @Override
         public FunctionCallExpressionNode transform(FunctionCallExpressionNode functionCall) {
+
             if (functionCall.functionName().toString().trim().equals("log:printError") ||
                     functionCall.functionName().toString().trim().equals("log:printWarn") ||
                     functionCall.functionName().toString().trim().equals("log:printInfo") ||
                     functionCall.functionName().toString().trim().equals("log:printDebug")) {
+
                 List<Node> arguments = new ArrayList<>();
                 for (FunctionArgumentNode arg: functionCall.arguments()) {
                     if (arguments.size() > 0) {

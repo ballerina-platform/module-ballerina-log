@@ -283,8 +283,7 @@ isolated function getModuleName(KeyValues keyValues) returns string {
     string name = "";
     foreach [string, Value] [k, v] in keyValues.entries() {
         if k == "module" {
-            name = v.toString();
-            break;
+            return v.toString();
         }
     }
     return name;
