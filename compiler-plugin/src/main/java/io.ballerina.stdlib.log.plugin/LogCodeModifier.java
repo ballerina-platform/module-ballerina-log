@@ -22,9 +22,11 @@ import io.ballerina.compiler.syntax.tree.AbstractNodeFactory;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.FunctionCallExpressionNode;
 import io.ballerina.compiler.syntax.tree.ModulePartNode;
+import io.ballerina.compiler.syntax.tree.NameReferenceNode;
 import io.ballerina.compiler.syntax.tree.NamedArgumentNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeFactory;
+import io.ballerina.compiler.syntax.tree.QualifiedNameReferenceNode;
 import io.ballerina.compiler.syntax.tree.SyntaxKind;
 import io.ballerina.compiler.syntax.tree.SyntaxTree;
 import io.ballerina.compiler.syntax.tree.TreeModifier;
@@ -77,8 +79,7 @@ public class LogCodeModifier extends CodeModifier {
         FunctionCallModifier functionCallModifier = new FunctionCallModifier(moduleName);
         ModulePartNode newRoot = (ModulePartNode) rootNode.apply(functionCallModifier);
 
-        ModulePartNode newModulePart = rootNode.modify(rootNode.imports(), newRoot.members(), rootNode.eofToken());
-        return document.syntaxTree().modifyWith(newModulePart);
+        return document.syntaxTree().modifyWith(newRoot);
     }
 
     private static class FunctionCallModifier extends TreeModifier {
@@ -92,41 +93,50 @@ public class LogCodeModifier extends CodeModifier {
         @Override
         public FunctionCallExpressionNode transform(FunctionCallExpressionNode functionCall) {
 
-            if (functionCall.functionName().toString().trim().equals("log:printError") ||
-                    functionCall.functionName().toString().trim().equals("log:printWarn") ||
-                    functionCall.functionName().toString().trim().equals("log:printInfo") ||
-                    functionCall.functionName().toString().trim().equals("log:printDebug")) {
-
-                List<Node> arguments = new ArrayList<>();
-                for (FunctionArgumentNode arg: functionCall.arguments()) {
-                    if (arguments.size() > 0) {
-                        arguments.add(AbstractNodeFactory.createIdentifierToken(","));
-                    }
-                    arguments.add(arg);
-                }
-                NamedArgumentNode moduleName = NodeFactory.createNamedArgumentNode(
-                        NodeFactory.createSimpleNameReferenceNode(
-                                AbstractNodeFactory.createIdentifierToken("module")
-                        ),
-                        AbstractNodeFactory.createIdentifierToken("="),
-                        NodeFactory.createBasicLiteralNode(
-                                SyntaxKind.STRING_LITERAL,
-                                AbstractNodeFactory.createIdentifierToken("\"" + this.moduleName + "\"")
-                        )
-                );
-                arguments.add(AbstractNodeFactory.createIdentifierToken(","));
-                arguments.add(moduleName);
-
-                return NodeFactory.createFunctionCallExpressionNode(
-                        NodeFactory.createSimpleNameReferenceNode(
-                                AbstractNodeFactory.createIdentifierToken(functionCall.functionName().toString())
-                        ),
-                        AbstractNodeFactory.createIdentifierToken("("),
-                        NodeFactory.createSeparatedNodeList(arguments),
-                        AbstractNodeFactory.createIdentifierToken(")")
-                );
+            NameReferenceNode nameRef = functionCall.functionName();
+            if (nameRef.kind() != SyntaxKind.QUALIFIED_NAME_REFERENCE) {
+                return functionCall;
             }
-            return functionCall;
+
+            QualifiedNameReferenceNode qualifiedNameRef = (QualifiedNameReferenceNode) nameRef;
+            if (!qualifiedNameRef.modulePrefix().text().equals("log")) {
+                return functionCall;
+            }
+
+            String text = qualifiedNameRef.identifier().text();
+            if (!text.equals("printError") && !text.equals("printWarn") && !text.equals("printInfo") &&
+                    !text.equals("printDebug")) {
+                return functionCall;
+            }
+
+            List<Node> arguments = new ArrayList<>();
+            for (FunctionArgumentNode arg: functionCall.arguments()) {
+                if (arguments.size() > 0) {
+                    arguments.add(NodeFactory.createToken(SyntaxKind.COMMA_TOKEN));
+                }
+                arguments.add(arg);
+            }
+            NamedArgumentNode moduleName = NodeFactory.createNamedArgumentNode(
+                    NodeFactory.createSimpleNameReferenceNode(
+                            AbstractNodeFactory.createIdentifierToken("module")
+                    ),
+                    NodeFactory.createToken(SyntaxKind.EQUAL_TOKEN),
+                    NodeFactory.createBasicLiteralNode(
+                            SyntaxKind.STRING_LITERAL,
+                            AbstractNodeFactory.createLiteralValueToken(
+                                    SyntaxKind.STRING_LITERAL_TOKEN,
+                                    "\"" + this.moduleName + "\"",
+                                    AbstractNodeFactory.createEmptyMinutiaeList(),
+                                    AbstractNodeFactory.createEmptyMinutiaeList()
+                            )
+                    )
+            );
+            if (arguments.size() > 0) {
+                arguments.add(NodeFactory.createToken(SyntaxKind.COMMA_TOKEN));
+            }
+            arguments.add(moduleName);
+
+            return functionCall.modify().withArguments(NodeFactory.createSeparatedNodeList(arguments)).apply();
         }
     }
 }
