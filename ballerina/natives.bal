@@ -281,7 +281,14 @@ isolated function isLogLevelEnabled(string logLevel, string moduleName) returns 
 
 isolated function getModuleName(KeyValues keyValues) returns string {
     Value module = keyValues["module"];
-    return module is string ? module : "";
+
+    if module is () {
+        return getModuleNameExtern();
+    } else {
+        return module is string ? module : "";
+    }
 }
+
+isolated function getModuleNameExtern() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
 
 isolated function getCurrentTime() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;

@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.log;
 
+import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BString;
 
@@ -33,6 +34,21 @@ public class Utils {
 
     private Utils() {
 
+    }
+
+    /**
+     * Get the name of the current module.
+     *
+     * @return module name
+     */
+    public static BString getModuleNameExtern() {
+        String className = Thread.currentThread().getStackTrace()[5].getClassName();
+        String[] pkgData = className.split("\\.");
+        if (pkgData.length > 1) {
+            String module = IdentifierUtils.decodeIdentifier(pkgData[1]);
+            return StringUtils.fromString(pkgData[0] + "/" + module);
+        }
+        return StringUtils.fromString(".");
     }
 
     /**
