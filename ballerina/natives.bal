@@ -92,7 +92,7 @@ public enum FileWriteOption {
 # + keyValues - The key-value pairs to be logged
 public isolated function printDebug(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     // Added `stackTrace` as an optional param due to https://github.com/ballerina-platform/ballerina-lang/issues/34572 
-    if isLogLevelEnabled(DEBUG) {
+    if isLogLevelEnabled(DEBUG, getModuleName(keyValues)) {
         print(DEBUG, msg, 'error, stackTrace, keyValues);
     }
 }
@@ -108,7 +108,7 @@ public isolated function printDebug(string msg, error? 'error = (), error:StackF
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printError(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-    if isLogLevelEnabled(ERROR) {
+    if isLogLevelEnabled(ERROR, getModuleName(keyValues)) {
         print(ERROR, msg, 'error, stackTrace, keyValues);
     }
 }
@@ -123,7 +123,7 @@ public isolated function printError(string msg, error? 'error = (), error:StackF
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printInfo(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-    if isLogLevelEnabled(INFO) {
+    if isLogLevelEnabled(INFO, getModuleName(keyValues)) {
         print(INFO, msg, 'error, stackTrace, keyValues);
     }
 }
@@ -138,7 +138,7 @@ public isolated function printInfo(string msg, error? 'error = (), error:StackFr
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printWarn(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-    if isLogLevelEnabled(WARN) {
+    if isLogLevelEnabled(WARN, getModuleName(keyValues)) {
         print(WARN, msg, 'error, stackTrace, keyValues);
     }
 }
@@ -172,7 +172,7 @@ isolated function print(string logLevel, string msg, error? err = (), error:Stac
     LogRecord logRecord = {
         time: getCurrentTime(),
         level: logLevel,
-        module: getModuleName() == "." ? "" : getModuleName(),
+        module: getModuleName(keyValues),
         message: msg
     };
     if err is error {
@@ -269,10 +269,9 @@ isolated function replaceString(handle receiver, handle target, handle replaceme
     name: "replace"
 } external;
 
-isolated function isLogLevelEnabled(string logLevel) returns boolean {
+isolated function isLogLevelEnabled(string logLevel, string moduleName) returns boolean {
     string moduleLogLevel = level;
     if modules.length() > 0 {
-        string moduleName = getModuleName();
         if modules.hasKey(moduleName) {
             moduleLogLevel = modules.get(moduleName).level;
         }
@@ -280,6 +279,16 @@ isolated function isLogLevelEnabled(string logLevel) returns boolean {
     return logLevelWeight.get(logLevel) >= logLevelWeight.get(moduleLogLevel);
 }
 
-isolated function getModuleName() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
+isolated function getModuleName(KeyValues keyValues) returns string {
+    Value module = keyValues["module"];
+
+    if module is () {
+        return getModuleNameExtern();
+    } else {
+        return module is string ? module : "";
+    }
+}
+
+isolated function getModuleNameExtern() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
 
 isolated function getCurrentTime() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;

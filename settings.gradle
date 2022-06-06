@@ -26,12 +26,14 @@ include ':checkstyle'
 include ':log-native'
 include ':log-test-utils'
 include ':log-ballerina'
+include ':log-compiler-plugin'
 include ':log-integration-tests'
 
 project(':checkstyle').projectDir = file("build-config${File.separator}checkstyle")
 project(':log-native').projectDir = file('native')
 project(':log-test-utils').projectDir = file('test-utils')
 project(':log-ballerina').projectDir = file('ballerina')
+project(':log-compiler-plugin').projectDir = file('compiler-plugin')
 project(':log-integration-tests').projectDir = file('integration-tests')
 
 gradleEnterprise {

@@ -41,7 +41,7 @@ public class Utils {
      *
      * @return module name
      */
-    public static BString getModuleName() {
+    public static BString getModuleNameExtern() {
         String className = Thread.currentThread().getStackTrace()[5].getClassName();
         String[] pkgData = className.split("\\.");
         if (pkgData.length > 1) {
