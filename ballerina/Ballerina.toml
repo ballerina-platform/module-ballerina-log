@@ -1,16 +1,16 @@
 [package]
 org = "ballerina"
 name = "log"
-version = "2.3.0"
+version = "2.3.1"
 authors = ["Ballerina"]
 keywords = ["level", "format"]
 repository = "https://github.com/ballerina-platform/module-ballerina-log"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.0.4"
+distribution = "2201.2.0"
 
 [[platform.java11.dependency]]
-path = "../native/build/libs/log-native-2.3.0.jar"
+path = "../native/build/libs/log-native-2.3.1-SNAPSHOT.jar"
 
 [[platform.java11.dependency]]
-path = "../test-utils/build/libs/log-test-utils-2.3.0.jar"
+path = "../test-utils/build/libs/log-test-utils-2.3.1-SNAPSHOT.jar"
