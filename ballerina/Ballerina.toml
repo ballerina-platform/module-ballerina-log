@@ -10,7 +10,11 @@ license = ["Apache-2.0"]
 distribution = "2201.2.0"
 
 [[platform.java11.dependency]]
+groupId = "log.ballerina.stdlib"
+artifactId = "log-native"
+version = "2.4.0"
 path = "../native/build/libs/log-native-2.4.0-SNAPSHOT.jar"
 
 [[platform.java11.dependency]]
 path = "../test-utils/build/libs/log-test-utils-2.4.0-SNAPSHOT.jar"
+scope = "testOnly"
