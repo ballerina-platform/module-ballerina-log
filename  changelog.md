@@ -4,27 +4,38 @@ This file contains all the notable changes done to the Ballerina TCP package thr
 ## [Unreleased]
 
 ### Added
-- [[2360] Add `error:StackFrame[]` as a key-value pair type](https://github.com/ballerina-platform/ballerina-standard-library/issues/2360)
+- [Add code modifier support to get module name](https://github.com/ballerina-platform/ballerina-standard-library/issues/2858)
+
+## [2.2.0] - 2022-01-28
+
+### Added
+- [Add stack trace as an optional param in print functions](https://github.com/ballerina-platform/ballerina-standard-library/issues/3149)
+
+## [2.1.0] - 2021-12-13
+
+### Added
+- [Add `error:StackFrame[]` as a key-value pair type](https://github.com/ballerina-platform/ballerina-standard-library/issues/2360)
 
 ## [2.0.0-beta3] - 2021-10-10
 
 ### Added
-- [[1395] Add function to write log output to a file](https://github.com/ballerina-platform/ballerina-standard-library/issues/1395)
+- [Add function to write log output to a file](https://github.com/ballerina-platform/ballerina-standard-library/issues/1395)
+- [Add Observability span context to log messages when Observability is enabled](https://github.com/ballerina-platform/ballerina-standard-library/issues/1342)
 
-### Added
-- [[#1342] Add Observability span context to log messages when Observability is enabled.](https://github.com/ballerina-platform/ballerina-standard-library/issues/1342)
+### Updated
+- [Improve the behavior of escaping characters in log output](https://github.com/ballerina-platform/ballerina-standard-library/issues/1959)
 
 ## [1.1.0-alpha8] - 2021-04-22
 
 ### Added
-- [[#1188] Add validation to check log levels in Config.toml file](https://github.com/ballerina-platform/ballerina-standard-library/issues/1188)
+- [Add validation to check log levels in Config.toml file](https://github.com/ballerina-platform/ballerina-standard-library/issues/1188)
 
 ### Changed
-- [[#1246] Changed the time format in log output to RFC3339](https://github.com/ballerina-platform/ballerina-standard-library/issues/1246)
+- [Changed the time format in log output to RFC3339](https://github.com/ballerina-platform/ballerina-standard-library/issues/1246)
 
 ### Fixed
-- [[#1192] Make log module escape characters properly](https://github.com/ballerina-platform/ballerina-standard-library/issues/1192)
-- [[#1087] Remove ballerina logging dependencies](https://github.com/ballerina-platform/ballerina-standard-library/issues/1087)
-- [[#429] Remove java logging libraries](https://github.com/ballerina-platform/ballerina-standard-library/issues/429)
+- [Make log module escape characters properly](https://github.com/ballerina-platform/ballerina-standard-library/issues/1192)
+- [Remove ballerina logging dependencies](https://github.com/ballerina-platform/ballerina-standard-library/issues/1087)
+- [Remove java logging libraries](https://github.com/ballerina-platform/ballerina-standard-library/issues/429)
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
