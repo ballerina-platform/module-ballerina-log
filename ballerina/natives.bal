@@ -172,7 +172,7 @@ isolated function print(string logLevel, string msg, error? err = (), error:Stac
     LogRecord logRecord = {
         time: getCurrentTime(),
         level: logLevel,
-        module: getModuleName(keyValues),
+        module: getModuleNameExtern() == "." ? "" : getModuleNameExtern(),
         message: msg
     };
     if err is error {
