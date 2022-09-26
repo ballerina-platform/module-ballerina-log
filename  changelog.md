@@ -1,7 +1,12 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina TCP package through the releases.
 
-## [Unreleased]
+## [2.4.1] - 2022-09-21
+
+### Removed
+- [Remove Code modifier support](https://github.com/ballerina-platform/ballerina-standard-library/issues/3418)
+
+## [2.3.0] - 2022-05-30
 
 ### Added
 - [Add code modifier support to get module name](https://github.com/ballerina-platform/ballerina-standard-library/issues/2858)
