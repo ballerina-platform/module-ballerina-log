@@ -6,6 +6,11 @@ This file contains all the notable changes done to the Ballerina TCP package thr
 ### Removed
 - [Remove Code modifier support](https://github.com/ballerina-platform/ballerina-standard-library/issues/3418)
 
+## [2.4.0] - 2022-09-08
+
+### Changed
+- [Update Ballerina distribution version to 2201.2.0](https://github.com/ballerina-platform/ballerina-standard-library/issues/3128)
+
 ## [2.3.0] - 2022-05-30
 
 ### Added
