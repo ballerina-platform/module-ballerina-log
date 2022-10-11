@@ -28,6 +28,6 @@ public class LogCompilerPlugin extends CompilerPlugin {
 
     @Override
     public void init(CompilerPluginContext compilerPluginContext) {
-//        compilerPluginContext.addCodeModifier(new LogCodeModifier());
+        compilerPluginContext.addCodeModifier(new LogCodeModifier());
     }
 }
