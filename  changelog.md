@@ -1,7 +1,12 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina TCP package through the releases.
 
-## [Unreleased]
+## [2.5.1] - 2023-01-04
+
+### Removed
+- [Remove Code modifier support](https://github.com/wso2-enterprise/internal-support-ballerina/issues/232)
+
+## [2.5.0] - 2022-11-29
 
 ### Added
 - [Add code modifier support to get module name](https://github.com/ballerina-platform/ballerina-standard-library/issues/2858)
