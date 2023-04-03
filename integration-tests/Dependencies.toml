@@ -9,8 +9,24 @@ distribution-version = "2201.5.0-20230401-003700-e9cbdd41"
 
 [[package]]
 org = "ballerina"
+name = "integration_tests"
+version = "2.7.0"
+dependencies = [
+	{org = "ballerina", name = "io"},
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.value"},
+	{org = "ballerina", name = "regex"},
+	{org = "ballerina", name = "test"}
+]
+modules = [
+	{org = "ballerina", packageName = "integration_tests", moduleName = "integration_tests"}
+]
+
+[[package]]
+org = "ballerina"
 name = "io"
 version = "1.4.0"
+scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"},
 	{org = "ballerina", name = "lang.value"}
@@ -23,14 +39,35 @@ modules = [
 org = "ballerina"
 name = "jballerina.java"
 version = "0.0.0"
+scope = "testOnly"
 modules = [
 	{org = "ballerina", packageName = "jballerina.java", moduleName = "jballerina.java"}
 ]
 
 [[package]]
 org = "ballerina"
+name = "lang.regexp"
+version = "0.0.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"}
+]
+
+[[package]]
+org = "ballerina"
+name = "lang.string"
+version = "0.0.0"
+scope = "testOnly"
+dependencies = [
+	{org = "ballerina", name = "jballerina.java"},
+	{org = "ballerina", name = "lang.regexp"}
+]
+
+[[package]]
+org = "ballerina"
 name = "lang.value"
 version = "0.0.0"
+scope = "testOnly"
 dependencies = [
 	{org = "ballerina", name = "jballerina.java"}
 ]
@@ -40,29 +77,15 @@ modules = [
 
 [[package]]
 org = "ballerina"
-name = "log"
-version = "2.7.0"
+name = "regex"
+version = "1.4.0"
+scope = "testOnly"
 dependencies = [
-	{org = "ballerina", name = "io"},
 	{org = "ballerina", name = "jballerina.java"},
-	{org = "ballerina", name = "lang.value"},
-	{org = "ballerina", name = "observe"},
-	{org = "ballerina", name = "test"}
+	{org = "ballerina", name = "lang.string"}
 ]
 modules = [
-	{org = "ballerina", packageName = "log", moduleName = "log"}
-]
-
-[[package]]
-org = "ballerina"
-name = "observe"
-version = "1.0.7"
-dependencies = [
-	{org = "ballerina", name = "jballerina.java"}
-]
-modules = [
-	{org = "ballerina", packageName = "observe", moduleName = "observe"},
-	{org = "ballerina", packageName = "observe", moduleName = "observe.mockextension"}
+	{org = "ballerina", packageName = "regex", moduleName = "regex"}
 ]
 
 [[package]]
