@@ -13,11 +13,11 @@ distribution = "2201.5.0"
 groupId = "io.ballerina.stdlib"
 artifactId = "log-native"
 version = "2.7.0"
-path = "../native/build/libs/log-native-2.7.0-SNAPSHOT.jar"
+path = "../native/build/libs/log-native-2.7.0.jar"
 
 [[platform.java11.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "log-test-utils"
 version = "2.7.0"
-path = "../test-utils/build/libs/log-test-utils-2.7.0-SNAPSHOT.jar"
+path = "../test-utils/build/libs/log-test-utils-2.7.0.jar"
 scope = "testOnly"
