@@ -141,7 +141,7 @@ public function testPrintWarnLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText);
+    string[] logLines = re`\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], " level = WARN module = \"\" message = \"warn log\"");
     validateLog(logLines[6], " level = WARN module = \"\" message = \"warn log\" username = \"Alex92\" id = 845315 foo = true");
