@@ -16,7 +16,6 @@
 
 import ballerina/jballerina.java;
 import ballerina/io;
-import ballerina/regex;
 import ballerina/test;
 
 const string UTF_8 = "UTF-8";
@@ -79,7 +78,7 @@ public function testPrintDebugLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], " level = DEBUG module = \"\" message = \"debug log\"");
     validateLog(logLines[6], " level = DEBUG module = \"\" message = \"debug log\" username = \"Alex92\" id = 845315 foo = true");
@@ -100,7 +99,7 @@ public function testPrintErrorLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], " level = ERROR module = \"\" message = \"error log\"");
     validateLog(logLines[6], " level = ERROR module = \"\" message = \"error log\" username = \"Alex92\" id = 845315 foo = true");
@@ -121,7 +120,7 @@ public function testPrintInfoLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], " level = INFO module = \"\" message = \"info log\"");
     validateLog(logLines[6], " level = INFO module = \"\" message = \"info log\" username = \"Alex92\" id = 845315 foo = true");
@@ -142,7 +141,7 @@ public function testPrintWarnLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], " level = WARN module = \"\" message = \"warn log\"");
     validateLog(logLines[6], " level = WARN module = \"\" message = \"warn log\" username = \"Alex92\" id = 845315 foo = true");
@@ -163,7 +162,7 @@ public function testErrorLevelLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], MESSAGE_ERROR_LOGFMT);
 }
@@ -177,7 +176,7 @@ public function testWarnLevelLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], MESSAGE_ERROR_LOGFMT);
     validateLog(logLines[6], MESSAGE_WARN_LOGFMT);
@@ -192,7 +191,7 @@ public function testInfoLevelLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 8, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], MESSAGE_ERROR_LOGFMT);
     validateLog(logLines[6], MESSAGE_WARN_LOGFMT);
@@ -208,7 +207,7 @@ public function testDebugLevelLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], MESSAGE_ERROR_LOGFMT);
     validateLog(logLines[6], MESSAGE_WARN_LOGFMT);
@@ -226,7 +225,7 @@ public function testProjectWithoutLogLevelLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 14, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], MESSAGE_ERROR_MAIN_LOGFMT);
     validateLog(logLines[6], MESSAGE_WARN_MAIN_LOGFMT);
@@ -249,7 +248,7 @@ public function testProjectWithGlobalLogLevelLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], MESSAGE_ERROR_MAIN_LOGFMT);
     validateLog(logLines[6], MESSAGE_WARN_MAIN_LOGFMT);
@@ -269,7 +268,7 @@ public function testProjectWithGlobalAndDefualtPackageLogLevelLogfmt() returns e
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], MESSAGE_ERROR_MAIN_LOGFMT);
     validateLog(logLines[6], MESSAGE_WARN_MAIN_LOGFMT);
@@ -290,7 +289,7 @@ public function testProjectWithGlobalAndModuleLogLevelsLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], MESSAGE_ERROR_MAIN_LOGFMT);
     validateLog(logLines[6], MESSAGE_WARN_MAIN_LOGFMT);
@@ -311,13 +310,13 @@ public function testObservabilityLogfmt() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = regex:split(outText, "\n");
+    string[] logLines = re`\n`.split(outText);
     test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
 
     io:ReadableByteChannel readableOutResult = result.stdout();
     io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
     string outText2 = check sc2.read(100000);
-    string[] ioLines = regex:split(outText2, "\n");
+    string[] ioLines = re`\n`.split(outText2);
     string spanContext = ioLines[1];
     validateLog(logLines[5], string ` level = ERROR module = myorg/myproject message = "error log" ${spanContext}`);
     validateLog(logLines[6], string ` level = WARN module = myorg/myproject message = "warn log" ${spanContext}`);
