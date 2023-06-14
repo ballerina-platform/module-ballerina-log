@@ -1,23 +1,26 @@
 [package]
 org = "ballerina"
 name = "log"
-version = "2.7.1"
+version = "2.8.0"
 authors = ["Ballerina"]
 keywords = ["level", "format"]
 repository = "https://github.com/ballerina-platform/module-ballerina-log"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.5.0"
+distribution = "2201.7.0"
+
+[platform.java11]
+graalvmCompatible = true
 
 [[platform.java11.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "log-native"
-version = "2.7.1"
-path = "../native/build/libs/log-native-2.7.1.jar"
+version = "2.8.0"
+path = "../native/build/libs/log-native-2.8.0-SNAPSHOT.jar"
 
 [[platform.java11.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "log-test-utils"
-version = "2.7.1"
-path = "../test-utils/build/libs/log-test-utils-2.7.1.jar"
+version = "2.8.0"
+path = "../test-utils/build/libs/log-test-utils-2.8.0-SNAPSHOT.jar"
 scope = "testOnly"
