@@ -121,6 +121,7 @@ task copyTestOutputResources(type: Copy) {
     into("output") {
         from "tests/resources/samples/file-write-output/output"
     }
+    dependsOn ':log-integration-tests:jar'
 }
 
 task ballerinaIntegrationTests {
