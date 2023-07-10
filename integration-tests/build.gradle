@@ -126,6 +126,8 @@ task copyTestOutputResources(type: Copy) {
 
 task ballerinaIntegrationTests {
     inputs.dir file(project.projectDir)
+    dependsOn(compileTestJava)
+    dependsOn(processTestResources)
     dependsOn(copyToLib)
     dependsOn(copyTestResources)
     dependsOn(copyTestOutputResources)
