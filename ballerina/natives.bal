@@ -266,7 +266,8 @@ isolated function escape(string msg) returns string {
 
 isolated function replaceString(handle receiver, handle target, handle replacement) returns handle = @java:Method {
     'class: "java.lang.String",
-    name: "replace"
+    name: "replace",
+    paramTypes: ["java.lang.CharSequence", "java.lang.CharSequence"]
 } external;
 
 isolated function isLogLevelEnabled(string logLevel, string moduleName) returns boolean {
