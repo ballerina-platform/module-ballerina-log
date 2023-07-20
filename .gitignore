@@ -24,7 +24,12 @@ hs_err_pid*
 
 build
 .gradle/
+.vscode/
 target
+
+integration-tests/Ballerina.toml
+integration-tests/Dependencies.toml
+
 # IDEA Files
 .idea/
 *.iml
