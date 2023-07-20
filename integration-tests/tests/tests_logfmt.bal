@@ -46,25 +46,25 @@ const string CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_LOGFMT = "tests/res
 const string CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_LOGFMT = "tests/resources/config/logfmt/log-project/global-and-module/Config.toml";
 const string CONFIG_OBSERVABILITY_PROJECT_LOGFMT = "tests/resources/config/logfmt/observability-project/Config.toml";
 
-const string MESSAGE_ERROR_LOGFMT = " level = ERROR module = \"\" message = \"error log\"";
-const string MESSAGE_WARN_LOGFMT = " level = WARN module = \"\" message = \"warn log\"";
-const string MESSAGE_INFO_LOGFMT = " level = INFO module = \"\" message = \"info log\"";
-const string MESSAGE_DEBUG_LOGFMT = " level = DEBUG module = \"\" message = \"debug log\"";
+const string MESSAGE_ERROR_LOGFMT = " level=ERROR module=\"\" message=\"error log\"";
+const string MESSAGE_WARN_LOGFMT = " level=WARN module=\"\" message=\"warn log\"";
+const string MESSAGE_INFO_LOGFMT = " level=INFO module=\"\" message=\"info log\"";
+const string MESSAGE_DEBUG_LOGFMT = " level=DEBUG module=\"\" message=\"debug log\"";
 
-const string MESSAGE_ERROR_MAIN_LOGFMT = " level = ERROR module = myorg/myproject message = \"error log\\t\\n\\r\\\\\\\"\"";
-const string MESSAGE_WARN_MAIN_LOGFMT = " level = WARN module = myorg/myproject message = \"warn log\\t\\n\\r\\\\\\\"\"";
-const string MESSAGE_INFO_MAIN_LOGFMT = " level = INFO module = myorg/myproject message = \"info log\\t\\n\\r\\\\\\\"\"";
-const string MESSAGE_DEBUG_MAIN_LOGFMT = " level = DEBUG module = myorg/myproject message = \"debug log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_ERROR_MAIN_LOGFMT = " level=ERROR module=myorg/myproject message=\"error log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_WARN_MAIN_LOGFMT = " level=WARN module=myorg/myproject message=\"warn log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_INFO_MAIN_LOGFMT = " level=INFO module=myorg/myproject message=\"info log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_DEBUG_MAIN_LOGFMT = " level=DEBUG module=myorg/myproject message=\"debug log\\t\\n\\r\\\\\\\"\"";
 
-const string MESSAGE_ERROR_FOO_LOGFMT = " level = ERROR module = myorg/myproject.foo message = \"error log\\t\\n\\r\\\\\\\"\"";
-const string MESSAGE_WARN_FOO_LOGFMT = " level = WARN module = myorg/myproject.foo message = \"warn log\\t\\n\\r\\\\\\\"\"";
-const string MESSAGE_INFO_FOO_LOGFMT = " level = INFO module = myorg/myproject.foo message = \"info log\\t\\n\\r\\\\\\\"\"";
-const string MESSAGE_DEBUG_FOO_LOGFMT = " level = DEBUG module = myorg/myproject.foo message = \"debug log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_ERROR_FOO_LOGFMT = " level=ERROR module=myorg/myproject.foo message=\"error log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_WARN_FOO_LOGFMT = " level=WARN module=myorg/myproject.foo message=\"warn log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_INFO_FOO_LOGFMT = " level=INFO module=myorg/myproject.foo message=\"info log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_DEBUG_FOO_LOGFMT = " level=DEBUG module=myorg/myproject.foo message=\"debug log\\t\\n\\r\\\\\\\"\"";
 
-const string MESSAGE_ERROR_BAR_LOGFMT = " level = ERROR module = myorg/myproject.bar message = \"error log\\t\\n\\r\\\\\\\"\"";
-const string MESSAGE_WARN_BAR_LOGFMT = " level = WARN module = myorg/myproject.bar message = \"warn log\\t\\n\\r\\\\\\\"\"";
-const string MESSAGE_INFO_BAR_LOGFMT = " level = INFO module = myorg/myproject.bar message = \"info log\\t\\n\\r\\\\\\\"\"";
-const string MESSAGE_DEBUG_BAR_LOGFMT = " level = DEBUG module = myorg/myproject.bar message = \"debug log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_ERROR_BAR_LOGFMT = " level=ERROR module=myorg/myproject.bar message=\"error log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_WARN_BAR_LOGFMT = " level=WARN module=myorg/myproject.bar message=\"warn log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_INFO_BAR_LOGFMT = " level=INFO module=myorg/myproject.bar message=\"info log\\t\\n\\r\\\\\\\"\"";
+const string MESSAGE_DEBUG_BAR_LOGFMT = " level=DEBUG module=myorg/myproject.bar message=\"debug log\\t\\n\\r\\\\\\\"\"";
 
 configurable string bal_exec_path = ?;
 configurable string temp_dir_path = ?;
@@ -80,14 +80,14 @@ public function testPrintDebugLogfmt() returns error? {
     string outText = check sc.read(100000);
     string[] logLines = re`\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[5], " level = DEBUG module = \"\" message = \"debug log\"");
-    validateLog(logLines[6], " level = DEBUG module = \"\" message = \"debug log\" username = \"Alex92\" id = 845315 foo = true");
-    validateLog(logLines[7], " level = DEBUG module = \"\" message = \"debug log\" username = \"Alex92\" id = 845315");
-    validateLog(logLines[8], " level = DEBUG module = \"\" message = \"debug log\" error = \"bad sad\"");
-    validateLog(logLines[9], " level = DEBUG module = \"\" message = \"debug log\" error = \"bad sad\" username = \"Alex92\" id = 845315 foo = true");
-    validateLog(logLines[10], " level = DEBUG module = \"\" message = \"debug log\\t\\n\\r\\\\\\\"\" username = \"Alex92\\t\\n\\r\\\\\\\"\"");
-    validateLog(logLines[11], " level = DEBUG module = \"\" message = \"debug log\" stackTrace = [\"callableName: f3  fileName: debug.bal lineNumber: 48\",\"callableName: f2  fileName: debug.bal lineNumber: 44\",\"callableName: f1  fileName: debug.bal lineNumber: 40\",\"callableName: main  fileName: debug.bal lineNumber: 29\"] username = \"Alex92\" id = 845315");
-    validateLog(logLines[12], " level = DEBUG module = \"\" message = \"debug log\" error = {\"code\":403,\"details\":\"Authentication failed\"}");
+    validateLog(logLines[5], " level=DEBUG module=\"\" message=\"debug log\"");
+    validateLog(logLines[6], " level=DEBUG module=\"\" message=\"debug log\" username=\"Alex92\" id=845315 foo=true");
+    validateLog(logLines[7], " level=DEBUG module=\"\" message=\"debug log\" username=\"Alex92\" id=845315");
+    validateLog(logLines[8], " level=DEBUG module=\"\" message=\"debug log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"debug.bal\",\"lineNumber\":22}]}");
+    validateLog(logLines[9], " level=DEBUG module=\"\" message=\"debug log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"debug.bal\",\"lineNumber\":22}]} username=\"Alex92\" id=845315 foo=true");
+    validateLog(logLines[10], " level=DEBUG module=\"\" message=\"debug log\\t\\n\\r\\\\\\\"\" username=\"Alex92\\t\\n\\r\\\\\\\"\"");
+    validateLog(logLines[11], " level=DEBUG module=\"\" message=\"debug log\" stackTrace=[\"callableName: f3  fileName: debug.bal lineNumber: 48\",\"callableName: f2  fileName: debug.bal lineNumber: 44\",\"callableName: f1  fileName: debug.bal lineNumber: 40\",\"callableName: main  fileName: debug.bal lineNumber: 29\"] username=\"Alex92\" id=845315");
+    validateLog(logLines[12], " level=DEBUG module=\"\" message=\"debug log\" error={\"causes\":[],\"message\":{\"code\":403,\"details\":\"Authentication failed\"},\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"debug.bal\",\"lineNumber\":35}]}");
 }
 
 @test:Config {}
@@ -101,14 +101,14 @@ public function testPrintErrorLogfmt() returns error? {
     string outText = check sc.read(100000);
     string[] logLines = re`\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[5], " level = ERROR module = \"\" message = \"error log\"");
-    validateLog(logLines[6], " level = ERROR module = \"\" message = \"error log\" username = \"Alex92\" id = 845315 foo = true");
-    validateLog(logLines[7], " level = ERROR module = \"\" message = \"error log\" username = \"Alex92\" id = 845315");
-    validateLog(logLines[8], " level = ERROR module = \"\" message = \"error log\" error = \"bad sad\"");
-    validateLog(logLines[9], " level = ERROR module = \"\" message = \"error log\" error = \"bad sad\" username = \"Alex92\" id = 845315 foo = true");
-    validateLog(logLines[10], " level = ERROR module = \"\" message = \"error log\\t\\n\\r\\\\\\\"\" username = \"Alex92\\t\\n\\r\\\\\\\"\"");
-    validateLog(logLines[11], " level = ERROR module = \"\" message = \"error log\" stackTrace = [\"callableName: f3  fileName: error.bal lineNumber: 48\",\"callableName: f2  fileName: error.bal lineNumber: 44\",\"callableName: f1  fileName: error.bal lineNumber: 40\",\"callableName: main  fileName: error.bal lineNumber: 29\"] username = \"Alex92\" id = 845315");
-    validateLog(logLines[12], " level = ERROR module = \"\" message = \"error log\" error = {\"code\":403,\"details\":\"Authentication failed\"}");
+    validateLog(logLines[5], " level=ERROR module=\"\" message=\"error log\"");
+    validateLog(logLines[6], " level=ERROR module=\"\" message=\"error log\" username=\"Alex92\" id=845315 foo=true");
+    validateLog(logLines[7], " level=ERROR module=\"\" message=\"error log\" username=\"Alex92\" id=845315");
+    validateLog(logLines[8], " level=ERROR module=\"\" message=\"error log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"error.bal\",\"lineNumber\":22}]}");
+    validateLog(logLines[9], " level=ERROR module=\"\" message=\"error log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"error.bal\",\"lineNumber\":22}]} username=\"Alex92\" id=845315 foo=true");
+    validateLog(logLines[10], " level=ERROR module=\"\" message=\"error log\\t\\n\\r\\\\\\\"\" username=\"Alex92\\t\\n\\r\\\\\\\"\"");
+    validateLog(logLines[11], " level=ERROR module=\"\" message=\"error log\" stackTrace=[\"callableName: f3  fileName: error.bal lineNumber: 48\",\"callableName: f2  fileName: error.bal lineNumber: 44\",\"callableName: f1  fileName: error.bal lineNumber: 40\",\"callableName: main  fileName: error.bal lineNumber: 29\"] username=\"Alex92\" id=845315");
+    validateLog(logLines[12], " level=ERROR module=\"\" message=\"error log\" error={\"causes\":[],\"message\":{\"code\":403,\"details\":\"Authentication failed\"},\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"error.bal\",\"lineNumber\":35}]}");
 }
 
 @test:Config {}
@@ -122,14 +122,14 @@ public function testPrintInfoLogfmt() returns error? {
     string outText = check sc.read(100000);
     string[] logLines = re`\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[5], " level = INFO module = \"\" message = \"info log\"");
-    validateLog(logLines[6], " level = INFO module = \"\" message = \"info log\" username = \"Alex92\" id = 845315 foo = true");
-    validateLog(logLines[7], " level = INFO module = \"\" message = \"info log\" username = \"Alex92\" id = 845315");
-    validateLog(logLines[8], " level = INFO module = \"\" message = \"info log\" error = \"bad sad\"");
-    validateLog(logLines[9], " level = INFO module = \"\" message = \"info log\" error = \"bad sad\" username = \"Alex92\" id = 845315 foo = true");
-    validateLog(logLines[10], " level = INFO module = \"\" message = \"info log\\t\\n\\r\\\\\\\"\" username = \"Alex92\\t\\n\\r\\\\\\\"\"");
-    validateLog(logLines[11], " level = INFO module = \"\" message = \"info log\" stackTrace = [\"callableName: f3  fileName: info.bal lineNumber: 48\",\"callableName: f2  fileName: info.bal lineNumber: 44\",\"callableName: f1  fileName: info.bal lineNumber: 40\",\"callableName: main  fileName: info.bal lineNumber: 29\"] username = \"Alex92\" id = 845315");
-    validateLog(logLines[12], " level = INFO module = \"\" message = \"info log\" error = {\"code\":403,\"details\":\"Authentication failed\"}");
+    validateLog(logLines[5], " level=INFO module=\"\" message=\"info log\"");
+    validateLog(logLines[6], " level=INFO module=\"\" message=\"info log\" username=\"Alex92\" id=845315 foo=true");
+    validateLog(logLines[7], " level=INFO module=\"\" message=\"info log\" username=\"Alex92\" id=845315");
+    validateLog(logLines[8], " level=INFO module=\"\" message=\"info log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"info.bal\",\"lineNumber\":22}]}");
+    validateLog(logLines[9], " level=INFO module=\"\" message=\"info log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"info.bal\",\"lineNumber\":22}]} username=\"Alex92\" id=845315 foo=true");
+    validateLog(logLines[10], " level=INFO module=\"\" message=\"info log\\t\\n\\r\\\\\\\"\" username=\"Alex92\\t\\n\\r\\\\\\\"\"");
+    validateLog(logLines[11], " level=INFO module=\"\" message=\"info log\" stackTrace=[\"callableName: f3  fileName: info.bal lineNumber: 48\",\"callableName: f2  fileName: info.bal lineNumber: 44\",\"callableName: f1  fileName: info.bal lineNumber: 40\",\"callableName: main  fileName: info.bal lineNumber: 29\"] username=\"Alex92\" id=845315");
+    validateLog(logLines[12], " level=INFO module=\"\" message=\"info log\" error={\"causes\":[],\"message\":{\"code\":403,\"details\":\"Authentication failed\"},\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"info.bal\",\"lineNumber\":35}]}");
 }
 
 @test:Config {}
@@ -143,14 +143,14 @@ public function testPrintWarnLogfmt() returns error? {
     string outText = check sc.read(100000);
     string[] logLines = re`\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
-    validateLog(logLines[5], " level = WARN module = \"\" message = \"warn log\"");
-    validateLog(logLines[6], " level = WARN module = \"\" message = \"warn log\" username = \"Alex92\" id = 845315 foo = true");
-    validateLog(logLines[7], " level = WARN module = \"\" message = \"warn log\" username = \"Alex92\" id = 845315");
-    validateLog(logLines[8], " level = WARN module = \"\" message = \"warn log\" error = \"bad sad\"");
-    validateLog(logLines[9], " level = WARN module = \"\" message = \"warn log\" error = \"bad sad\" username = \"Alex92\" id = 845315 foo = true");
-    validateLog(logLines[10], " level = WARN module = \"\" message = \"warn log\\t\\n\\r\\\\\\\"\" username = \"Alex92\\t\\n\\r\\\\\\\"\"");
-    validateLog(logLines[11], " level = WARN module = \"\" message = \"warn log\" stackTrace = [\"callableName: f3  fileName: warn.bal lineNumber: 48\",\"callableName: f2  fileName: warn.bal lineNumber: 44\",\"callableName: f1  fileName: warn.bal lineNumber: 40\",\"callableName: main  fileName: warn.bal lineNumber: 29\"] username = \"Alex92\" id = 845315");
-    validateLog(logLines[12], " level = WARN module = \"\" message = \"warn log\" error = {\"code\":403,\"details\":\"Authentication failed\"}");
+    validateLog(logLines[5], " level=WARN module=\"\" message=\"warn log\"");
+    validateLog(logLines[6], " level=WARN module=\"\" message=\"warn log\" username=\"Alex92\" id=845315 foo=true");
+    validateLog(logLines[7], " level=WARN module=\"\" message=\"warn log\" username=\"Alex92\" id=845315");
+    validateLog(logLines[8], " level=WARN module=\"\" message=\"warn log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"warn.bal\",\"lineNumber\":22}]}");
+    validateLog(logLines[9], " level=WARN module=\"\" message=\"warn log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"warn.bal\",\"lineNumber\":22}]} username=\"Alex92\" id=845315 foo=true");
+    validateLog(logLines[10], " level=WARN module=\"\" message=\"warn log\\t\\n\\r\\\\\\\"\" username=\"Alex92\\t\\n\\r\\\\\\\"\"");
+    validateLog(logLines[11], " level=WARN module=\"\" message=\"warn log\" stackTrace=[\"callableName: f3  fileName: warn.bal lineNumber: 48\",\"callableName: f2  fileName: warn.bal lineNumber: 44\",\"callableName: f1  fileName: warn.bal lineNumber: 40\",\"callableName: main  fileName: warn.bal lineNumber: 29\"] username=\"Alex92\" id=845315");
+    validateLog(logLines[12], " level=WARN module=\"\" message=\"warn log\" error={\"causes\":[],\"message\":{\"code\":403,\"details\":\"Authentication failed\"},\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"warn.bal\",\"lineNumber\":35}]}");
 }
 
 @test:Config {}
@@ -318,10 +318,10 @@ public function testObservabilityLogfmt() returns error? {
     string outText2 = check sc2.read(100000);
     string[] ioLines = re`\n`.split(outText2.trim());
     string spanContext = ioLines[1];
-    validateLog(logLines[5], string ` level = ERROR module = myorg/myproject message = "error log" ${spanContext}`);
-    validateLog(logLines[6], string ` level = WARN module = myorg/myproject message = "warn log" ${spanContext}`);
-    validateLog(logLines[7], string ` level = INFO module = myorg/myproject message = "info log" ${spanContext}`);
-    validateLog(logLines[8], string ` level = DEBUG module = myorg/myproject message = "debug log" ${spanContext}`);
+    validateLog(logLines[5], string ` level=ERROR module=myorg/myproject message="error log" ${spanContext}`);
+    validateLog(logLines[6], string ` level=WARN module=myorg/myproject message="warn log" ${spanContext}`);
+    validateLog(logLines[7], string ` level=INFO module=myorg/myproject message="info log" ${spanContext}`);
+    validateLog(logLines[8], string ` level=DEBUG module=myorg/myproject message="debug log" ${spanContext}`);
 }
 
 @test:Config {}
@@ -355,7 +355,7 @@ public function testSetOutputFileSingleFileAppendLogfmt() returns error? {
     test:assertTrue(fileWriteOutputLines is string[]);
     if fileWriteOutputLines is string[] {
         test:assertEquals(fileWriteOutputLines.length(), 5, INCORRECT_NUMBER_OF_LINES);
-        validateLog(fileWriteOutputLines[0], " level = INFO module = \"\" message = \"info log 0\"");
+        validateLog(fileWriteOutputLines[0], " level=INFO module=\"\" message=\"info log 0\"");
         validateLog(fileWriteOutputLines[1], MESSAGE_ERROR_LOGFMT);
         validateLog(fileWriteOutputLines[2], MESSAGE_WARN_LOGFMT);
         validateLog(fileWriteOutputLines[3], MESSAGE_INFO_LOGFMT);
@@ -425,7 +425,7 @@ public function testSetOutputFileProjectAppendLogfmt() returns error? {
     test:assertTrue(fileWriteOutputLines is string[]);
     if fileWriteOutputLines is string[] {
         test:assertEquals(fileWriteOutputLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
-        validateLog(fileWriteOutputLines[0], " level = INFO module = \"\" message = \"info log 0\"");
+        validateLog(fileWriteOutputLines[0], " level=INFO module=\"\" message=\"info log 0\"");
         validateLog(fileWriteOutputLines[1], MESSAGE_ERROR_MAIN_LOGFMT);
         validateLog(fileWriteOutputLines[2], MESSAGE_WARN_MAIN_LOGFMT);
         validateLog(fileWriteOutputLines[3], MESSAGE_INFO_MAIN_LOGFMT);
@@ -453,7 +453,7 @@ public function testSetOutputFileProjectAppendLogfmt2() returns error? {
     test:assertTrue(fileWriteOutputLines is string[]);
     if fileWriteOutputLines is string[] {
         test:assertEquals(fileWriteOutputLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
-        validateLog(fileWriteOutputLines[0], " level = INFO module = \"\" message = \"info log 0\"");
+        validateLog(fileWriteOutputLines[0], " level=INFO module=\"\" message=\"info log 0\"");
         validateLog(fileWriteOutputLines[1], MESSAGE_ERROR_FOO_LOGFMT);
         validateLog(fileWriteOutputLines[2], MESSAGE_WARN_FOO_LOGFMT);
         validateLog(fileWriteOutputLines[3], MESSAGE_INFO_FOO_LOGFMT);
@@ -466,8 +466,8 @@ public function testSetOutputFileProjectAppendLogfmt2() returns error? {
 }
 
 isolated function validateLog(string log, string output) {
-    test:assertTrue(log.includes("time ="), "log does not contain the time");
-    test:assertTrue(log.includes(output), "log does not contain the required output");
+    test:assertTrue(log.includes("time="), "log does not contain the time");
+    test:assertTrue(log.includes(output), string `log: ${log} does not contain the output: ${output}`);
 }
 
 function exec(@untainted string command, @untainted map<string> env = {},
