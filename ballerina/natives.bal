@@ -298,7 +298,7 @@ isolated function printLogFmt(LogRecord logRecord) returns string {
                 value = v.toBalString();
             }
             _ => {
-                value = v is string ? escape(v).toBalString() : v.toString();
+                value = v is string ? string `${escape(v.toString())}` : v.toString();
             }
         }
         if message == "" {
@@ -318,7 +318,7 @@ isolated function escape(string msg) returns string {
     temp = replaceString(temp, java:fromString("'"), java:fromString("\\'"));
     temp = replaceString(temp, java:fromString("\""), java:fromString("\\\""));
     string? updatedString = java:toString(temp);
-    return updatedString is string ? updatedString : msg;
+    return updatedString.toBalString();
 }
 
 isolated function replaceString(handle receiver, handle target, handle replacement) returns handle = @java:Method {
