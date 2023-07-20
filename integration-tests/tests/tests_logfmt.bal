@@ -83,14 +83,10 @@ public function testPrintDebugLogfmt() returns error? {
     validateLog(logLines[5], " level=DEBUG module=\"\" message=\"debug log\"");
     validateLog(logLines[6], " level=DEBUG module=\"\" message=\"debug log\" username=\"Alex92\" id=845315 foo=true");
     validateLog(logLines[7], " level=DEBUG module=\"\" message=\"debug log\" username=\"Alex92\" id=845315");
-    //io:println(logLines[8]);
     validateLog(logLines[8], " level=DEBUG module=\"\" message=\"debug log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"debug.bal\",\"lineNumber\":22}]}");
-    //io:println(logLines[9]);
     validateLog(logLines[9], " level=DEBUG module=\"\" message=\"debug log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"debug.bal\",\"lineNumber\":22}]} username=\"Alex92\" id=845315 foo=true");
-    //io:println(logLines[10]);
     validateLog(logLines[10], " level=DEBUG module=\"\" message=\"debug log\\t\\n\\r\\\\\\\"\" username=\"Alex92\\t\\n\\r\\\\\\\"\"");
     validateLog(logLines[11], " level=DEBUG module=\"\" message=\"debug log\" stackTrace=[\"callableName: f3  fileName: debug.bal lineNumber: 48\",\"callableName: f2  fileName: debug.bal lineNumber: 44\",\"callableName: f1  fileName: debug.bal lineNumber: 40\",\"callableName: main  fileName: debug.bal lineNumber: 29\"] username=\"Alex92\" id=845315");
-    //io:println(logLines[12]);
     validateLog(logLines[12], " level=DEBUG module=\"\" message=\"debug log\" error={\"causes\":[],\"message\":{\"code\":403,\"details\":\"Authentication failed\"},\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"debug.bal\",\"lineNumber\":35}]}");
 }
 
@@ -108,13 +104,10 @@ public function testPrintErrorLogfmt() returns error? {
     validateLog(logLines[5], " level=ERROR module=\"\" message=\"error log\"");
     validateLog(logLines[6], " level=ERROR module=\"\" message=\"error log\" username=\"Alex92\" id=845315 foo=true");
     validateLog(logLines[7], " level=ERROR module=\"\" message=\"error log\" username=\"Alex92\" id=845315");
-    //io:println(logLines[8]);
     validateLog(logLines[8], " level=ERROR module=\"\" message=\"error log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"error.bal\",\"lineNumber\":22}]}");
-    //io:println(logLines[9]);
     validateLog(logLines[9], " level=ERROR module=\"\" message=\"error log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"error.bal\",\"lineNumber\":22}]} username=\"Alex92\" id=845315 foo=true");
     validateLog(logLines[10], " level=ERROR module=\"\" message=\"error log\\t\\n\\r\\\\\\\"\" username=\"Alex92\\t\\n\\r\\\\\\\"\"");
     validateLog(logLines[11], " level=ERROR module=\"\" message=\"error log\" stackTrace=[\"callableName: f3  fileName: error.bal lineNumber: 48\",\"callableName: f2  fileName: error.bal lineNumber: 44\",\"callableName: f1  fileName: error.bal lineNumber: 40\",\"callableName: main  fileName: error.bal lineNumber: 29\"] username=\"Alex92\" id=845315");
-    //io:println(logLines[12]);
     validateLog(logLines[12], " level=ERROR module=\"\" message=\"error log\" error={\"causes\":[],\"message\":{\"code\":403,\"details\":\"Authentication failed\"},\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"error.bal\",\"lineNumber\":35}]}");
 }
 
@@ -132,13 +125,10 @@ public function testPrintInfoLogfmt() returns error? {
     validateLog(logLines[5], " level=INFO module=\"\" message=\"info log\"");
     validateLog(logLines[6], " level=INFO module=\"\" message=\"info log\" username=\"Alex92\" id=845315 foo=true");
     validateLog(logLines[7], " level=INFO module=\"\" message=\"info log\" username=\"Alex92\" id=845315");
-    //io:println(logLines[8]);
     validateLog(logLines[8], " level=INFO module=\"\" message=\"info log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"info.bal\",\"lineNumber\":22}]}");
-    //io:println(logLines[9]);
     validateLog(logLines[9], " level=INFO module=\"\" message=\"info log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"info.bal\",\"lineNumber\":22}]} username=\"Alex92\" id=845315 foo=true");
     validateLog(logLines[10], " level=INFO module=\"\" message=\"info log\\t\\n\\r\\\\\\\"\" username=\"Alex92\\t\\n\\r\\\\\\\"\"");
     validateLog(logLines[11], " level=INFO module=\"\" message=\"info log\" stackTrace=[\"callableName: f3  fileName: info.bal lineNumber: 48\",\"callableName: f2  fileName: info.bal lineNumber: 44\",\"callableName: f1  fileName: info.bal lineNumber: 40\",\"callableName: main  fileName: info.bal lineNumber: 29\"] username=\"Alex92\" id=845315");
-    //io:println(logLines[12]);
     validateLog(logLines[12], " level=INFO module=\"\" message=\"info log\" error={\"causes\":[],\"message\":{\"code\":403,\"details\":\"Authentication failed\"},\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"info.bal\",\"lineNumber\":35}]}");
 }
 
@@ -156,13 +146,10 @@ public function testPrintWarnLogfmt() returns error? {
     validateLog(logLines[5], " level=WARN module=\"\" message=\"warn log\"");
     validateLog(logLines[6], " level=WARN module=\"\" message=\"warn log\" username=\"Alex92\" id=845315 foo=true");
     validateLog(logLines[7], " level=WARN module=\"\" message=\"warn log\" username=\"Alex92\" id=845315");
-    //io:println(logLines[8]);
     validateLog(logLines[8], " level=WARN module=\"\" message=\"warn log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"warn.bal\",\"lineNumber\":22}]}");
-    //io:println(logLines[9]);
     validateLog(logLines[9], " level=WARN module=\"\" message=\"warn log\" error={\"causes\":[],\"message\":\"bad sad\",\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"warn.bal\",\"lineNumber\":22}]} username=\"Alex92\" id=845315 foo=true");
     validateLog(logLines[10], " level=WARN module=\"\" message=\"warn log\\t\\n\\r\\\\\\\"\" username=\"Alex92\\t\\n\\r\\\\\\\"\"");
     validateLog(logLines[11], " level=WARN module=\"\" message=\"warn log\" stackTrace=[\"callableName: f3  fileName: warn.bal lineNumber: 48\",\"callableName: f2  fileName: warn.bal lineNumber: 44\",\"callableName: f1  fileName: warn.bal lineNumber: 40\",\"callableName: main  fileName: warn.bal lineNumber: 29\"] username=\"Alex92\" id=845315");
-    //io:println(logLines[12]);
     validateLog(logLines[12], " level=WARN module=\"\" message=\"warn log\" error={\"causes\":[],\"message\":{\"code\":403,\"details\":\"Authentication failed\"},\"detail\":{},\"stackTrace\":[{\"callableName\":\"main\",\"moduleName\":(),\"fileName\":\"warn.bal\",\"lineNumber\":35}]}");
 }
 
