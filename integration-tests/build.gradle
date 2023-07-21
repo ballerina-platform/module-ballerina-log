@@ -161,7 +161,5 @@ test {
 ballerinaIntegrationTests.dependsOn ":log-ballerina:build"
 ballerinaIntegrationTests.dependsOn updateTomlVerions
 ballerinaIntegrationTests.dependsOn compileJava
-ballerinaIntegrationTests.dependsOn jar
 ballerinaIntegrationTests.dependsOn processResources
-jar.dependsOn copyTestOutputResources
 build.dependsOn test
