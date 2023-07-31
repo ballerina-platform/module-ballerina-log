@@ -121,10 +121,13 @@ task copyTestOutputResources(type: Copy) {
     into("output") {
         from "tests/resources/samples/file-write-output/output"
     }
+    dependsOn ':log-integration-tests:jar'
 }
 
 task ballerinaIntegrationTests {
     inputs.dir file(project.projectDir)
+    dependsOn(compileTestJava)
+    dependsOn(processTestResources)
     dependsOn(copyToLib)
     dependsOn(copyTestResources)
     dependsOn(copyTestOutputResources)
@@ -158,7 +161,5 @@ test {
 ballerinaIntegrationTests.dependsOn ":log-ballerina:build"
 ballerinaIntegrationTests.dependsOn updateTomlVerions
 ballerinaIntegrationTests.dependsOn compileJava
-ballerinaIntegrationTests.dependsOn jar
 ballerinaIntegrationTests.dependsOn processResources
-jar.dependsOn copyTestOutputResources
 build.dependsOn test
