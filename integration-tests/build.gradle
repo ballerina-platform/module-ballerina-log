@@ -28,7 +28,7 @@ def tempDir = File.createTempDir()
 def tmpDir = "build/tmp";
 def originalBallerinaTOMLFile = ballerinaConfigFile.text
 def originalConfigTOMLFile = configTOMLFile.text
-def nativeFlag = ""
+def graalvmFlag = ""
 
 def stripBallerinaExtensionVersion(String extVersion) {
     if (extVersion.matches(project.ext.timestampedVersionRegex)) {
@@ -121,10 +121,13 @@ task copyTestOutputResources(type: Copy) {
     into("output") {
         from "tests/resources/samples/file-write-output/output"
     }
+    dependsOn ':log-integration-tests:jar'
 }
 
 task ballerinaIntegrationTests {
     inputs.dir file(project.projectDir)
+    dependsOn(compileTestJava)
+    dependsOn(processTestResources)
     dependsOn(copyToLib)
     dependsOn(copyTestResources)
     dependsOn(copyTestOutputResources)
@@ -132,8 +135,8 @@ task ballerinaIntegrationTests {
     dependsOn(updateTomlVerions)
     finalizedBy(revertTomlFile)
 
-    if (project.hasProperty('balNativeTest')) {
-        nativeFlag = '--native'
+    if (project.hasProperty('balGraalVMTest')) {
+        graalvmFlag = '--graalvm'
     }
     doLast {
         def distributionBinPath =  "$project.rootDir/target/ballerina-runtime/bin"
@@ -143,9 +146,9 @@ task ballerinaIntegrationTests {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                commandLine 'cmd', '/c', "$distributionBinPath/bal.bat test ${nativeFlag} --offline && exit %%ERRORLEVEL%%"
+                commandLine 'cmd', '/c', "$distributionBinPath/bal.bat test ${graalvmFlag} --offline && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "$distributionBinPath/bal test ${nativeFlag} --offline --code-coverage --includes=*"
+                commandLine 'sh', '-c', "$distributionBinPath/bal test ${graalvmFlag} --offline --code-coverage --includes=*"
             }
         }
     }
@@ -157,4 +160,6 @@ test {
 
 ballerinaIntegrationTests.dependsOn ":log-ballerina:build"
 ballerinaIntegrationTests.dependsOn updateTomlVerions
+ballerinaIntegrationTests.dependsOn compileJava
+ballerinaIntegrationTests.dependsOn processResources
 build.dependsOn test

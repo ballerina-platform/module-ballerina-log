@@ -16,8 +16,8 @@
 
 import ballerina/io;
 import ballerina/observe;
-import ballerina/lang.'value;
 import ballerina/jballerina.java;
+import ballerina/lang.value;
 
 # Represents log level types.
 enum LogLevel {
@@ -61,6 +61,7 @@ type LogRecord record {
     string level;
     string module;
     string message;
+    FullErrorDetails 'error?;
 };
 
 final map<int> & readonly logLevelWeight = {
@@ -176,12 +177,7 @@ isolated function print(string logLevel, string msg, error? err = (), error:Stac
         message: msg
     };
     if err is error {
-        json|error errMessage = value:fromJsonString(err.message());
-        if errMessage is json {
-            logRecord["error"] = errMessage;
-        } else {
-            logRecord["error"] = err.message();
-        }
+        logRecord.'error = getFullErrorDetails(err);
     }
     if stackTrace is error:StackFrame[] {
         json[] stackTraceArray = [];
@@ -212,6 +208,64 @@ isolated function print(string logLevel, string msg, error? err = (), error:Stac
     }
 }
 
+type StackFrame record {|
+    string callableName;
+    string? moduleName;
+    string fileName;
+    int lineNumber;
+|};
+
+type ErrorDetail record {|
+    json|string message;
+    json|string detail;
+    StackFrame[] stackTrace;
+|};
+
+type FullErrorDetails record {|
+    *ErrorDetail;
+    ErrorDetail[] causes;
+|};
+
+isolated function getFullErrorDetails(error err) returns FullErrorDetails {
+    ErrorDetail[] causes = [];
+    error? errCause = err.cause();
+
+    while errCause != () {
+        causes.push({message: parseErrorMessage(errCause.message()), stackTrace: parseStackTrace(errCause.stackTrace()), detail: parseErrorDetail(errCause.detail())});
+        errCause = errCause.cause();
+    }
+
+    return {message: parseErrorMessage(err.message()), stackTrace: parseStackTrace(err.stackTrace()), detail: parseErrorDetail(err.detail()), causes};
+}
+
+isolated function parseStackTrace(error:StackFrame[] stackTrace) returns StackFrame[] {
+    StackFrame[] stackFrames = [];
+    foreach error:StackFrame item in stackTrace {
+        java:StackFrameImpl stackFrameImpl = <java:StackFrameImpl>item;
+        StackFrame stackFrame = {
+            callableName: stackFrameImpl.callableName,
+            fileName: stackFrameImpl.fileName,
+            moduleName: stackFrameImpl.moduleName,
+            lineNumber: stackFrameImpl.lineNumber
+        };
+        stackFrames.push(stackFrame);
+    }
+    return stackFrames;
+}
+
+isolated function parseErrorMessage(string message) returns json|string {
+    json|error errMessage = value:fromJsonString(message);
+    if errMessage is json {
+        return errMessage;
+    } else {
+        return message;
+    }
+}
+
+isolated function parseErrorDetail(error:Detail detail) returns json|string {
+    return detail is anydata ? detail.toJson() : detail.toBalString();
+}
+
 isolated function fileWrite(string logOutput) {
     string output = logOutput;
     string? path = ();
@@ -240,14 +294,17 @@ isolated function printLogFmt(LogRecord logRecord) returns string {
                     value = "\"\"";
                 }
             }
+            "error" => {
+                value = v.toBalString();
+            }
             _ => {
                 value = v is string ? string `${escape(v.toString())}` : v.toString();
             }
         }
         if message == "" {
-            message = message + string `${k} = ${value}`;
+            message = message + string `${k}=${value}`;
         } else {
-            message = message + string ` ${k} = ${value}`;
+            message = message + string ` ${k}=${value}`;
         }
     }
     return message;
@@ -266,7 +323,8 @@ isolated function escape(string msg) returns string {
 
 isolated function replaceString(handle receiver, handle target, handle replacement) returns handle = @java:Method {
     'class: "java.lang.String",
-    name: "replace"
+    name: "replace",
+    paramTypes: ["java.lang.CharSequence", "java.lang.CharSequence"]
 } external;
 
 isolated function isLogLevelEnabled(string logLevel, string moduleName) returns boolean {

@@ -52,7 +52,7 @@ isolated function testPrintLogFmtExtern() {
         message: "debug message"
     };
     test:assertEquals(printLogFmt(logRecord1),
-    "time = 2021-05-04T10:32:13.220+05:30 level = DEBUG module = foo/bar message = \"debug message\"");
+    "time=2021-05-04T10:32:13.220+05:30 level=DEBUG module=foo/bar message=\"debug message\"");
     LogRecord logRecord2 = {
         time: "2021-05-04T10:32:13.220+05:30",
         level: "INFO",
@@ -60,7 +60,7 @@ isolated function testPrintLogFmtExtern() {
         message: "debug message"
     };
     test:assertEquals(printLogFmt(logRecord2),
-    "time = 2021-05-04T10:32:13.220+05:30 level = INFO module = foo/bar message = \"debug message\"");
+    "time=2021-05-04T10:32:13.220+05:30 level=INFO module=foo/bar message=\"debug message\"");
     LogRecord logRecord3 = {
         time: "2021-05-04T10:32:13.220+05:30",
         level: "DEBUG",
@@ -68,7 +68,7 @@ isolated function testPrintLogFmtExtern() {
         message: "debug message"
     };
     test:assertEquals(printLogFmt(logRecord3),
-    "time = 2021-05-04T10:32:13.220+05:30 level = DEBUG module = \"\" message = \"debug message\"");
+    "time=2021-05-04T10:32:13.220+05:30 level=DEBUG module=\"\" message=\"debug message\"");
     LogRecord logRecord4 = {
         time: "2021-05-04T10:32:13.220+05:30",
         level: "DEBUG",
@@ -78,7 +78,7 @@ isolated function testPrintLogFmtExtern() {
         "id": 845315
     };
     test:assertEquals(printLogFmt(logRecord4),
-    "time = 2021-05-04T10:32:13.220+05:30 level = DEBUG module = foo/bar message = \"debug message\" username = \"Alex\" id = 845315");
+    "time=2021-05-04T10:32:13.220+05:30 level=DEBUG module=foo/bar message=\"debug message\" username=\"Alex\" id=845315");
 }
 
 public isolated function main() {
