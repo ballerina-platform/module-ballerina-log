@@ -163,6 +163,8 @@ public function testErrorLevelLogfmt() returns error? {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
     string[] logLines = re`\n`.split(outText.trim());
+    io:println(outText.trim());
+    io:println(logLines.toBalString());
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], MESSAGE_ERROR_LOGFMT);
 }

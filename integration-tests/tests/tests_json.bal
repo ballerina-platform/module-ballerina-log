@@ -197,6 +197,8 @@ public function testDebugLevelJson() returns error? {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
     string[] logLines = re`\n`.split(outText.trim());
+    io:println(outText.trim());
+    io:println(logLines.toBalString());
     test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
     validateLogJson(logLines[6], MESSAGE_WARN_JSON);
