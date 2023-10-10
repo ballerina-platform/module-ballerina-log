@@ -215,7 +215,7 @@ public function testProjectWithoutLogLevelJson() returns error? {
     int _ = check result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
-    string outText =  re `Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8`.replaceAll(check sc.read(100000)), "");
+    string outText =  re `Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8`.replaceAll(check sc.read(100000), "");
     string[] logLines = re`\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 14, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_MAIN_JSON);
