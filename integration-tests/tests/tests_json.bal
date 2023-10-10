@@ -16,7 +16,6 @@
 
 import ballerina/lang.'value;
 import ballerina/io;
-import ballerina/os;
 import ballerina/test;
 
 const string CONFIG_DEBUG_JSON = "tests/resources/config/json/log-levels/debug/Config.toml";
@@ -58,8 +57,6 @@ const string MESSAGE_ERROR_BAR_JSON = "\", \"level\":\"ERROR\", \"module\":\"myo
 const string MESSAGE_WARN_BAR_JSON = "\", \"level\":\"WARN\", \"module\":\"myorg/myproject.bar\", \"message\":\"warn log\\t\\n\\r\\\\\\\"\"}";
 const string MESSAGE_INFO_BAR_JSON = "\", \"level\":\"INFO\", \"module\":\"myorg/myproject.bar\", \"message\":\"info log\\t\\n\\r\\\\\\\"\"}";
 const string MESSAGE_DEBUG_BAR_JSON = "\", \"level\":\"DEBUG\", \"module\":\"myorg/myproject.bar\", \"message\":\"debug log\\t\\n\\r\\\\\\\"\"}";
-
-boolean isWindows = os:getEnv("OS") != "";
 
 @test:Config {}
 public function testPrintDebugJson() returns error? {
@@ -200,8 +197,6 @@ public function testDebugLevelJson() returns error? {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
     string[] logLines = re`\n`.split(outText.trim());
-    io:println(outText.trim());
-    io:println(logLines.toBalString());
     test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
     validateLogJson(logLines[6], MESSAGE_WARN_JSON);
@@ -220,23 +215,16 @@ public function testProjectWithoutLogLevelJson() returns error? {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText =  check sc.read(100000);
     string[] logLines = re`\n`.split(outText.trim());
-    if (isWindows) {
-        test:assertEquals(logLines.length(), 16, INCORRECT_NUMBER_OF_LINES);
-        io:println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
-        io:println(logLines[0]);
-        validateLogJson(logLines[0], "Picked up JAVA_TOOL_OPTIONS: -Dfile.encoding=UTF8");
-    } else {
-        test:assertEquals(logLines.length(), 14, INCORRECT_NUMBER_OF_LINES);
-        validateLogJson(logLines[5], MESSAGE_ERROR_MAIN_JSON);
-        validateLogJson(logLines[6], MESSAGE_WARN_MAIN_JSON);
-        validateLogJson(logLines[7], MESSAGE_INFO_MAIN_JSON);
-        validateLogJson(logLines[8], MESSAGE_ERROR_FOO_JSON);
-        validateLogJson(logLines[9], MESSAGE_WARN_FOO_JSON);
-        validateLogJson(logLines[10], MESSAGE_INFO_FOO_JSON);
-        validateLogJson(logLines[11], MESSAGE_ERROR_BAR_JSON);
-        validateLogJson(logLines[12], MESSAGE_WARN_BAR_JSON);
-        validateLogJson(logLines[13], MESSAGE_INFO_BAR_JSON);
-    }
+    test:assertEquals(logLines.length(), 14, INCORRECT_NUMBER_OF_LINES);
+    validateLogJson(logLines[5], MESSAGE_ERROR_MAIN_JSON);
+    validateLogJson(logLines[6], MESSAGE_WARN_MAIN_JSON);
+    validateLogJson(logLines[7], MESSAGE_INFO_MAIN_JSON);
+    validateLogJson(logLines[8], MESSAGE_ERROR_FOO_JSON);
+    validateLogJson(logLines[9], MESSAGE_WARN_FOO_JSON);
+    validateLogJson(logLines[10], MESSAGE_INFO_FOO_JSON);
+    validateLogJson(logLines[11], MESSAGE_ERROR_BAR_JSON);
+    validateLogJson(logLines[12], MESSAGE_WARN_BAR_JSON);
+    validateLogJson(logLines[13], MESSAGE_INFO_BAR_JSON);
 }
 
 @test:Config {}
