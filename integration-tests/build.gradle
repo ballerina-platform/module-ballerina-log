@@ -146,7 +146,7 @@ task ballerinaIntegrationTests {
             workingDir project.projectDir
             environment "JAVA_OPTS", "-DBALLERINA_DEV_COMPILE_BALLERINA_ORG=true"
             if (Os.isFamily(Os.FAMILY_WINDOWS)) {
-                System.clearProperty("JAVA_TOOL_OPTIONS");
+                environment.remove("JAVA_TOOL_OPTIONS")
                 commandLine 'cmd', '/c', "$distributionBinPath/bal.bat test ${graalvmFlag} --offline && exit %%ERRORLEVEL%%"
             } else {
                 commandLine 'sh', '-c', "$distributionBinPath/bal test ${graalvmFlag} --offline --code-coverage --includes=*"
