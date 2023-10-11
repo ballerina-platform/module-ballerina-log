@@ -16,7 +16,10 @@
 
 import ballerina/lang.'value;
 import ballerina/io;
+import ballerina/os;
 import ballerina/test;
+
+boolean isWindows = os:getEnv("OS") != "";
 
 const string CONFIG_DEBUG_JSON = "tests/resources/config/json/log-levels/debug/Config.toml";
 const string CONFIG_ERROR_JSON = "tests/resources/config/json/log-levels/error/Config.toml";
@@ -131,15 +134,19 @@ public function testPrintWarnJson() returns error? {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
     string[] logLines = re`\n`.split(outText.trim());
-    test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
-    validateLogJson(logLines[5], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\"}");
-    validateLogJson(logLines[6], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
-    validateLogJson(logLines[7], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"username\":\"Alex92\", \"id\":845315}");
-    validateLogJson(logLines[8], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":{\"causes\":[], \"message\":\"bad sad\", \"detail\":{}, \"stackTrace\":[{\"callableName\":\"main\", \"moduleName\":null, \"fileName\":\"warn.bal\", \"lineNumber\":22}]}}");
-    validateLogJson(logLines[9], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":{\"causes\":[], \"message\":\"bad sad\", \"detail\":{}, \"stackTrace\":[{\"callableName\":\"main\", \"moduleName\":null, \"fileName\":\"warn.bal\", \"lineNumber\":22}]}, \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
-    validateLogJson(logLines[10], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\\t\\n\\r\\\\\\\"\", \"username\":\"Alex92\\t\\n\\r\\\\\\\"\"}");
-    validateLogJson(logLines[11], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"stackTrace\":[\"callableName: f3  fileName: warn.bal lineNumber: 48\", \"callableName: f2  fileName: warn.bal lineNumber: 44\", \"callableName: f1  fileName: warn.bal lineNumber: 40\", \"callableName: main  fileName: warn.bal lineNumber: 29\"], \"username\":\"Alex92\", \"id\":845315}");
-    validateLogJson(logLines[12], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":{\"causes\":[], \"message\":{\"code\":403, \"details\":\"Authentication failed\"}, \"detail\":{}, \"stackTrace\":[{\"callableName\":\"main\", \"moduleName\":null, \"fileName\":\"warn.bal\", \"lineNumber\":35}]}}");
+    if (isWindows) {
+        test:assertEquals(logLines.length(), 15, INCORRECT_NUMBER_OF_LINES);
+    } else {
+        test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
+        validateLogJson(logLines[5], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\"}");
+        validateLogJson(logLines[6], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
+        validateLogJson(logLines[7], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"username\":\"Alex92\", \"id\":845315}");
+        validateLogJson(logLines[8], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":{\"causes\":[], \"message\":\"bad sad\", \"detail\":{}, \"stackTrace\":[{\"callableName\":\"main\", \"moduleName\":null, \"fileName\":\"warn.bal\", \"lineNumber\":22}]}}");
+        validateLogJson(logLines[9], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":{\"causes\":[], \"message\":\"bad sad\", \"detail\":{}, \"stackTrace\":[{\"callableName\":\"main\", \"moduleName\":null, \"fileName\":\"warn.bal\", \"lineNumber\":22}]}, \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
+        validateLogJson(logLines[10], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\\t\\n\\r\\\\\\\"\", \"username\":\"Alex92\\t\\n\\r\\\\\\\"\"}");
+        validateLogJson(logLines[11], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"stackTrace\":[\"callableName: f3  fileName: warn.bal lineNumber: 48\", \"callableName: f2  fileName: warn.bal lineNumber: 44\", \"callableName: f1  fileName: warn.bal lineNumber: 40\", \"callableName: main  fileName: warn.bal lineNumber: 29\"], \"username\":\"Alex92\", \"id\":845315}");
+        validateLogJson(logLines[12], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"error\":{\"causes\":[], \"message\":{\"code\":403, \"details\":\"Authentication failed\"}, \"detail\":{}, \"stackTrace\":[{\"callableName\":\"main\", \"moduleName\":null, \"fileName\":\"warn.bal\", \"lineNumber\":35}]}}");
+    }
 }
 
 @test:Config {}
