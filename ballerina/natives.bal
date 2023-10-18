@@ -20,7 +20,7 @@ import ballerina/jballerina.java;
 import ballerina/lang.value;
 
 # Represents log level types.
-enum LogLevel {
+public enum LogLevel {
     DEBUG,
     ERROR,
     INFO,
@@ -53,6 +53,9 @@ type Module record {
 configurable string format = "logfmt";
 configurable string level = "INFO";
 configurable table<Module> key(name) & readonly modules = table [];
+
+isolated string levelInternal = "INFO";
+isolated final table<Module> key(name) modulesInternal = table [];
 
 const string JSON_OUTPUT_FORMAT = "json";
 
@@ -166,6 +169,25 @@ public isolated function setOutputFile(string path, FileWriteOption option = APP
     }
     lock {
         outputFilePath = path;
+    }
+}
+
+# Modifies the root and module log level
+#
+# + logLevel - New log level to be set
+# + organization - Organization name
+# + module - Module name
+public function setLogLevel(LogLevel logLevel, string? organization = (), string? module = ()) {
+    // Set module log level
+    if (organization != () && module != ()) {
+        lock {
+            string moduleName = organization + "/" + module;
+            modulesInternal.put({ name: moduleName, level: logLevel });
+        }
+    } else {
+        lock {
+            levelInternal = logLevel;
+        }
     }
 }
 
@@ -328,13 +350,19 @@ isolated function replaceString(handle receiver, handle target, handle replaceme
 } external;
 
 isolated function isLogLevelEnabled(string logLevel, string moduleName) returns boolean {
-    string moduleLogLevel = level;
-    if modules.length() > 0 {
-        if modules.hasKey(moduleName) {
-            moduleLogLevel = modules.get(moduleName).level;
-        }
+    string moduleLogLevel;
+    lock {
+        moduleLogLevel = levelInternal;
     }
-    return logLevelWeight.get(logLevel) >= logLevelWeight.get(moduleLogLevel);
+
+    lock {
+        if modulesInternal.length() > 0 {
+            if modulesInternal.hasKey(moduleName) {
+                moduleLogLevel = modulesInternal.get(moduleName).level;
+            }
+        }
+        return logLevelWeight.get(logLevel) >= logLevelWeight.get(moduleLogLevel);
+    }
 }
 
 isolated function getModuleName(KeyValues keyValues) returns string {
