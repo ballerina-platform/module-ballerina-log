@@ -177,7 +177,7 @@ public isolated function setOutputFile(string path, FileWriteOption option = APP
 # + logLevel - New log level to be set
 # + organization - Organization name
 # + module - Module name
-public function setLogLevel(LogLevel logLevel, string? organization = (), string? module = ()) {
+public isolated function setLogLevel(LogLevel logLevel, string? organization = (), string? module = ()) {
     // Set module log level
     if (organization != () && module != ()) {
         lock {
