@@ -20,14 +20,26 @@ function init() returns error? {
     if(!(level is LogLevel)) {
        return  error(string `invalid log level: ${level}`);
     }
+    lock {
+        levelInternal = level;
+    }
+    
     boolean invalidModuleLogLevel = false;
     string invalidModule = "";
     string invalidLogLevel = "";
     modules.forEach(function(Module module) {
-        if (!(module.level is LogLevel)) {
+        string moduleName = module.name;
+        string moduleLevel = module.level;
+
+        if (!(moduleLevel is LogLevel)) {
             invalidModuleLogLevel = true;
-            invalidLogLevel = module.level;
-            invalidModule = module.name;
+            invalidLogLevel = moduleLevel;
+            invalidModule = moduleName;
+        }
+        else {
+            lock {
+                modulesInternal.put({ name: moduleName, level: moduleLevel});
+            }
         }
     });
     if invalidModuleLogLevel {
