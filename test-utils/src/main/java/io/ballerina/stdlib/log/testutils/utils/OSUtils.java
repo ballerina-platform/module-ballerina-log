@@ -25,7 +25,6 @@ import io.ballerina.runtime.api.values.BObject;
 import io.ballerina.runtime.api.values.BString;
 
 import java.io.IOException;
-import java.util.Objects;
 
 import static io.ballerina.stdlib.log.testutils.nativeimpl.ModuleUtils.getModule;
 import static io.ballerina.stdlib.log.testutils.utils.OSConstants.PROCESS_FIELD;
@@ -78,15 +77,5 @@ public class OSUtils {
 
     public static boolean isValidDateTime(BString dateTime) {
         return dateTime.substring(0, 23).getValue().matches("^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}.\\d{3}");
-    }
-
-    /**
-     * Get the environment variable value.
-     * @param key Environment variable key
-     * @return  Environment variable value
-     */
-    public static BString getEnv(BString key) {
-        String envValue = System.getenv(key.getValue());
-        return StringUtils.fromString(Objects.requireNonNullElse(envValue, ""));
     }
 }
