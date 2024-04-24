@@ -317,7 +317,12 @@ public function testObservabilityLogfmt() returns error? {
     io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
     string outText2 = check sc2.read(100000);
     string[] ioLines = re`\n`.split(outText2.trim());
-    string spanContext = ioLines[1];
+    string spanContext;
+    if (boolean:fromString(getEnvVal("CENTRAL_VERBOSE_ENABLED")) == true) {
+        spanContext = ioLines[ioLines.length() - 1]; // last line  
+    } else {
+        spanContext = ioLines[1];
+    }
     validateLog(logLines[5], string ` level=ERROR module=myorg/myproject message="error log" ${spanContext}`);
     validateLog(logLines[6], string ` level=WARN module=myorg/myproject message="warn log" ${spanContext}`);
     validateLog(logLines[7], string ` level=INFO module=myorg/myproject message="info log" ${spanContext}`);
@@ -474,4 +479,9 @@ function exec(@untainted string command, @untainted map<string> env = {},
                      @untainted string? dir = (), @untainted string... args) returns Process|error = @java:Method {
     name: "exec",
     'class: "io.ballerina.stdlib.log.testutils.nativeimpl.Exec"
+} external;
+
+function getEnvVal(@untainted string key) returns string = @java:Method {
+    name: "getEnv",
+    'class: "io.ballerina.stdlib.log.testutils.utils.OSUtils"
 } external;
