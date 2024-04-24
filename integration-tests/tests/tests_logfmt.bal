@@ -317,7 +317,7 @@ public function testObservabilityLogfmt() returns error? {
     io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
     string outText2 = check sc2.read(100000);
     string[] ioLines = re`\n`.split(outText2.trim());
-    string spanContext = ioLines[1];
+    string spanContext = ioLines[ioLines.length() - 1]; // last line
     validateLog(logLines[5], string ` level=ERROR module=myorg/myproject message="error log" ${spanContext}`);
     validateLog(logLines[6], string ` level=WARN module=myorg/myproject message="warn log" ${spanContext}`);
     validateLog(logLines[7], string ` level=INFO module=myorg/myproject message="info log" ${spanContext}`);
