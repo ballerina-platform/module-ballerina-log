@@ -1,20 +1,20 @@
 [package]
 org = "ballerina"
 name = "integration_tests"
-version = "2.10.1"
+version = "@toml.version@"
 
-[[platform.java17.dependency]]
+[[platform.java21.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "log-native"
-path = "../native/build/libs/log-native-2.10.1-SNAPSHOT.jar"
+path = "../native/build/libs/log-native-@project.version@.jar"
 
-[[platform.java17.dependency]]
+[[platform.java21.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "log-test-utils"
 scope = "testOnly"
-path = "../test-utils/build/libs/log-test-utils-2.10.1-SNAPSHOT.jar"
+path = "../test-utils/build/libs/log-test-utils-@project.version@.jar"
 
-[[platform.java17.dependency]]
+[[platform.java21.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "io-native"
-path = "./lib/io-native-1.6.2-20240928-084100-656404f.jar"
+path = "./lib/io-native-@io.native.version@.jar"
