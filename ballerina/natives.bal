@@ -50,6 +50,11 @@ type Module record {
     string level;
 };
 
+type ModuleName record {|
+    string organization;
+    string module;
+|};
+
 configurable string format = "logfmt";
 configurable string level = "INFO";
 configurable table<Module> key(name) & readonly modules = table [];
@@ -175,14 +180,13 @@ public isolated function setOutputFile(string path, FileWriteOption option = APP
 # Modifies the root and module log level
 #
 # + logLevel - New log level to be set
-# + organization - Organization name
-# + module - Module name
-public isolated function setLogLevel(LogLevel logLevel, string? organization = (), string? module = ()) {
+# + moduleName - Module name
+public isolated function setLogLevel(LogLevel logLevel, ModuleName? moduleName = ()) {
     // Set module log level
-    if (organization != () && module != ()) {
+    if (moduleName != ()) {
         lock {
-            string moduleName = organization + "/" + module;
-            modulesInternal.put({ name: moduleName, level: logLevel });
+            string name = moduleName.organization + "/" + moduleName.module;
+            modulesInternal.put({ name: name, level: logLevel });
         }
     } else {
         lock {
