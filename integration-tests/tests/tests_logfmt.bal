@@ -330,7 +330,7 @@ public function testProjectWithGlobalLogLevelLogfmt() returns error? {
 @test:Config {}
 public function testProjectWithGlobalAndDefualtPackageLogLevelLogfmt() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_LOGFMT},
-    (), "run", temp_dir_path + "/log-project");
+     (), "run", temp_dir_path + "/log-project");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -396,7 +396,7 @@ public function testObservabilityLogfmt() returns error? {
 @test:Config {}
 public function testSetOutputFileSingleFileOverwriteLogfmt() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
-                                                   FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_LOGFMT);
+    FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_LOGFMT);
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -415,7 +415,7 @@ public function testSetOutputFileSingleFileOverwriteLogfmt() returns error? {
 @test:Config {}
 public function testSetOutputFileSingleFileAppendLogfmt() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
-                                                   FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_LOGFMT);
+    FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_LOGFMT);
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -540,7 +540,7 @@ isolated function validateLog(string log, string output) {
 }
 
 function exec(@untainted string command, @untainted map<string> env = {},
-        @untainted string? dir = (), @untainted string... args) returns Process|error = @java:Method {
+                    @untainted string? dir = (), @untainted string... args) returns Process|error = @java:Method {
     name: "exec",
     'class: "io.ballerina.stdlib.log.testutils.nativeimpl.Exec"
 } external;
