@@ -540,7 +540,7 @@ isolated function validateLog(string log, string output) {
 }
 
 function exec(@untainted string command, @untainted map<string> env = {},
-                    @untainted string? dir = (), @untainted string... args) returns Process|error = @java:Method {
+                     @untainted string? dir = (), @untainted string... args) returns Process|error = @java:Method {
     name: "exec",
     'class: "io.ballerina.stdlib.log.testutils.nativeimpl.Exec"
 } external;
