@@ -27,6 +27,7 @@ const string PRINT_DEBUG_FILE = "tests/resources/samples/print-functions/debug.b
 const string PRINT_ERROR_FILE = "tests/resources/samples/print-functions/error.bal";
 const string PRINT_RAW_TEMPLATE_FILE = "tests/resources/samples/print-functions/raw_template.bal";
 const string LOG_LEVEL_FILE = "tests/resources/samples/log-levels/main.bal";
+const string LOG_LEVEL_RAW_TEMPLATE_FILE = "tests/resources/samples/log-levels-raw-template/main.bal";
 
 const string FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_LOGFMT = "tests/resources/samples/file-write-output/single-file/overwrite-logfmt.bal";
 const string FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_LOGFMT = "tests/resources/samples/file-write-output/single-file/append-logfmt.bal";
@@ -51,6 +52,8 @@ const string MESSAGE_ERROR_LOGFMT = " level=ERROR module=\"\" message=\"error lo
 const string MESSAGE_WARN_LOGFMT = " level=WARN module=\"\" message=\"warn log\"";
 const string MESSAGE_INFO_LOGFMT = " level=INFO module=\"\" message=\"info log\"";
 const string MESSAGE_DEBUG_LOGFMT = " level=DEBUG module=\"\" message=\"debug log\"";
+
+const string MESSAGE_ERROR_RAW_TEMPLATE_LOGFMT = " level=ERROR module=\"\" message=\"My name is Alex92 and my age is 25\"";
 
 const string MESSAGE_ERROR_MAIN_LOGFMT = " level=ERROR module=myorg/myproject message=\"error log\\t\\n\\r\\\\\\\"\"";
 const string MESSAGE_WARN_MAIN_LOGFMT = " level=WARN module=myorg/myproject message=\"warn log\\t\\n\\r\\\\\\\"\"";
@@ -217,8 +220,8 @@ public function testDebugLevelLogfmt() returns error? {
 }
 
 @test:Config {}
-public function testPrintRawTemplate() returns error? {
-    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_LOGFMT}, (), "run", PRINT_RAW_TEMPLATE_FILE);
+public function testErrorLevelRawTemplateLogfmt() returns error? {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ERROR_LOGFMT}, (), "run", LOG_LEVEL_RAW_TEMPLATE_FILE);
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -226,10 +229,8 @@ public function testPrintRawTemplate() returns error? {
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
     string[] logLines = re `\n`.split(outText.trim());
-
-    // test:assertEquals(logLines.length(), 2, "Incorrect number of log lines");
-    // validateLog(logLines[4], " level=DEBUG module=\"\" message=\"User Alex92 with ID 845315 encountered an error\"");
-    validateLog(logLines[4], " level=ERROR module=\"\" message=\"Status: true for user Alex92 with ID 845315\"");
+    test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[5], MESSAGE_ERROR_RAW_TEMPLATE_LOGFMT);
 }
 
 @test:Config {}
