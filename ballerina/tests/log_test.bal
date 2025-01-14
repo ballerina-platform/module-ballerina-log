@@ -52,7 +52,7 @@ isolated function testPrintLogFmtExtern() {
         message: "debug message"
     };
     test:assertEquals(printLogFmt(logRecord1),
-            "time=2021-05-04T10:32:13.220+05:30 level=DEBUG module=foo/bar message=\"debug message\"");
+    "time=2021-05-04T10:32:13.220+05:30 level=DEBUG module=foo/bar message=\"debug message\"");
     LogRecord logRecord2 = {
         time: "2021-05-04T10:32:13.220+05:30",
         level: "INFO",
@@ -60,7 +60,7 @@ isolated function testPrintLogFmtExtern() {
         message: "debug message"
     };
     test:assertEquals(printLogFmt(logRecord2),
-            "time=2021-05-04T10:32:13.220+05:30 level=INFO module=foo/bar message=\"debug message\"");
+    "time=2021-05-04T10:32:13.220+05:30 level=INFO module=foo/bar message=\"debug message\"");
     LogRecord logRecord3 = {
         time: "2021-05-04T10:32:13.220+05:30",
         level: "DEBUG",
@@ -68,7 +68,7 @@ isolated function testPrintLogFmtExtern() {
         message: "debug message"
     };
     test:assertEquals(printLogFmt(logRecord3),
-            "time=2021-05-04T10:32:13.220+05:30 level=DEBUG module=\"\" message=\"debug message\"");
+    "time=2021-05-04T10:32:13.220+05:30 level=DEBUG module=\"\" message=\"debug message\"");
     LogRecord logRecord4 = {
         time: "2021-05-04T10:32:13.220+05:30",
         level: "DEBUG",
@@ -78,46 +78,46 @@ isolated function testPrintLogFmtExtern() {
         "id": 845315
     };
     test:assertEquals(printLogFmt(logRecord4),
-            "time=2021-05-04T10:32:13.220+05:30 level=DEBUG module=foo/bar message=\"debug message\" username=\"Alex\" id=845315");
+    "time=2021-05-04T10:32:13.220+05:30 level=DEBUG module=foo/bar message=\"debug message\" username=\"Alex\" id=845315");
 }
 
 public isolated function main() {
     error err = error("bad sad");
     printDebug("something went wrong", 'error = err, stackTrace = err.stackTrace(), username = "Alex92", admin = true, id = 845315,
-            attempts = isolated function() returns int {
-                return 3;
-            });
+    attempts = isolated function() returns int {
+        return 3;
+    });
     printError("something went wrong", 'error = err, stackTrace = err.stackTrace(), username = "Alex92", admin = true, id = 845315,
-            attempts = isolated function() returns int {
-                return 3;
-            });
+    attempts = isolated function() returns int {
+        return 3;
+    });
     printInfo("something went wrong", 'error = err, stackTrace = err.stackTrace(), username = "Alex92", admin = true, id = 845315,
-            attempts = isolated function() returns int {
-                return 3;
-            });
+    attempts = isolated function() returns int {
+        return 3;
+    });
     printWarn("something went wrong", 'error = err, stackTrace = err.stackTrace(), username = "Alex92", admin = true, id = 845315,
-            attempts = isolated function() returns int {
-                return 3;
-            });
+    attempts = isolated function() returns int {
+        return 3;
+    });
 
     var result1 = setOutputFile("./foo/bar.log");
     test:assertFalse(result1 is error);
     printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-            attempts = isolated function() returns int {
-                return 3;
-            });
+    attempts = isolated function() returns int {
+        return 3;
+    });
     var result2 = setOutputFile("./foo/bar.log", APPEND);
     test:assertFalse(result2 is error);
     printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-            attempts = isolated function() returns int {
-                return 3;
-            });
+        attempts = isolated function() returns int {
+        return 3;
+    });
     var result3 = setOutputFile("./foo/bar.log", OVERWRITE);
     test:assertFalse(result3 is error);
     printInfo("something went wrong", 'error = err, username = "Alex92", admin = true, id = 845315,
-            attempts = isolated function() returns int {
-                return 3;
-            });
+        attempts = isolated function() returns int {
+        return 3;
+    });
 
     var result4 = setOutputFile("./foo/bar.bal", OVERWRITE);
     test:assertTrue(result4 is error);
