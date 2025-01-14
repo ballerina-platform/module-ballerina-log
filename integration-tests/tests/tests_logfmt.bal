@@ -53,7 +53,10 @@ const string MESSAGE_WARN_LOGFMT = " level=WARN module=\"\" message=\"warn log\"
 const string MESSAGE_INFO_LOGFMT = " level=INFO module=\"\" message=\"info log\"";
 const string MESSAGE_DEBUG_LOGFMT = " level=DEBUG module=\"\" message=\"debug log\"";
 
-const string MESSAGE_ERROR_RAW_TEMPLATE_LOGFMT = " level=ERROR module=\"\" message=\"My name is Alex92 and my age is 25\"";
+const string MESSAGE_ERROR_RAW_TEMPLATE_LOGFMT = " level=ERROR module=\"\" message=\"error: My name is Alex92 and my age is 25\"";
+const string MESSAGE_WARN_RAW_TEMPLATE_LOGFMT = " level=WARN module=\"\" message=\"warning: My name is Alex92 and my age is 25\"";
+const string MESSAGE_INFO_RAW_TEMPLATE_LOGFMT = " level=INFO module=\"\" message=\"info: My name is Alex92 and my age is 25\"";
+const string MESSAGE_DEBUG_RAW_TEMPLATE_LOGFMT = " level=DEBUG module=\"\" message=\"debug: My name is Alex92 and my age is 25\"";
 
 const string MESSAGE_ERROR_MAIN_LOGFMT = " level=ERROR module=myorg/myproject message=\"error log\\t\\n\\r\\\\\\\"\"";
 const string MESSAGE_WARN_MAIN_LOGFMT = " level=WARN module=myorg/myproject message=\"warn log\\t\\n\\r\\\\\\\"\"";
@@ -231,6 +234,54 @@ public function testErrorLevelRawTemplateLogfmt() returns error? {
     string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     validateLog(logLines[5], MESSAGE_ERROR_RAW_TEMPLATE_LOGFMT);
+}
+
+@test:Config {}
+public function testWarnLevelRawTemplateLogfmt() returns error? {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_WARN_LOGFMT}, (), "run", LOG_LEVEL_RAW_TEMPLATE_FILE);
+    Process result = check execResult;
+    int _ = check result.waitForExit();
+    int _ = check result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = check sc.read(100000);
+    string[] logLines = re `\n`.split(outText.trim());
+    test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[5], MESSAGE_ERROR_RAW_TEMPLATE_LOGFMT);
+    validateLog(logLines[6], MESSAGE_WARN_RAW_TEMPLATE_LOGFMT);
+}
+
+@test:Config {}
+public function testInfoLevelRawTemplateLogfmt() returns error? {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INFO_LOGFMT}, (), "run", LOG_LEVEL_RAW_TEMPLATE_FILE);
+    Process result = check execResult;
+    int _ = check result.waitForExit();
+    int _ = check result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = check sc.read(100000);
+    string[] logLines = re `\n`.split(outText.trim());
+    test:assertEquals(logLines.length(), 8, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[5], MESSAGE_ERROR_RAW_TEMPLATE_LOGFMT);
+    validateLog(logLines[6], MESSAGE_WARN_RAW_TEMPLATE_LOGFMT);
+    validateLog(logLines[7], MESSAGE_INFO_RAW_TEMPLATE_LOGFMT);
+}
+
+@test:Config {}
+public function testDebugLevelRawTemplateLogfmt() returns error? {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run", LOG_LEVEL_RAW_TEMPLATE_FILE);
+    Process result = check execResult;
+    int _ = check result.waitForExit();
+    int _ = check result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = check sc.read(100000);
+    string[] logLines = re `\n`.split(outText.trim());
+    test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
+    validateLog(logLines[5], MESSAGE_ERROR_RAW_TEMPLATE_LOGFMT);
+    validateLog(logLines[6], MESSAGE_WARN_RAW_TEMPLATE_LOGFMT);
+    validateLog(logLines[7], MESSAGE_INFO_RAW_TEMPLATE_LOGFMT);
+    validateLog(logLines[8], MESSAGE_DEBUG_RAW_TEMPLATE_LOGFMT);
 }
 
 @test:Config {}
