@@ -15,9 +15,9 @@
 // under the License.
 
 import ballerina/io;
-import ballerina/observe;
 import ballerina/jballerina.java;
 import ballerina/lang.value;
+import ballerina/observe;
 
 # Represents log level types.
 enum LogLevel {
@@ -28,7 +28,16 @@ enum LogLevel {
 }
 
 # A value of `anydata` type or a function pointer.
-public type Value anydata|Valuer;
+public type Value anydata|Valuer|PrintableRawTemplate;
+
+# Represents raw templates for logging.
+# e.g: `The input value is ${val}`
+# + strings - String values of the template as an array
+# + insertions - Parameterized values/expressions after evaluations as an array
+public type PrintableRawTemplate object {
+    public string[] & readonly strings;
+    public anydata[] insertions;
+};
 
 # A function, which returns `anydata` type.
 public type Valuer isolated function () returns anydata;
@@ -82,19 +91,53 @@ public enum FileWriteOption {
     APPEND
 }
 
+class PrintableRawTemplateImpl {
+    *object:RawTemplate;
+    public Value[] insertions;
+
+    public isolated function init(PrintableRawTemplate printableRawTemplate) {
+        self.strings = printableRawTemplate.strings;
+        self.insertions = printableRawTemplate.insertions;
+    }
+
+    public isolated function toString() returns string {
+        Value[] templateInsertions = self.insertions;
+        string[] templateStrings = self.strings;
+        string templatedString = templateStrings[0];
+        foreach int i in 1 ..< (templateStrings.length()) {
+            Value templateInsert = templateInsertions[i - 1];
+            if templateInsert is PrintableRawTemplate {
+                templatedString += new PrintableRawTemplateImpl(templateInsert).toString() + templateStrings[i];
+            } else if templateInsert is Valuer {
+                templatedString += templateInsert().toString() + templateStrings[i];
+            } else {
+                templatedString += templateInsert.toString() + templateStrings[i];
+            }
+        }
+        return templatedString;
+    }
+}
+
+isolated function processMessage(string|PrintableRawTemplate msg) returns string {
+    if msg is PrintableRawTemplate {
+        return new PrintableRawTemplateImpl(msg).toString();
+    }
+    return msg;
+}
+
 # Prints debug logs.
 # ```ballerina
-# log:printDebug("debug message", id = 845315)
+# log:printDebug(`Debug message with value: ${value}`, id = 845315)
 # ```
 #
 # + msg - The message to be logged
 # + 'error - The error struct to be logged
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printDebug(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     // Added `stackTrace` as an optional param due to https://github.com/ballerina-platform/ballerina-lang/issues/34572 
     if isLogLevelEnabled(DEBUG, getModuleName(keyValues)) {
-        print(DEBUG, msg, 'error, stackTrace, keyValues);
+        print(DEBUG, processMessage(msg), 'error, stackTrace, keyValues);
     }
 }
 
@@ -108,9 +151,9 @@ public isolated function printDebug(string msg, error? 'error = (), error:StackF
 # + 'error - The error struct to be logged
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printError(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+public isolated function printError(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(ERROR, getModuleName(keyValues)) {
-        print(ERROR, msg, 'error, stackTrace, keyValues);
+        print(ERROR, processMessage(msg), 'error, stackTrace, keyValues);
     }
 }
 
@@ -123,9 +166,9 @@ public isolated function printError(string msg, error? 'error = (), error:StackF
 # + 'error - The error struct to be logged
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printInfo(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(INFO, getModuleName(keyValues)) {
-        print(INFO, msg, 'error, stackTrace, keyValues);
+        print(INFO, processMessage(msg), 'error, stackTrace, keyValues);
     }
 }
 
@@ -138,9 +181,9 @@ public isolated function printInfo(string msg, error? 'error = (), error:StackFr
 # + 'error - The error struct to be logged
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printWarn(string msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(WARN, getModuleName(keyValues)) {
-        print(WARN, msg, 'error, stackTrace, keyValues);
+        print(WARN, processMessage(msg), 'error, stackTrace, keyValues);
     }
 }
 
@@ -187,7 +230,14 @@ isolated function print(string logLevel, string msg, error? err = (), error:Stac
         logRecord["stackTrace"] = stackTraceArray;
     }
     foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata value = v is Valuer ? v() : v;
+        anydata value;
+        if v is Valuer {
+            value = v();
+        } else if v is PrintableRawTemplate {
+            value = processMessage(v);
+        } else {
+            value = v;
+        }
         logRecord[k] = value;
     }
     if observe:isTracingEnabled() {

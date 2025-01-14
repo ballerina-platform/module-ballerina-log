@@ -14,8 +14,8 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/lang.'value;
 import ballerina/io;
+import ballerina/lang.'value;
 import ballerina/test;
 
 const string CONFIG_DEBUG_JSON = "tests/resources/config/json/log-levels/debug/Config.toml";
@@ -67,7 +67,7 @@ public function testPrintDebugJson() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\"}");
     validateLogJson(logLines[6], "\", \"level\":\"DEBUG\", \"module\":\"\", \"message\":\"debug log\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
@@ -88,7 +88,7 @@ public function testPrintErrorJson() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\"}");
     validateLogJson(logLines[6], "\", \"level\":\"ERROR\", \"module\":\"\", \"message\":\"error log\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
@@ -109,7 +109,7 @@ public function testPrintInfoJson() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\"}");
     validateLogJson(logLines[6], "\", \"level\":\"INFO\", \"module\":\"\", \"message\":\"info log\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
@@ -130,7 +130,7 @@ public function testPrintWarnJson() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 13, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\"}");
     validateLogJson(logLines[6], "\", \"level\":\"WARN\", \"module\":\"\", \"message\":\"warn log\", \"username\":\"Alex92\", \"id\":845315, \"foo\":true}");
@@ -151,7 +151,7 @@ public function testErrorLevelJson() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
 }
@@ -165,7 +165,7 @@ public function testWarnLevelJson() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
     validateLogJson(logLines[6], MESSAGE_WARN_JSON);
@@ -180,7 +180,7 @@ public function testInfoLevelJson() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 8, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
     validateLogJson(logLines[6], MESSAGE_WARN_JSON);
@@ -196,7 +196,7 @@ public function testDebugLevelJson() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_JSON);
     validateLogJson(logLines[6], MESSAGE_WARN_JSON);
@@ -214,7 +214,7 @@ public function testProjectWithoutLogLevelJson() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 14, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_MAIN_JSON);
     validateLogJson(logLines[6], MESSAGE_WARN_MAIN_JSON);
@@ -230,14 +230,14 @@ public function testProjectWithoutLogLevelJson() returns error? {
 @test:Config {}
 public function testProjectWithGlobalLogLevelJson() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_LEVEL_JSON}, (),
-    "run", temp_dir_path + "/log-project");
+                                                   "run", temp_dir_path + "/log-project");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 11, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_MAIN_JSON);
     validateLogJson(logLines[6], MESSAGE_WARN_MAIN_JSON);
@@ -250,14 +250,14 @@ public function testProjectWithGlobalLogLevelJson() returns error? {
 @test:Config {}
 public function testProjectWithGlobalAndDefualtPackageLogLevelJson() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_JSON},
-     (), "run", temp_dir_path + "/log-project");
+                                                   (), "run", temp_dir_path + "/log-project");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_MAIN_JSON);
     validateLogJson(logLines[6], MESSAGE_WARN_MAIN_JSON);
@@ -271,14 +271,14 @@ public function testProjectWithGlobalAndDefualtPackageLogLevelJson() returns err
 @test:Config {}
 public function testProjectWithGlobalAndModuleLogLevelsJson() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_JSON}, (),
-    "run", temp_dir_path + "/log-project");
+                                                   "run", temp_dir_path + "/log-project");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 12, INCORRECT_NUMBER_OF_LINES);
     validateLogJson(logLines[5], MESSAGE_ERROR_MAIN_JSON);
     validateLogJson(logLines[6], MESSAGE_WARN_MAIN_JSON);
@@ -292,20 +292,20 @@ public function testProjectWithGlobalAndModuleLogLevelsJson() returns error? {
 @test:Config {}
 public function testObservabilityJson() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_OBSERVABILITY_PROJECT_JSON}, (),
-    "run", temp_dir_path + "/observability-project-json");
+                                                   "run", temp_dir_path + "/observability-project-json");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = re `\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
 
     io:ReadableByteChannel readableOutResult = result.stdout();
     io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
     string outText2 = check sc2.read(100000);
-    string[] ioLines = re`\n`.split(outText2);
+    string[] ioLines = re `\n`.split(outText2);
     string spanContext = ioLines[ioLines.length() - 1];
     validateLogJson(logLines[5], string `", "level":"ERROR", "module":"myorg/myproject", "message":"error log", ${spanContext}}`);
     validateLogJson(logLines[6], string `", "level":"WARN", "module":"myorg/myproject", "message":"warn log", ${spanContext}}`);
@@ -316,7 +316,7 @@ public function testObservabilityJson() returns error? {
 @test:Config {}
 public function testSetOutputFileSingleFileOverwriteJson() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
-    FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_JSON);
+                                                   FILE_WRITE_OUTPUT_OVERWRITE_INPUT_FILE_JSON);
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -335,7 +335,7 @@ public function testSetOutputFileSingleFileOverwriteJson() returns error? {
 @test:Config {}
 public function testSetOutputFileSingleFileAppendJson() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
-    FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_JSON);
+                                                   FILE_WRITE_OUTPUT_APPEND_INPUT_FILE_JSON);
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -355,7 +355,7 @@ public function testSetOutputFileSingleFileAppendJson() returns error? {
 @test:Config {}
 public function testSetOutputFileProjectOverwriteJson() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
-    temp_dir_path + "/file-write-project/overwrite-json");
+                                                   temp_dir_path + "/file-write-project/overwrite-json");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -382,7 +382,7 @@ public function testSetOutputFileProjectOverwriteJson() returns error? {
 @test:Config {}
 public function testSetOutputFileProjectOverwriteJson2() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
-    temp_dir_path + "/file-write-project/overwrite-json2");
+                                                   temp_dir_path + "/file-write-project/overwrite-json2");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -405,7 +405,7 @@ public function testSetOutputFileProjectOverwriteJson2() returns error? {
 @test:Config {}
 public function testSetOutputFileProjectAppendJson() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
-    temp_dir_path + "/file-write-project/append-json");
+                                                   temp_dir_path + "/file-write-project/append-json");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -433,7 +433,7 @@ public function testSetOutputFileProjectAppendJson() returns error? {
 @test:Config {}
 public function testSetOutputFileProjectAppendJson2() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_JSON}, (), "run",
-    temp_dir_path + "/file-write-project/append-json2");
+                                                   temp_dir_path + "/file-write-project/append-json2");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
