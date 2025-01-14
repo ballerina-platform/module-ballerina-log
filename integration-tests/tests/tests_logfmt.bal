@@ -310,7 +310,7 @@ public function testProjectWithoutLogLevelLogfmt() returns error? {
 @test:Config {}
 public function testProjectWithGlobalLogLevelLogfmt() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_LEVEL_LOGFMT}, (),
-                                                   "run", temp_dir_path + "/log-project");
+    "run", temp_dir_path + "/log-project");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -330,7 +330,7 @@ public function testProjectWithGlobalLogLevelLogfmt() returns error? {
 @test:Config {}
 public function testProjectWithGlobalAndDefualtPackageLogLevelLogfmt() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_DEFAULT_PACKAGE_LEVEL_LOGFMT},
-                                                   (), "run", temp_dir_path + "/log-project");
+    (), "run", temp_dir_path + "/log-project");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -351,7 +351,7 @@ public function testProjectWithGlobalAndDefualtPackageLogLevelLogfmt() returns e
 @test:Config {}
 public function testProjectWithGlobalAndModuleLogLevelsLogfmt() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_PROJECT_GLOBAL_AND_MODULE_LEVEL_LOGFMT}, (),
-                                                   "run", temp_dir_path + "/log-project");
+    "run", temp_dir_path + "/log-project");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -372,7 +372,7 @@ public function testProjectWithGlobalAndModuleLogLevelsLogfmt() returns error? {
 @test:Config {}
 public function testObservabilityLogfmt() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_OBSERVABILITY_PROJECT_LOGFMT}, (),
-                                                   "run", temp_dir_path + "/observability-project-logfmt");
+    "run", temp_dir_path + "/observability-project-logfmt");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -385,7 +385,7 @@ public function testObservabilityLogfmt() returns error? {
     io:ReadableByteChannel readableOutResult = result.stdout();
     io:ReadableCharacterChannel sc2 = new (readableOutResult, UTF_8);
     string outText2 = check sc2.read(100000);
-    string[] ioLines = re `\n`.split(outText2.trim());
+    string[] ioLines = re`\n`.split(outText2.trim());
     string spanContext = ioLines[ioLines.length() - 1]; // last line
     validateLog(logLines[5], string ` level=ERROR module=myorg/myproject message="error log" ${spanContext}`);
     validateLog(logLines[6], string ` level=WARN module=myorg/myproject message="warn log" ${spanContext}`);
@@ -435,7 +435,7 @@ public function testSetOutputFileSingleFileAppendLogfmt() returns error? {
 @test:Config {}
 public function testSetOutputFileProjectOverwriteLogfmt() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
-                                                   temp_dir_path + "/file-write-project/overwrite-logfmt");
+    temp_dir_path + "/file-write-project/overwrite-logfmt");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -462,7 +462,7 @@ public function testSetOutputFileProjectOverwriteLogfmt() returns error? {
 @test:Config {}
 public function testSetOutputFileProjectOverwriteLogfmt2() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
-                                                   temp_dir_path + "/file-write-project/overwrite-logfmt2");
+    temp_dir_path + "/file-write-project/overwrite-logfmt2");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -485,7 +485,7 @@ public function testSetOutputFileProjectOverwriteLogfmt2() returns error? {
 @test:Config {}
 public function testSetOutputFileProjectAppendLogfmt() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
-                                                   temp_dir_path + "/file-write-project/append-logfmt");
+    temp_dir_path + "/file-write-project/append-logfmt");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -513,7 +513,7 @@ public function testSetOutputFileProjectAppendLogfmt() returns error? {
 @test:Config {}
 public function testSetOutputFileProjectAppendLogfmt2() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_DEBUG_LOGFMT}, (), "run",
-                                                   temp_dir_path + "/file-write-project/append-logfmt2");
+    temp_dir_path + "/file-write-project/append-logfmt2");
     Process result = check execResult;
     int _ = check result.waitForExit();
     int _ = check result.exitCode();
@@ -535,13 +535,12 @@ public function testSetOutputFileProjectAppendLogfmt2() returns error? {
 }
 
 isolated function validateLog(string log, string output) {
-    test:assertTrue(log.includes("time="), "log does not contain the time" + "this is what we got" + log);
+    test:assertTrue(log.includes("time="), "log does not contain the time");
     test:assertTrue(log.includes(output), string `log: ${log} does not contain the output: ${output}`);
 }
 
 function exec(@untainted string command, @untainted map<string> env = {},
-        @untainted string? dir = (), @untainted
-        string... args) returns Process|error = @java:Method {
+        @untainted string? dir = (), @untainted string... args) returns Process|error = @java:Method {
     name: "exec",
     'class: "io.ballerina.stdlib.log.testutils.nativeimpl.Exec"
 } external;
