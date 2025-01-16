@@ -31,6 +31,7 @@ enum LogLevel {
 public type Value anydata|Valuer|PrintableRawTemplate;
 
 # Represents raw templates for logging.
+# 
 # e.g: `The input value is ${val}`
 # + strings - String values of the template as an array
 # + insertions - Parameterized values/expressions after evaluations as an array
