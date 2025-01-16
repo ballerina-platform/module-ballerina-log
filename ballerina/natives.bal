@@ -230,14 +230,7 @@ isolated function print(string logLevel, string msg, error? err = (), error:Stac
         logRecord["stackTrace"] = stackTraceArray;
     }
     foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata value;
-        if v is Valuer {
-            value = v();
-        } else if v is PrintableRawTemplate {
-            value = processMessage(v);
-        } else {
-            value = v;
-        }
+        anydata value = v is Valuer ? v() : processMessage(v);
         logRecord[k] = value;
     }
     if observe:isTracingEnabled() {
