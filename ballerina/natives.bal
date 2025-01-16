@@ -218,7 +218,7 @@ isolated function print(string logLevel, string|PrintableRawTemplate msg, error?
         time: getCurrentTime(),
         level: logLevel,
         module: getModuleNameExtern() == "." ? "" : getModuleNameExtern(),
-        message: msg is PrintableRawTemplate ? processMessage(msg) : msg
+        message: processMessage(msg)
     };
     if err is error {
         logRecord.'error = getFullErrorDetails(err);
