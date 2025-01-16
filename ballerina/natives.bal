@@ -138,7 +138,7 @@ isolated function processMessage(string|PrintableRawTemplate msg) returns string
 public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     // Added `stackTrace` as an optional param due to https://github.com/ballerina-platform/ballerina-lang/issues/34572 
     if isLogLevelEnabled(DEBUG, getModuleName(keyValues)) {
-        print(DEBUG, processMessage(msg), 'error, stackTrace, keyValues);
+        print(DEBUG, msg, 'error, stackTrace, keyValues);
     }
 }
 
@@ -154,7 +154,7 @@ public isolated function printDebug(string|PrintableRawTemplate msg, error? 'err
 # + keyValues - The key-value pairs to be logged
 public isolated function printError(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(ERROR, getModuleName(keyValues)) {
-        print(ERROR, processMessage(msg), 'error, stackTrace, keyValues);
+        print(ERROR, msg, 'error, stackTrace, keyValues);
     }
 }
 
@@ -169,7 +169,7 @@ public isolated function printError(string|PrintableRawTemplate msg, error? 'err
 # + keyValues - The key-value pairs to be logged
 public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(INFO, getModuleName(keyValues)) {
-        print(INFO, processMessage(msg), 'error, stackTrace, keyValues);
+        print(INFO, msg, 'error, stackTrace, keyValues);
     }
 }
 
@@ -184,7 +184,7 @@ public isolated function printInfo(string|PrintableRawTemplate msg, error? 'erro
 # + keyValues - The key-value pairs to be logged
 public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     if isLogLevelEnabled(WARN, getModuleName(keyValues)) {
-        print(WARN, processMessage(msg), 'error, stackTrace, keyValues);
+        print(WARN, msg, 'error, stackTrace, keyValues);
     }
 }
 
@@ -213,12 +213,12 @@ public isolated function setOutputFile(string path, FileWriteOption option = APP
     }
 }
 
-isolated function print(string logLevel, string msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+isolated function print(string logLevel, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     LogRecord logRecord = {
         time: getCurrentTime(),
         level: logLevel,
         module: getModuleNameExtern() == "." ? "" : getModuleNameExtern(),
-        message: msg
+        message: msg is PrintableRawTemplate ? processMessage(msg) : msg
     };
     if err is error {
         logRecord.'error = getFullErrorDetails(err);
@@ -231,7 +231,14 @@ isolated function print(string logLevel, string msg, error? err = (), error:Stac
         logRecord["stackTrace"] = stackTraceArray;
     }
     foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata value = v is Valuer ? v() : processMessage(v);
+        anydata value;
+        if v is Valuer {
+            value = v();
+        } else if v is PrintableRawTemplate {
+            value = processMessage(v);
+        } else {
+            value = v;
+        }
         logRecord[k] = value;
     }
     if observe:isTracingEnabled() {

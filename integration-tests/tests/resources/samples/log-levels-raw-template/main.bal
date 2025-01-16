@@ -23,5 +23,6 @@ public function main() {
     log:printWarn(string `warning: My name is ${myname} and my age is ${myage}`);
     log:printInfo(string `info: My name is ${myname} and my age is ${myage}`);
     log:printDebug(string `debug: My name is ${myname} and my age is ${myage}`);
+    log:printInfo("User details", details = string `name: ${myname}, age: ${myage}`);   
 }
 
