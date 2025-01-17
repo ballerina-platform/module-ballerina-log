@@ -1,6 +1,11 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina TCP package through the releases.
 
+## [Unreleased]
+
+### Added
+- [Support logging raw template value in log APIs](https://github.com/ballerina-platform/ballerina-library/issues/3331)
+
 ## [2.5.1] - 2023-01-04
 
 ### Removed
