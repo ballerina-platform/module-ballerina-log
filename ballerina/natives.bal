@@ -27,15 +27,16 @@ enum LogLevel {
     WARN
 }
 
-# A value of `anydata` type or a function pointer.
+# A value of `anydata` type or a function pointer or raw template.
 public type Value anydata|Valuer|PrintableRawTemplate;
 
 # Represents raw templates for logging.
-# 
+#
 # e.g: `The input value is ${val}`
 # + strings - String values of the template as an array
 # + insertions - Parameterized values/expressions after evaluations as an array
 public type PrintableRawTemplate object {
+    *object:RawTemplate;
     public string[] & readonly strings;
     public Value[] insertions;
 };
@@ -92,35 +93,29 @@ public enum FileWriteOption {
     APPEND
 }
 
-class PrintableRawTemplateImpl {
-    *object:RawTemplate;
-    public Value[] insertions;
+# Process the raw template and return the processed string.
+#
+# + template - The raw template to be processed
+# + return - The processed string
+isolated function processTemplate(PrintableRawTemplate template) returns string {
+    string[] templateStrings = template.strings;
+    Value[] insertions = template.insertions;
+    string result = templateStrings[0];
 
-    public isolated function init(PrintableRawTemplate printableRawTemplate) {
-        self.strings = printableRawTemplate.strings;
-        self.insertions = printableRawTemplate.insertions;
+    foreach int i in 1 ..< templateStrings.length() {
+        Value insertion = insertions[i - 1];
+        string insertionStr = insertion is PrintableRawTemplate ?
+            processTemplate(insertion) :
+                insertion is Valuer ?
+                insertion().toString() :
+                insertion.toString();
+        result += insertionStr + templateStrings[i];
     }
-
-    public isolated function toString() returns string {
-        Value[] templateInsertions = self.insertions;
-        string[] templateStrings = self.strings;
-        string templatedString = templateStrings[0];
-        foreach int i in 1 ..< (templateStrings.length()) {
-            Value templateInsert = templateInsertions[i - 1];
-            if templateInsert is PrintableRawTemplate {
-                templatedString += new PrintableRawTemplateImpl(templateInsert).toString() + templateStrings[i];
-            } else if templateInsert is Valuer {
-                templatedString += templateInsert().toString() + templateStrings[i];
-            } else {
-                templatedString += templateInsert.toString() + templateStrings[i];
-            }
-        }
-        return templatedString;
-    }
+    return result;
 }
 
 isolated function processMessage(string|PrintableRawTemplate msg) returns string =>
-   msg is PrintableRawTemplate ? new PrintableRawTemplateImpl(msg).toString() : msg;
+    msg !is string ? processTemplate(msg) : msg;
 
 # Prints debug logs.
 # ```ballerina
@@ -227,7 +222,7 @@ isolated function print(string logLevel, string|PrintableRawTemplate msg, error?
         logRecord["stackTrace"] = stackTraceArray;
     }
     foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata value =  v is Valuer ? v() : v is PrintableRawTemplate ? processMessage(v) : v;
+        anydata value = v is Valuer ? v() : v is PrintableRawTemplate ? processMessage(v) : v;
         logRecord[k] = value;
     }
     if observe:isTracingEnabled() {

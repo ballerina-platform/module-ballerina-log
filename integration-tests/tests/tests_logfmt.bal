@@ -57,7 +57,7 @@ const string MESSAGE_ERROR_RAW_TEMPLATE_LOGFMT = " level=ERROR module=\"\" messa
 const string MESSAGE_WARN_RAW_TEMPLATE_LOGFMT = " level=WARN module=\"\" message=\"warning: My name is Alex92 and my age is 25\"";
 const string MESSAGE_INFO_RAW_TEMPLATE_LOGFMT = " level=INFO module=\"\" message=\"info: My name is Alex92 and my age is 25\"";
 const string MESSAGE_DEBUG_RAW_TEMPLATE_LOGFMT = " level=DEBUG module=\"\" message=\"debug: My name is Alex92 and my age is 25\"";
-const string MESSAGE_KEY_VALUE_PAIR_LOGFMT = " level=INFO module=\"\" message=\"User details\" details=\"name: Alex92, age: 25\"";
+const string MESSAGE_KEY_VALUE_PAIR_LOGFMT = " level=INFO module=\"\" message=\"User details\" details=\"name: Alex92, age: 25\" actions=\"actions: action1, action2, action3\"";
 
 const string MESSAGE_ERROR_MAIN_LOGFMT = " level=ERROR module=myorg/myproject message=\"error log\\t\\n\\r\\\\\\\"\"";
 const string MESSAGE_WARN_MAIN_LOGFMT = " level=WARN module=myorg/myproject message=\"warn log\\t\\n\\r\\\\\\\"\"";

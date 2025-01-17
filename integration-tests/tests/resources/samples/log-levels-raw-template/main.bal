@@ -19,10 +19,13 @@ import ballerina/log;
 public function main() {
     string myname = "Alex92";
     int myage = 25;
-    log:printError(string `error: My name is ${myname} and my age is ${myage}`);
-    log:printWarn(string `warning: My name is ${myname} and my age is ${myage}`);
-    log:printInfo(string `info: My name is ${myname} and my age is ${myage}`);
-    log:printDebug(string `debug: My name is ${myname} and my age is ${myage}`);
-    log:printInfo("User details", details = string `name: ${myname}, age: ${myage}`);   
+    string action1 = "action1";
+    string action2 = "action2";
+    string action3 = "action3";
+    log:printError(`error: My name is ${myname} and my age is ${myage}`);
+    log:printWarn(`warning: My name is ${myname} and my age is ${myage}`);
+    log:printInfo(`info: My name is ${myname} and my age is ${myage}`);
+    log:printDebug(`debug: My name is ${myname} and my age is ${myage}`);
+    log:printInfo("User details", details = `name: ${myname}, age: ${myage}`, actions = `actions: ${action1}, ${action2}, ${action3}`);   
 }
 
