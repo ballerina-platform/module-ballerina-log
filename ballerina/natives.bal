@@ -119,12 +119,8 @@ class PrintableRawTemplateImpl {
     }
 }
 
-isolated function processMessage(string|PrintableRawTemplate msg) returns string {
-    if msg is PrintableRawTemplate {
-        return new PrintableRawTemplateImpl(msg).toString();
-    }
-    return msg;
-}
+isolated function processMessage(string|PrintableRawTemplate msg) returns string =>
+   msg is PrintableRawTemplate ? new PrintableRawTemplateImpl(msg).toString() : msg;
 
 # Prints debug logs.
 # ```ballerina
