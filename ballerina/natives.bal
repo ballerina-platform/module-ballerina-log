@@ -37,7 +37,7 @@ public type Value anydata|Valuer|PrintableRawTemplate;
 # + insertions - Parameterized values/expressions after evaluations as an array
 public type PrintableRawTemplate object {
     public string[] & readonly strings;
-    public anydata[] insertions;
+    public Value[] insertions;
 };
 
 # A function, which returns `anydata` type.
