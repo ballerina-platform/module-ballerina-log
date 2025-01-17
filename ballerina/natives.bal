@@ -119,7 +119,7 @@ isolated function processMessage(string|PrintableRawTemplate msg) returns string
 
 # Prints debug logs.
 # ```ballerina
-# log:printDebug(`Debug message with value: ${value}`, id = 845315)
+# log:printDebug("debug message", id = 845315)
 # ```
 #
 # + msg - The message to be logged
