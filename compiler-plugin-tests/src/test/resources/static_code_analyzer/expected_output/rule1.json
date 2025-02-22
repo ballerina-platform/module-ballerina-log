@@ -2,11 +2,11 @@
   {
     "location": {
       "filePath": "main.bal",
-      "startLine": 5,
-      "endLine": 5,
+      "startLine": 21,
+      "endLine": 21,
       "startColumn": 4,
       "endColumn": 28,
-      "startOffset": 98,
+      "startOffset": 743,
       "length": 24
     },
     "rule": {
@@ -22,11 +22,11 @@
   {
     "location": {
       "filePath": "main.bal",
-      "startLine": 6,
-      "endLine": 6,
+      "startLine": 22,
+      "endLine": 22,
       "startColumn": 4,
       "endColumn": 48,
-      "startOffset": 127,
+      "startOffset": 772,
       "length": 44
     },
     "rule": {
@@ -42,11 +42,11 @@
   {
     "location": {
       "filePath": "main.bal",
-      "startLine": 7,
-      "endLine": 7,
+      "startLine": 23,
+      "endLine": 23,
       "startColumn": 4,
       "endColumn": 40,
-      "startOffset": 176,
+      "startOffset": 821,
       "length": 36
     },
     "rule": {
@@ -62,11 +62,11 @@
   {
     "location": {
       "filePath": "main.bal",
-      "startLine": 8,
-      "endLine": 8,
+      "startLine": 24,
+      "endLine": 24,
       "startColumn": 4,
       "endColumn": 50,
-      "startOffset": 217,
+      "startOffset": 862,
       "length": 46
     },
     "rule": {
@@ -82,11 +82,11 @@
   {
     "location": {
       "filePath": "main.bal",
-      "startLine": 17,
-      "endLine": 17,
+      "startLine": 33,
+      "endLine": 33,
       "startColumn": 8,
       "endColumn": 51,
-      "startOffset": 394,
+      "startOffset": 1039,
       "length": 43
     },
     "rule": {
