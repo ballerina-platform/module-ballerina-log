@@ -16,7 +16,7 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.log.plugin;
+package io.ballerina.stdlib.log.compiler;
 
 import io.ballerina.compiler.syntax.tree.AbstractNodeFactory;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
