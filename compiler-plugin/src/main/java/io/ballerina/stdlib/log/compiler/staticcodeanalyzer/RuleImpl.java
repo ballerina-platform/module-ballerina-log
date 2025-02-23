@@ -21,6 +21,11 @@ package io.ballerina.stdlib.log.compiler.staticcodeanalyzer;
 import io.ballerina.scan.Rule;
 import io.ballerina.scan.RuleKind;
 
+/**
+ * {@code RuleFactory} contains the logic to create a {@link Rule}.
+ *
+ * @since 2.12.0
+ */
 class RuleImpl implements Rule {
     private final int id;
     private final String description;

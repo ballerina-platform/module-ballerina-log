@@ -44,6 +44,11 @@ import java.util.List;
 
 import static io.ballerina.stdlib.log.compiler.staticcodeanalyzer.LogRule.AVOID_LOGGING_CONFIGURABLE_VARIABLES;
 
+/**
+ * This class analyzes the log statements and checks if the log statement is logging a configurable variable.
+ *
+ * @since 2.12.0
+ */
 public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisContext> {
 
     public static final String CONFIGURABLE_QUALIFIER = "CONFIGURABLE";

@@ -23,6 +23,10 @@ import io.ballerina.scan.Rule;
 import static io.ballerina.scan.RuleKind.VULNERABILITY;
 import static io.ballerina.stdlib.log.compiler.staticcodeanalyzer.RuleFactory.createRule;
 
+/**
+ * Enum to hold the log rules.
+ * @since 2.12.0
+ */
 public enum LogRule {
     AVOID_LOGGING_CONFIGURABLE_VARIABLES(createRule(1,
             "Potentially-sensitive configurable variables are logged", VULNERABILITY));

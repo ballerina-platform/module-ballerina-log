@@ -26,6 +26,11 @@ import java.util.List;
 
 import static io.ballerina.compiler.syntax.tree.SyntaxKind.CALL_STATEMENT;
 
+/**
+ * Static code analyzer for log module.
+ *
+ * @since 2.12.0
+ */
 public class StaticCodeAnalyzer extends CodeAnalyzer {
     private final Reporter reporter;
 
