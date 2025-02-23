@@ -2,6 +2,6 @@
   {
     "id": 1,
     "kind": "VULNERABILITY",
-    "description": "Avoid logging configurable variables"
+    "description": "Potentially-sensitive configurable variables are logged"
   }
 ]

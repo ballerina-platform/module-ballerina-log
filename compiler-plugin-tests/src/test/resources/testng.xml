@@ -19,9 +19,9 @@
   -->
 
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
-<suite name="Cache compiler plugin test suite" parallel="false">
+<suite name="Log compiler plugin test suite" parallel="false">
 
-    <test name="Cache Compiler Plugin Tests" parallel="false">
+    <test name="Log Compiler Plugin Tests" parallel="false">
         <classes>
             <class name="io.ballerina.stdlib.log.compiler.staticcodeanalyzer.StaticCodeAnalyzerTest"/>
         </classes>

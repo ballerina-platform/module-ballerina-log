@@ -2,17 +2,57 @@
   {
     "location": {
       "filePath": "main.bal",
-      "startLine": 21,
-      "endLine": 21,
-      "startColumn": 4,
-      "endColumn": 28,
-      "startOffset": 743,
-      "length": 24
+      "startLine": 19,
+      "endLine": 19,
+      "startColumn": 18,
+      "endColumn": 26,
+      "startOffset": 711,
+      "length": 8
     },
     "rule": {
       "id": "ballerina/log:1",
       "numericId": 1,
-      "description": "Avoid logging configurable variables",
+      "description": "Potentially-sensitive configurable variables are logged",
+      "ruleKind": "VULNERABILITY"
+    },
+    "source": "BUILT_IN",
+    "fileName": "rule1/main.bal",
+    "filePath": "/Users/danesh/ballerina-platform/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+  },
+  {
+    "location": {
+      "filePath": "main.bal",
+      "startLine": 20,
+      "endLine": 20,
+      "startColumn": 36,
+      "endColumn": 44,
+      "startOffset": 758,
+      "length": 8
+    },
+    "rule": {
+      "id": "ballerina/log:1",
+      "numericId": 1,
+      "description": "Potentially-sensitive configurable variables are logged",
+      "ruleKind": "VULNERABILITY"
+    },
+    "source": "BUILT_IN",
+    "fileName": "rule1/main.bal",
+    "filePath": "/Users/danesh/ballerina-platform/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+  },
+  {
+    "location": {
+      "filePath": "main.bal",
+      "startLine": 21,
+      "endLine": 21,
+      "startColumn": 30,
+      "endColumn": 38,
+      "startOffset": 801,
+      "length": 8
+    },
+    "rule": {
+      "id": "ballerina/log:1",
+      "numericId": 1,
+      "description": "Potentially-sensitive configurable variables are logged",
       "ruleKind": "VULNERABILITY"
     },
     "source": "BUILT_IN",
@@ -24,15 +64,15 @@
       "filePath": "main.bal",
       "startLine": 22,
       "endLine": 22,
-      "startColumn": 4,
+      "startColumn": 40,
       "endColumn": 48,
-      "startOffset": 772,
-      "length": 44
+      "startOffset": 852,
+      "length": 8
     },
     "rule": {
       "id": "ballerina/log:1",
       "numericId": 1,
-      "description": "Avoid logging configurable variables",
+      "description": "Potentially-sensitive configurable variables are logged",
       "ruleKind": "VULNERABILITY"
     },
     "source": "BUILT_IN",
@@ -44,15 +84,15 @@
       "filePath": "main.bal",
       "startLine": 23,
       "endLine": 23,
-      "startColumn": 4,
-      "endColumn": 40,
-      "startOffset": 821,
-      "length": 36
+      "startColumn": 39,
+      "endColumn": 47,
+      "startOffset": 902,
+      "length": 8
     },
     "rule": {
       "id": "ballerina/log:1",
       "numericId": 1,
-      "description": "Avoid logging configurable variables",
+      "description": "Potentially-sensitive configurable variables are logged",
       "ruleKind": "VULNERABILITY"
     },
     "source": "BUILT_IN",
@@ -62,37 +102,17 @@
   {
     "location": {
       "filePath": "main.bal",
-      "startLine": 24,
-      "endLine": 24,
-      "startColumn": 4,
-      "endColumn": 50,
-      "startOffset": 862,
-      "length": 46
+      "startLine": 23,
+      "endLine": 23,
+      "startColumn": 56,
+      "endColumn": 60,
+      "startOffset": 919,
+      "length": 4
     },
     "rule": {
       "id": "ballerina/log:1",
       "numericId": 1,
-      "description": "Avoid logging configurable variables",
-      "ruleKind": "VULNERABILITY"
-    },
-    "source": "BUILT_IN",
-    "fileName": "rule1/main.bal",
-    "filePath": "/Users/danesh/ballerina-platform/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
-  },
-  {
-    "location": {
-      "filePath": "main.bal",
-      "startLine": 33,
-      "endLine": 33,
-      "startColumn": 8,
-      "endColumn": 51,
-      "startOffset": 1039,
-      "length": 43
-    },
-    "rule": {
-      "id": "ballerina/log:1",
-      "numericId": 1,
-      "description": "Avoid logging configurable variables",
+      "description": "Potentially-sensitive configurable variables are logged",
       "ruleKind": "VULNERABILITY"
     },
     "source": "BUILT_IN",

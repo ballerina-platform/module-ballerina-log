@@ -22,7 +22,7 @@ plugins {
     id 'com.github.spotbugs'
 }
 
-description = 'Ballerina - Cache Compiler Plugin Tests'
+description = 'Ballerina - Log Compiler Plugin Tests'
 
 dependencies {
     checkstyle project(':checkstyle')

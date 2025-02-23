@@ -53,6 +53,8 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
 
     List<SemanticModel> semanticModels = new ArrayList<>();
 
+    Document document = null;
+
     private final Reporter reporter;
 
     public LogStatementAnalyzer(Reporter reporter) {
@@ -66,6 +68,11 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
                 SemanticModel semanticModel = module.getCompilation().getSemanticModel();
                 semanticModels.add(semanticModel);
             });
+        }
+
+        // If the document is null, we get the document of the context
+        if (document == null) {
+            document = context.currentPackage().module(context.moduleId()).document(context.documentId());
         }
 
         if (context.node() instanceof ExpressionStatementNode expressionStatementNode) {
@@ -94,7 +101,7 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
                         positionalArgumentNode.childEntries().forEach(childNodeEntry -> {
                             Node expression = childNodeEntry.node().orElse(null);
                             if (expression instanceof SimpleNameReferenceNode simpleNameReferenceNode) {
-                                checkConfigurableQualifier(simpleNameReferenceNode, context, expressionStatementNode);
+                                checkConfigurableQualifier(simpleNameReferenceNode);
                             } else if (expression instanceof TemplateExpressionNode templateExpressionNode) {
                                 templateExpressionNode.content().forEach(content -> {
                                     if (content instanceof InterpolationNode interpolationNode) {
@@ -102,8 +109,7 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
                                             Node interpolationExpression = interpolationChild.node().orElse(null);
                                             if (interpolationExpression instanceof SimpleNameReferenceNode
                                                     simpleNameReferenceNode) {
-                                                checkConfigurableQualifier(simpleNameReferenceNode, context,
-                                                        expressionStatementNode);
+                                                checkConfigurableQualifier(simpleNameReferenceNode);
                                             }
                                         });
                                     }
@@ -112,36 +118,30 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
                                 binaryExpressionNode.childEntries().forEach(childEntry -> {
                                     Node childNode = childEntry.node().orElse(null);
                                     if (childNode instanceof SimpleNameReferenceNode simpleNameReferenceNode) {
-                                        checkConfigurableQualifier(simpleNameReferenceNode, context,
-                                                expressionStatementNode);
+                                        checkConfigurableQualifier(simpleNameReferenceNode);
                                     }
                                 });
                             }
                         });
                     } else if (node instanceof NamedArgumentNode namedArgumentNode) {
-                        checkConfigurableQualifier(namedArgumentNode.expression(), context, expressionStatementNode);
+                        checkConfigurableQualifier(namedArgumentNode.expression());
                     }
                 }
             }
         }
     }
 
-    private void checkConfigurableQualifier(ExpressionNode argumentNode, SyntaxNodeAnalysisContext context,
-                                            ExpressionStatementNode expressionStatementNode) {
+    private void checkConfigurableQualifier(ExpressionNode argumentNode) {
         semanticModels.forEach(semanticModel -> {
             Symbol symbol = semanticModel.symbol(argumentNode).orElse(null);
             if (symbol instanceof VariableSymbol variableSymbol) {
                 variableSymbol.qualifiers().stream().filter(qualifier -> qualifier
                         .toString().equals(CONFIGURABLE_QUALIFIER)).forEach(qualifier -> {
-                    this.reporter.reportIssue(getDocument(context),
-                            expressionStatementNode.location(),
+                    this.reporter.reportIssue(document,
+                            argumentNode.location(),
                             AVOID_LOGGING_CONFIGURABLE_VARIABLES.getId());
                 });
             }
         });
-    }
-
-    private static Document getDocument(SyntaxNodeAnalysisContext context) {
-        return context.currentPackage().module(context.moduleId()).document(context.documentId());
     }
 }

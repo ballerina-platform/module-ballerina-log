@@ -15,30 +15,18 @@
 // under the License.
 
 import ballerina/log;
-import ballerina/http;
-import ballerina/file;
 
 public function main() {
     log:printInfo(password);
     log:printError(string `Error: ${password}`);
     log:printError("Error " + password);
     log:printWarn("Warning", password = password);
+    log:printError("Error", password = password, user = user);
 }
 
 function log() {
     log:printInfo("Info");
 }
 
-service on new http:Listener(9090) {
-    resource function get test() {
-        log:printInfo("Info", password = password);
-    }
-}
-
-service  on new file:Listener({path: "/tmp", recursive: true}) {
-    remote function onCreate(file:FileEvent event) {
-        log:printInfo("File created: ", path = event.name);
-    }
-}
-
 configurable string password = ?;
+configurable string user = ?;
