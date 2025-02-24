@@ -15,6 +15,7 @@
 // under the License.
 
 import ballerina/log;
+import ballerina/log as lg;
 
 public function main() {
     log:printInfo(password);
@@ -23,7 +24,7 @@ public function main() {
     log:printError("Error " + password);
     log:printWarn("Warning", password = password);
     log:printError("Error", password = password, user = user);
-    log:printError(password, user = user);
+    lg:printError(password, user = user);
 }
 
 function log() {

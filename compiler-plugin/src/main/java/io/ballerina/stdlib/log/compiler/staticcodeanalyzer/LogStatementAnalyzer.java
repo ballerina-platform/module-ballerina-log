@@ -25,7 +25,10 @@ import io.ballerina.compiler.syntax.tree.BinaryExpressionNode;
 import io.ballerina.compiler.syntax.tree.ChildNodeEntry;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.ExpressionStatementNode;
+import io.ballerina.compiler.syntax.tree.ImportOrgNameNode;
+import io.ballerina.compiler.syntax.tree.ImportPrefixNode;
 import io.ballerina.compiler.syntax.tree.InterpolationNode;
+import io.ballerina.compiler.syntax.tree.ModulePartNode;
 import io.ballerina.compiler.syntax.tree.NamedArgumentNode;
 import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.NodeList;
@@ -52,13 +55,12 @@ import static io.ballerina.stdlib.log.compiler.staticcodeanalyzer.LogRule.AVOID_
 public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisContext> {
 
     public static final String CONFIGURABLE_QUALIFIER = "CONFIGURABLE";
-    public static final String LOG_MODULE_PREFIX = "log";
+    public static final String LOG_MODULE = "log";
+    public static final String BALLERINA_ORG = "ballerina";
 
     final List<String> logFunctions = Arrays.asList("printInfo", "printError", "printWarn");
 
     List<SemanticModel> semanticModels = new ArrayList<>();
-
-    Document document = null;
 
     private final Reporter reporter;
 
@@ -75,10 +77,22 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
             });
         }
 
-        // If the document is null, we get the document of the context
-        if (document == null) {
-            document = context.currentPackage().module(context.moduleId()).document(context.documentId());
+        Document document = context.currentPackage().module(context.moduleId()).document(context.documentId());
+        List<String> importPrefix = new ArrayList<>();
+        if (document.syntaxTree().rootNode() instanceof ModulePartNode modulePartNode) {
+            importPrefix = modulePartNode.imports().stream()
+                    .filter(importDeclarationNode -> {
+                        ImportOrgNameNode importOrgNameNode = importDeclarationNode.orgName().orElse(null);
+                        return importOrgNameNode != null && BALLERINA_ORG.equals(importOrgNameNode.orgName().text());
+                    })
+                    .filter(importDeclarationNode -> importDeclarationNode.moduleName().stream().anyMatch(
+                            moduleNameNode -> LOG_MODULE.equals(moduleNameNode.text())))
+                    .map(importDeclarationNode -> {
+                        ImportPrefixNode importPrefixNode = importDeclarationNode.prefix().orElse(null);
+                        return importPrefixNode != null ? importPrefixNode.prefix().text() : LOG_MODULE;
+                    }).toList();
         }
+
 
         if (context.node() instanceof ExpressionStatementNode expressionStatementNode) {
             // Check if the log statement has a configurable qualifier
@@ -91,7 +105,7 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
 
             Node firstChild = childlist.getFirst().node().orElse(null);
             if (firstChild instanceof QualifiedNameReferenceNode qualifiedNameReferenceNode
-                    && qualifiedNameReferenceNode.modulePrefix().text().equals(LOG_MODULE_PREFIX)
+                    && importPrefix.contains(qualifiedNameReferenceNode.modulePrefix().text())
                     && logFunctions.contains(qualifiedNameReferenceNode.identifier().text())) {
 
                 // The argument of the log function is the third child. second and fourth child are the parentheses
@@ -106,7 +120,7 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
                         positionalArgumentNode.childEntries().forEach(childNodeEntry -> {
                             Node expression = childNodeEntry.node().orElse(null);
                             if (expression instanceof SimpleNameReferenceNode simpleNameReferenceNode) {
-                                checkConfigurableQualifier(simpleNameReferenceNode);
+                                checkConfigurableQualifier(simpleNameReferenceNode, document);
                             } else if (expression instanceof TemplateExpressionNode templateExpressionNode) {
                                 templateExpressionNode.content().forEach(content -> {
                                     if (content instanceof InterpolationNode interpolationNode) {
@@ -114,7 +128,7 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
                                             Node interpolationExpression = interpolationChild.node().orElse(null);
                                             if (interpolationExpression instanceof SimpleNameReferenceNode
                                                     simpleNameReferenceNode) {
-                                                checkConfigurableQualifier(simpleNameReferenceNode);
+                                                checkConfigurableQualifier(simpleNameReferenceNode, document);
                                             }
                                         });
                                     }
@@ -123,20 +137,20 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
                                 binaryExpressionNode.childEntries().forEach(childEntry -> {
                                     Node childNode = childEntry.node().orElse(null);
                                     if (childNode instanceof SimpleNameReferenceNode simpleNameReferenceNode) {
-                                        checkConfigurableQualifier(simpleNameReferenceNode);
+                                        checkConfigurableQualifier(simpleNameReferenceNode, document);
                                     }
                                 });
                             }
                         });
                     } else if (node instanceof NamedArgumentNode namedArgumentNode) {
-                        checkConfigurableQualifier(namedArgumentNode.expression());
+                        checkConfigurableQualifier(namedArgumentNode.expression(), document);
                     }
                 }
             }
         }
     }
 
-    private void checkConfigurableQualifier(ExpressionNode argumentNode) {
+    private void checkConfigurableQualifier(ExpressionNode argumentNode, Document document) {
         semanticModels.forEach(semanticModel -> {
             Symbol symbol = semanticModel.symbol(argumentNode).orElse(null);
             if (symbol instanceof VariableSymbol variableSymbol) {
