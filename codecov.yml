@@ -1,5 +1,6 @@
 fixes:
   - "ballerina/log/*/::log-ballerina/"
+  - "io/ballerina/stdlib/log/compiler/::./compiler-plugin/src/main/java/io/ballerina/stdlib/log/compiler/"
 
 ignore:
   - "**/tests"
