@@ -54,7 +54,7 @@ public class LogStatementAnalyzer implements AnalysisTask<SyntaxNodeAnalysisCont
     public static final String CONFIGURABLE_QUALIFIER = "CONFIGURABLE";
     public static final String LOG_MODULE_PREFIX = "log";
 
-    final List<String> logFunctions = Arrays.asList("printInfo", "printDebug", "printError", "printWarn");
+    final List<String> logFunctions = Arrays.asList("printInfo", "printError", "printWarn");
 
     List<SemanticModel> semanticModels = new ArrayList<>();
 

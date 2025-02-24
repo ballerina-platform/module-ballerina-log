@@ -50,6 +50,4 @@ public enum LogRule {
         return "{\"id\":" + this.getId() + ", \"kind\":\"" + this.rule.kind() + "\"," +
                 " \"description\" : \"" + this.rule.description() + "\"}";
     }
-
-
 }

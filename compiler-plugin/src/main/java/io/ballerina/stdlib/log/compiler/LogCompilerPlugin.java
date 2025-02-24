@@ -32,8 +32,6 @@ public class LogCompilerPlugin extends CompilerPlugin {
 
     @Override
     public void init(CompilerPluginContext context) {
-
-        //context.addCodeModifier(new LogCodeModifier());
         Object object = context.userData().get(SCANNER_CONTEXT);
         if (object instanceof ScannerContext scannerContext) {
             context.addCodeAnalyzer(new StaticCodeAnalyzer(scannerContext.getReporter()));

@@ -19,9 +19,11 @@ import ballerina/log;
 public function main() {
     log:printInfo(password);
     log:printError(string `Error: ${password}`);
+    log:printWarn(`Error: ${password}`);
     log:printError("Error " + password);
     log:printWarn("Warning", password = password);
     log:printError("Error", password = password, user = user);
+    log:printError(password, user = user);
 }
 
 function log() {
