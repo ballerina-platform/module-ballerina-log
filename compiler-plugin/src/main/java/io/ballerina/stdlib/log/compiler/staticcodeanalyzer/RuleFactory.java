@@ -1,7 +1,7 @@
 /*
- * Copyright (c) 2022, WSO2 Inc. (http://www.wso2.org) All Rights Reserved.
+ * Copyright (c) 2024, WSO2 LLC. (http://www.wso2.org) All Rights Reserved.
  *
- * WSO2 Inc. licenses this file to you under the Apache License,
+ * WSO2 LLC. licenses this file to you under the Apache License,
  * Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License.
  * You may obtain a copy of the License at
@@ -16,18 +16,18 @@
  * under the License.
  */
 
-package io.ballerina.stdlib.log.plugin;
+package io.ballerina.stdlib.log.compiler.staticcodeanalyzer;
 
-import io.ballerina.projects.plugins.CompilerPlugin;
-import io.ballerina.projects.plugins.CompilerPluginContext;
+import io.ballerina.scan.Rule;
+import io.ballerina.scan.RuleKind;
 
 /**
- * log module Compiler plugin.
+ * {@code RuleFactory} contains the logic to create a {@link Rule}.
+ *
+ * @since 2.12.0
  */
-public class LogCompilerPlugin extends CompilerPlugin {
-
-    @Override
-    public void init(CompilerPluginContext compilerPluginContext) {
-//        compilerPluginContext.addCodeModifier(new LogCodeModifier());
+public class RuleFactory {
+    public static Rule createRule(int id, String description, RuleKind kind) {
+        return new RuleImpl(id, description, kind);
     }
 }

@@ -5,6 +5,7 @@ This file contains all the notable changes done to the Ballerina TCP package thr
 
 ### Added
 - [Support logging raw template value in log APIs](https://github.com/ballerina-platform/ballerina-library/issues/3331)
+- [Add static code rules](https://github.com/ballerina-platform/ballerina-library/issues/7283)
 
 ## [2.5.1] - 2023-01-04
 
