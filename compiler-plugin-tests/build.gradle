@@ -20,6 +20,12 @@ plugins {
     id 'java'
     id 'checkstyle'
     id 'com.github.spotbugs'
+    id 'jacoco'
+}
+
+jacoco {
+    toolVersion = "${jacocoVersion}"
+    reportsDirectory = file("$project.buildDir/reports/jacoco")
 }
 
 description = 'Ballerina - Log Compiler Plugin Tests'
@@ -44,7 +50,6 @@ tasks.withType(JavaCompile) {
 sourceCompatibility = JavaVersion.VERSION_21
 
 test {
-    systemProperty "ballerina.offline.flag", "true"
     useTestNG() {
         suites 'src/test/resources/testng.xml'
     }
@@ -60,6 +65,15 @@ test {
             }
         }
     }
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+    }
+    sourceSets project(':log-compiler-plugin').sourceSets.main
 }
 
 spotbugsTest {
