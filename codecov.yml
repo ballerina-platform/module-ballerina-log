@@ -5,6 +5,7 @@ fixes:
 ignore:
   - "**/tests"
   - "test-utils"
+  - "compiler-plugin"
 
 coverage:
   precision: 2
