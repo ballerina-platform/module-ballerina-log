@@ -20,6 +20,12 @@ path = "../native/build/libs/log-native-@project.version@.jar"
 
 [[platform.java21.dependency]]
 groupId = "io.ballerina.stdlib"
+artifactId = "log-compiler-plugin"
+version = "@toml.version@"
+path = "../compiler-plugin/build/libs/log-compiler-plugin-@project.version@.jar"
+
+[[platform.java21.dependency]]
+groupId = "io.ballerina.stdlib"
 artifactId = "log-test-utils"
 version = "@toml.version@"
 path = "../test-utils/build/libs/log-test-utils-@project.version@.jar"
