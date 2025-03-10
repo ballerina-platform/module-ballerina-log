@@ -20,21 +20,22 @@ package io.ballerina.stdlib.log.compiler;
 
 import io.ballerina.projects.plugins.CompilerPlugin;
 import io.ballerina.projects.plugins.CompilerPluginContext;
-import io.ballerina.scan.ScannerContext;
-import io.ballerina.stdlib.log.compiler.staticcodeanalyzer.StaticCodeAnalyzer;
+//import io.ballerina.scan.ScannerContext;
+//import io.ballerina.stdlib.log.compiler.staticcodeanalyzer.StaticCodeAnalyzer;
 
 /**
  * log module Compiler plugin.
  */
 public class LogCompilerPlugin extends CompilerPlugin {
 
-    private static final String SCANNER_CONTEXT = "ScannerContext";
+//    private static final String SCANNER_CONTEXT = "ScannerContext";
 
     @Override
     public void init(CompilerPluginContext context) {
-        Object object = context.userData().get(SCANNER_CONTEXT);
-        if (object instanceof ScannerContext scannerContext) {
-            context.addCodeAnalyzer(new StaticCodeAnalyzer(scannerContext.getReporter()));
-        }
+        //
+//        Object object = context.userData().get(SCANNER_CONTEXT);
+//        if (object instanceof ScannerContext scannerContext) {
+//            context.addCodeAnalyzer(new StaticCodeAnalyzer(scannerContext.getReporter()));
+//        }
     }
 }
