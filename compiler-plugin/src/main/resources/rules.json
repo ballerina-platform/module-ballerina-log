@@ -1,0 +1,7 @@
+[
+  {
+    "id": 1,
+    "kind": "VULNERABILITY",
+    "description": "Potentially-sensitive configurable variables are logged"
+  }
+]
