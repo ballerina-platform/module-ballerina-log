@@ -42,5 +42,3 @@ integration-tests/Dependencies.toml
 # Ballerina
 velocity.log*
 *Ballerina.lock
-
-compiler-plugin-tests/**/target
