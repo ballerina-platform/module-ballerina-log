@@ -251,7 +251,7 @@ public isolated function printWarn(string|PrintableRawTemplate msg, error? 'erro
 # ```
 #
 # + path - The path of the file
-# + option - To indicate whether to overwrite or append the log output
+# + option - The file write option. Default is `APPEND`
 #
 # + return - A `log:Error` if an invalid file path was provided
 # # Deprecated
