@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * This class includes tests for Ballerina Http static code analyzer.
  * @since 2.12.0
  */
-class StaticCodeAnalyzerTest {
+public class StaticCodeAnalyzerTest {
 
     PrintStream outStream = System.out;
 
