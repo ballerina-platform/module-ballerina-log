@@ -64,6 +64,7 @@ class StaticCodeAnalyzerTest {
                 .matcher(output.getOutput()).find()) {
             return;
         }
+        outStream.println("The message does not match the expected pattern. Output: " + output.getOutput());
         Assert.assertFalse(ExitCode.hasFailure(output.getExitCode()));
     }
 
