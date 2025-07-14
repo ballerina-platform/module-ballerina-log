@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
  * This class includes tests for Ballerina Http static code analyzer.
  * @since 2.12.0
  */
-class StaticCodeAnalyzerTest {
+public class StaticCodeAnalyzerTest {
 
     PrintStream outStream = System.out;
 
@@ -64,6 +64,7 @@ class StaticCodeAnalyzerTest {
                 .matcher(output.getOutput()).find()) {
             return;
         }
+        outStream.println("The message does not match the expected pattern. Output: " + output.getOutput());
         Assert.assertFalse(ExitCode.hasFailure(output.getExitCode()));
     }
 
