@@ -17,23 +17,17 @@
 import ballerina/jballerina.java;
 
 function init() returns error? {
-    if(!(level is LogLevel)) {
-       return  error(string `invalid log level: ${level}`);
-    }
-    boolean invalidModuleLogLevel = false;
-    string invalidModule = "";
-    string invalidLogLevel = "";
-    modules.forEach(function(Module module) {
-        if (!(module.level is LogLevel)) {
-            invalidModuleLogLevel = true;
-            invalidLogLevel = module.level;
-            invalidModule = module.name;
-        }
-    });
-    if invalidModuleLogLevel {
-        return  error(string `invalid log level: ${invalidLogLevel} for module: ${invalidModule}`); 
-    }
+    rootLogger = new RootLogger();
+    check validateDestinations();
     setModule();
+}
+
+function validateDestinations() returns error? {
+    foreach string destination in destinations {
+        if destination != STDERR && destination != STDOUT && !destination.endsWith(".log") {
+            return error(string `The given destination path: '${destination}' is not valid. Log destination should be either 'stderr', 'stdout' or a valid file with .log extension.`);
+        }
+    }
 }
 
 isolated function setModule() = @java:Method {
