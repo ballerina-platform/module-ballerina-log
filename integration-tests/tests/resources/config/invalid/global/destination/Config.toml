@@ -1,0 +1,2 @@
+[ballerina.log]
+destinations = ["stderr", "stdout", "tests/resources/logs/ballerina.log", "invalid_file"]

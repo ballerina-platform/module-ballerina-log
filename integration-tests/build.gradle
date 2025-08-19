@@ -114,6 +114,9 @@ task copyTestResources(type: Copy) {
     into("file-write-project") {
         from "tests/resources/samples/file-write-output/file-write-project"
     }
+    into("logger-from-config") {
+        from "tests/resources/samples/logger/logger-from-config"
+    }
 }
 
 task copyTestOutputResources(type: Copy) {
@@ -149,7 +152,7 @@ task ballerinaIntegrationTests {
                 environment.remove("JAVA_TOOL_OPTIONS")
                 commandLine 'cmd', '/c', "$distributionBinPath/bal.bat test ${graalvmFlag} --offline && exit %%ERRORLEVEL%%"
             } else {
-                commandLine 'sh', '-c', "$distributionBinPath/bal test ${graalvmFlag} --offline --code-coverage --includes=*"
+                commandLine 'sh', '-c', "$distributionBinPath/bal test ${graalvmFlag} --offline --code-coverage"
             }
         }
     }
