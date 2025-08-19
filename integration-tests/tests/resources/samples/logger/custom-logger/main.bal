@@ -107,8 +107,8 @@ isolated class CustomLogger {
     }
 }
 
-final log:Logger customInfoLogger = check new CustomLogger(filePath = "build/tmp/output/cutom-logger-info.log", keyValues = {"mode": "info"});
-final log:Logger customDebugLogger = check new CustomLogger(filePath = "build/tmp/output/cutom-logger-debug.log", keyValues = {"mode": "debug"}, level = log:DEBUG);
+final log:Logger customInfoLogger = check new CustomLogger(filePath = "build/tmp/output/custom-logger-info.log", keyValues = {"mode": "info"});
+final log:Logger customDebugLogger = check new CustomLogger(filePath = "build/tmp/output/custom-logger-debug.log", keyValues = {"mode": "debug"}, level = log:DEBUG);
 
 final log:Logger customChildLogger = check customInfoLogger.withContext(child = true);
 

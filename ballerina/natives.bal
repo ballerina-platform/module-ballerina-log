@@ -162,7 +162,7 @@ isolated function processMessage(string|PrintableRawTemplate msg) returns string
 public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     // Added `stackTrace` as an optional param due to https://github.com/ballerina-platform/ballerina-lang/issues/34572
     string moduleName = getModuleName(keyValues);
-    rootLogger.print(DEBUG, moduleName, msg, 'error, stackTrace.clone(), keyValues.clone());
+    rootLogger.print(DEBUG, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
 # Prints error logs.
@@ -177,7 +177,7 @@ public isolated function printDebug(string|PrintableRawTemplate msg, error? 'err
 # + keyValues - The key-value pairs to be logged
 public isolated function printError(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     string moduleName = getModuleName(keyValues);
-    rootLogger.print(ERROR, moduleName, msg, 'error, stackTrace.clone(), keyValues.clone());
+    rootLogger.print(ERROR, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
 # Prints info logs.
@@ -191,7 +191,7 @@ public isolated function printError(string|PrintableRawTemplate msg, error? 'err
 # + keyValues - The key-value pairs to be logged
 public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     string moduleName = getModuleName(keyValues);
-    rootLogger.print(INFO, moduleName, msg, 'error, stackTrace.clone(), keyValues.clone());
+    rootLogger.print(INFO, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
 # Prints warn logs.
@@ -205,7 +205,7 @@ public isolated function printInfo(string|PrintableRawTemplate msg, error? 'erro
 # + keyValues - The key-value pairs to be logged
 public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     string moduleName = getModuleName(keyValues);
-    rootLogger.print(WARN, moduleName, msg, 'error, stackTrace.clone(), keyValues.clone());
+    rootLogger.print(WARN, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
 # Set the log output to a file. Note that all the subsequent logs of the entire application will be written to this file.

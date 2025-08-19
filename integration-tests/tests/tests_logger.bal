@@ -106,7 +106,7 @@ function testCustomLogger() returns error? {
     test:assertEquals(logLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
     check sc.close();
 
-    string[] fileInfoLogs = check io:fileReadLines("build/tmp/output/cutom-logger-info.log");
+    string[] fileInfoLogs = check io:fileReadLines("build/tmp/output/custom-logger-info.log");
     test:assertEquals(fileInfoLogs.length(), 6, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(fileInfoLogs[0].endsWith(string `] {INFO} "This is an info message"  mode="info"`));
     test:assertTrue(fileInfoLogs[1].endsWith(string `] {ERROR} "This is an error message" error="An error occurred" mode="info"`));
@@ -115,7 +115,7 @@ function testCustomLogger() returns error? {
     test:assertTrue(fileInfoLogs[4].endsWith(string `] {ERROR} "This is an error message" error="An error occurred" mode="info" child="true"`));
     test:assertTrue(fileInfoLogs[5].endsWith(string `] {WARN} "This is a warning message"  mode="info" child="true"`));
 
-    string[] fileDebugLogs = check io:fileReadLines("build/tmp/output/cutom-logger-debug.log");
+    string[] fileDebugLogs = check io:fileReadLines("build/tmp/output/custom-logger-debug.log");
     test:assertEquals(fileDebugLogs.length(), 4, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(fileDebugLogs[0].endsWith(string `] {INFO} "This is an info message"  mode="debug"`));
     test:assertTrue(fileDebugLogs[1].endsWith(string `] {ERROR} "This is an error message" error="An error occurred" mode="debug"`));
