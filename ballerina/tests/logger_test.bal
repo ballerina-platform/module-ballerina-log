@@ -30,20 +30,16 @@ type Context record {|
 
 isolated function getCtx() returns Context => {id: "ctx-1234", msg: "Sample Context Message"};
 
-isolated string[] stdErrLogs = [];
-isolated string[] stdOutLogs = [];
+string[] stdErrLogs = [];
+string[] stdOutLogs = [];
 
-isolated function addLogs(io:FileOutputStream fileOutputStream, io:Printable... values) {
+function addLogs(io:FileOutputStream fileOutputStream, io:Printable... values) {
     var firstValue = values[0];
     if firstValue is string {
         if fileOutputStream == io:stderr {
-            lock {
-                stdErrLogs.push(firstValue);
-            }
+            stdErrLogs.push(firstValue);
         } else if fileOutputStream == io:stdout {
-            lock {
-                stdOutLogs.push(firstValue);
-            }
+            stdOutLogs.push(firstValue);
         }
     }
 }
@@ -63,17 +59,16 @@ function testBasicLoggingFunctions() returns io:Error? {
     string expectedMsg21 = string `, "level":"ERROR", "module":"ballerina/log$test", "message":"This is an error message", "error":{"causes":[], "message":"An error ocurred", "detail":{}, "stackTrace":`;
     string expectedMsg22 = string `, "key2":"val:value2", "name":"logger1", "env":"prod"}`;
     string expectedMsg3 = string `, "level":"WARN", "module":"ballerina/log$test", "message":"This is a warning message", "name":"logger1", "env":"prod"}`;
-    lock {
-        test:assertEquals(stdErrLogs.length(), 3);
-        test:assertTrue(stdErrLogs[0].endsWith(expectedMsg1));
-        test:assertTrue(stdErrLogs[1].includes(expectedMsg21));
-        test:assertTrue(stdErrLogs[1].endsWith(expectedMsg22));
-        test:assertTrue(stdErrLogs[2].endsWith(expectedMsg3));
-        stdErrLogs.removeAll();
-    }
-    lock {
-        test:assertTrue(stdOutLogs.length() == 0);
-    }
+
+    test:assertEquals(stdErrLogs.length(), 3);
+    test:assertTrue(stdErrLogs[0].endsWith(expectedMsg1));
+    test:assertTrue(stdErrLogs[1].includes(expectedMsg21));
+    test:assertTrue(stdErrLogs[1].endsWith(expectedMsg22));
+    test:assertTrue(stdErrLogs[2].endsWith(expectedMsg3));
+    stdErrLogs.removeAll();
+
+    test:assertTrue(stdOutLogs.length() == 0);
+
     string[] logger1FileLogs = check io:fileReadLines("target/tmp/output/logger1.log");
     test:assertEquals(logger1FileLogs.length(), 3);
     test:assertTrue(logger1FileLogs[0].endsWith(expectedMsg1));
@@ -92,18 +87,17 @@ function testBasicLoggingFunctions() returns io:Error? {
     string expectedMsg52 = string ` name="logger2" env="dev"`;
     string expectedMsg6 = string ` level=DEBUG module=ballerina/log$test message="This is a debug message" key1="value1" key2="val:value2" ctx={"id":"ctx-1234","msg":"Sample Context Message"} name="logger2" env="dev"`;
     string expectedMsg7 = string ` level=WARN module=ballerina/log$test message="This is a warning message" name="logger2" env="dev"`;
-    lock {
-        test:assertTrue(stdErrLogs.length() == 0);
-    }
-    lock {
-        test:assertEquals(stdOutLogs.length(), 4);
-        test:assertTrue(stdOutLogs[0].endsWith(expectedMsg4));
-        test:assertTrue(stdOutLogs[1].includes(expectedMsg51));
-        test:assertTrue(stdOutLogs[1].endsWith(expectedMsg52));
-        test:assertTrue(stdOutLogs[2].endsWith(expectedMsg6));
-        test:assertTrue(stdOutLogs[3].endsWith(expectedMsg7));
-        stdOutLogs.removeAll();
-    }
+
+    test:assertTrue(stdErrLogs.length() == 0);
+
+    test:assertEquals(stdOutLogs.length(), 4);
+    test:assertTrue(stdOutLogs[0].endsWith(expectedMsg4));
+    test:assertTrue(stdOutLogs[1].includes(expectedMsg51));
+    test:assertTrue(stdOutLogs[1].endsWith(expectedMsg52));
+    test:assertTrue(stdOutLogs[2].endsWith(expectedMsg6));
+    test:assertTrue(stdOutLogs[3].endsWith(expectedMsg7));
+    stdOutLogs.removeAll();
+
     string[] logger2FileLogs = check io:fileReadLines("target/tmp/output/logger2.log");
     test:assertEquals(logger2FileLogs.length(), 4);
     test:assertTrue(logger2FileLogs[0].endsWith(expectedMsg4));
@@ -126,25 +120,21 @@ function testRootLogger() {
 
     test:when(mock_fprintln).call("addLogs");
     logger.printInfo("This is an info message");
-    lock {
-        test:assertTrue(stdOutLogs.length() == 0);
-    }
-    lock {
-        test:assertEquals(stdErrLogs.length(), 1);
-        test:assertTrue(stdErrLogs[0].endsWith(string ` "level":"INFO", "module":"ballerina/log$test", "message":"This is an info message", "env":"test"}`));
-        stdErrLogs.removeAll();
-    }
+
+    test:assertTrue(stdOutLogs.length() == 0);
+
+    test:assertEquals(stdErrLogs.length(), 1);
+    test:assertTrue(stdErrLogs[0].endsWith(string ` "level":"INFO", "module":"ballerina/log$test", "message":"This is an info message", "env":"test"}`));
+    stdErrLogs.removeAll();
 
     Logger newLogger = fromConfig(newLoggerConfig);
     newLogger.printDebug("This is a debug message");
-    lock {
-        test:assertTrue(stdErrLogs.length() == 0);
-    }
-    lock {
-        test:assertEquals(stdOutLogs.length(), 1);
-        test:assertTrue(stdOutLogs[0].endsWith(string ` level=DEBUG module=ballerina/log$test message="This is a debug message" env="test" name="newLogger"`));
-        stdOutLogs.removeAll();
-    }
+
+    test:assertTrue(stdErrLogs.length() == 0);
+
+    test:assertEquals(stdOutLogs.length(), 1);
+    test:assertTrue(stdOutLogs[0].endsWith(string ` level=DEBUG module=ballerina/log$test message="This is a debug message" env="test" name="newLogger"`));
+    stdOutLogs.removeAll();
 }
 
 @test:Config {
@@ -155,12 +145,10 @@ function testChildLogger() {
     Logger childLogger = rootLogger.withContext(child = true, name = `child-logger`, key = isolated function() returns string => "value");
     test:when(mock_fprintln).call("addLogs");
     childLogger.printInfo("This is an info message");
-    lock {
-        test:assertTrue(stdOutLogs.length() == 0);
-    }
-    lock {
-        test:assertEquals(stdErrLogs.length(), 1);
-        test:assertTrue(stdErrLogs[0].endsWith(string `, "level":"INFO", "module":"ballerina/log$test", "message":"This is an info message", "env":"test", "child":true, "name":"child-logger", "key":"value"}`));
-        stdErrLogs.removeAll();
-    }
+
+    test:assertTrue(stdOutLogs.length() == 0);
+
+    test:assertEquals(stdErrLogs.length(), 1);
+    test:assertTrue(stdErrLogs[0].endsWith(string `, "level":"INFO", "module":"ballerina/log$test", "message":"This is an info message", "env":"test", "child":true, "name":"child-logger", "key":"value"}`));
+    stdErrLogs.removeAll();
 }
