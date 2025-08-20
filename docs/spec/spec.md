@@ -1,6 +1,6 @@
 # Specification: Ballerina Log Library
 
-_Authors_: @daneshk @MadhukaHarith92  
+_Owners_: @daneshk @MadhukaHarith92  
 _Reviewers_: @daneshk  
 _Created_: 2021/11/15  
 _Updated_: 2025/08/20  

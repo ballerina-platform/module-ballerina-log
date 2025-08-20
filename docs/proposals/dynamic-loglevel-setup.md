@@ -1,4 +1,4 @@
-# Proposal: Support Data Mapping in CSV read/write operations
+# Proposal: Support Dynamic Log Level Setup
 
 _Owners_: @daneshk   
 _Reviewers_: @daneshk  
