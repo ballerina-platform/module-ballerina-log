@@ -33,11 +33,11 @@ import java.util.Date;
  */
 public class Utils {
 
-    public static final String SIMPLE_DATA_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    public static final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
     public static final String DOT_REGEX = "\\.";
     public static final String SLASH = "/";
     public static final String EMPTY_STRING = "";
-    public static final String OFFSET_VALIDATION_ERROR = "Offset must be greater or equal to zero";
+    public static final String OFFSET_VALIDATION_ERROR = "Offset must be greater than or equal to zero";
     public static final String BALLERINA_LOG_CLASS_NAME = "ballerina.log";
     public static final String INVOKED_FUNCTION_NAME = "getInvokedModuleName";
 
@@ -81,7 +81,7 @@ public class Utils {
      */
     public static BString getCurrentTime() {
         return StringUtils.fromString(
-                new SimpleDateFormat(SIMPLE_DATA_FORMAT)
+                new SimpleDateFormat(SIMPLE_DATE_FORMAT)
                         .format(new Date()));
     }
 }
