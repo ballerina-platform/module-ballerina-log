@@ -57,7 +57,7 @@ public class Utils {
                                 String className = frame.getClassName();
                                 String methodName = frame.getMethodName();
                                 return !(className.startsWith(BALLERINA_LOG_CLASS_NAME) &&
-                                        methodName.matches(INVOKED_FUNCTION_NAME));
+                                        methodName.equals(INVOKED_FUNCTION_NAME));
                             })
                             .skip(offset + 1)
                             .findFirst() // Get the next frame (caller)

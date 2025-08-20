@@ -25,7 +25,7 @@ const LOGGER_FROM_CONFIG_CONFIG_FILE = "tests/resources/samples/logger/logger-fr
 @test:Config {
     groups: ["logger"]
 }
-function testRootLoogerWithConfig() returns error? {
+function testRootLoggerWithConfig() returns error? {
     Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_ROOT_LOGGER}, (), "run", LOG_LEVEL_FILE);
     Process result = check execResult;
     int _ = check result.waitForExit();
