@@ -17,11 +17,15 @@ Currently, the log module does not support dynamic log levels and the user has t
     * ```setLogLevel()``` - To set the root and module log level.
 ## Motivation
 
-Until now, user didn't have the support for dynamic log levels which can be a hindrance in large code bases. This feature is available in most of the popular programming languages. To support user requirements [discord thread](https://discord.com/channels/957996897782616114/1124006547857616916), we are adding these two new APIs.
+Until now, users didn't have the support for dynamic log levels which can be a hindrance in large code bases. This feature is available in most of the popular programming languages. To support user requirements [discord thread](https://discord.com/channels/957996897782616114/1124006547857616916), we are adding this new API.
 
 ## Description
 
 We will be adding the new API with the following signature to set the root and module log levels depending on the input parameters.
-`log:setLogLevel(string? organization = (), string? module = (), string level)`
+
+```ballerina
+log:setLogLevel(string? organization = (), string? module = (), string level)
+```
+
 If both `organization` and `module` are present, module log level is modified and otherwise the root log level is modified. The log levels mentioned in Config.toml is considered as the default level, and it won't be changed during the dynamic log level changes during runtime.
 
