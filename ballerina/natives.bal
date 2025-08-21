@@ -72,12 +72,11 @@ type Module record {
     readonly Level level;
 };
 
-# Json log format.
-public const JSON_FORMAT = "json";
-# Logfmt log format.
-public const LOGFMT = "logfmt";
 # Represents supported log formats.
-public type LogFormat JSON_FORMAT|LOGFMT;
+public enum LogFormat {
+    JSON_FORMAT = "json",
+    LOGFMT = "logfmt"
+};
 
 # Root logger default log format.
 configurable LogFormat format = LOGFMT;

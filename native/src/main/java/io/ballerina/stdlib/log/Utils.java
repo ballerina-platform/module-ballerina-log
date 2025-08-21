@@ -45,6 +45,20 @@ public class Utils {
 
     }
 
+    // This method is used to traverse through the thread stacktrace to find the trace which invoked
+    // the method: INVOKED_FUNCTION_NAME. The offset is to move up in the stacktrace.
+    // This is implemented since we do not have a proper way to extract such information from
+    // Ballerina runtime
+    // Related issue: https://github.com/ballerina-platform/ballerina-lang/issues/35083
+    // The proposed solution is to use a code modifier to add the module information, but it caused
+    // performance issue in compilation. We may need to revisit that implementation or get
+    // an API from runtime
+    /**
+     * Get the module name of the caller of the log native function.
+     *
+     * @param offset The offset to move up in the stack trace
+     * @return The module name of the caller
+     */
     public static BString getInvokedModuleName(long offset) {
         if (offset < 0) {
             throw ErrorCreator.createError(StringUtils.fromString(OFFSET_VALIDATION_ERROR));

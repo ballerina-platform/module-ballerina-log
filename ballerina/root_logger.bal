@@ -29,6 +29,13 @@ public type Config record {|
     readonly & AnydataKeyValues keyValues = {...keyValues};
 |};
 
+type ConfigInternal record {|
+    LogFormat format = format;
+    Level level = level;
+    readonly & string[] destinations = destinations;
+    readonly & KeyValues keyValues = {...keyValues};
+|};
+
 final RootLogger rootLogger;
 
 # Get the root logger instance.
@@ -62,9 +69,9 @@ isolated class RootLogger {
     private final LogFormat format;
     private final Level level;
     private final readonly & string[] destinations;
-    private final readonly & AnydataKeyValues keyValues;
+    private final readonly & KeyValues keyValues;
 
-    public isolated function init(Config config = {}) {
+    public isolated function init(Config|ConfigInternal config = <Config>{}) {
         self.format = config.format;
         self.level = config.level;
         self.destinations = config.destinations;
@@ -92,12 +99,11 @@ isolated class RootLogger {
     }
 
     public isolated function withContext(*KeyValues keyValues) returns Logger {
-        AnydataKeyValues newKeyValues = {...self.keyValues};
+        KeyValues newKeyValues = {...self.keyValues};
         foreach [string, Value] [k, v] in keyValues.entries() {
-            anydata value = v is Valuer ? v() : v is PrintableRawTemplate ? processTemplate(v) : v;
-            newKeyValues[k] = value;
+            newKeyValues[k] = v;
         }
-        Config config = {
+        ConfigInternal config = {
             format: self.format,
             level: self.level,
             destinations: self.destinations,
@@ -120,15 +126,11 @@ isolated class RootLogger {
             logRecord.'error = getFullErrorDetails(err);
         }
         if stackTrace is error:StackFrame[] {
-            json[] stackTraceArray = [];
-            foreach var element in stackTrace {
-                stackTraceArray.push(element.toString());
-            }
-            logRecord["stackTrace"] = stackTraceArray;
+            logRecord["stackTrace"] = from var element in stackTrace
+                select element.toString();
         }
         foreach [string, Value] [k, v] in keyValues.entries() {
-            anydata value = v is Valuer ? v() : v is PrintableRawTemplate ? processMessage(v) : v;
-            logRecord[k] = value;
+            logRecord[k] = v is Valuer ? v() : v is PrintableRawTemplate ? processMessage(v) : v;
         }
         if observe:isTracingEnabled() {
             map<string> spanContext = observe:getSpanContext();
@@ -136,8 +138,8 @@ isolated class RootLogger {
                 logRecord[k] = v;
             }
         }
-        foreach [string, anydata] [k, v] in self.keyValues.entries() {
-            logRecord[k] = v;
+        foreach [string, Value] [k, v] in self.keyValues.entries() {
+            logRecord[k] = v is Valuer ? v() : v is PrintableRawTemplate ? processMessage(v) : v;
         }
 
         string logOutput = self.format == JSON_FORMAT ? logRecord.toJsonString() : printLogFmt(logRecord);
