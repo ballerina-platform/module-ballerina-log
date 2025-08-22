@@ -30,11 +30,12 @@ function mockFprintln(io:FileOutputStream fileOutputStream, io:Printable... valu
     logMessage = "something went wrong";
 }
 
-@test:Config {}
+@test:Config {
+    dependsOn: [testRootLogger]
+}
 function testPrintLog() {
     test:when(mock_fprintln).call("mockFprintln");
-
-    main();
+    test();
     test:assertEquals(logMessage, "something went wrong");
 }
 
@@ -81,7 +82,7 @@ isolated function testPrintLogFmtExtern() {
     "time=2021-05-04T10:32:13.220+05:30 level=DEBUG module=foo/bar message=\"debug message\" username=\"Alex\" id=845315");
 }
 
-public isolated function main() {
+function test() {
     error err = error("bad sad");
     printDebug("something went wrong", 'error = err, stackTrace = err.stackTrace(), username = "Alex92", admin = true, id = 845315,
     attempts = isolated function() returns int {

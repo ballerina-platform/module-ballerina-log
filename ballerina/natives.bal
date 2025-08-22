@@ -222,6 +222,10 @@ public isolated function printWarn(string|PrintableRawTemplate msg, error? 'erro
 # Add the output file path as part of the `destinations` configurable instead.
 @deprecated
 public isolated function setOutputFile(string path, FileWriteOption option = APPEND) returns Error? {
+    // Deprecated usage warning. The default option is [STDERR]
+    if destinations != [STDERR] {
+        io:fprintln(io:stderr, "warning: deprecated `setOutputFile` function is being called along with the destinations configurations. Consider adding the file path set by the `setOutputFile` function to the destinations list.");
+    }
     if !path.endsWith(".log") {
         return error Error("The given path is not valid. Should be a file with .log extension.");
     }

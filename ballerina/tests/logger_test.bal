@@ -112,7 +112,7 @@ configurable Config newLoggerConfig = {};
 
 @test:Config {
     groups: ["logger"],
-    after: testBasicLoggingFunctions
+    dependsOn: [testBasicLoggingFunctions]
 }
 function testRootLogger() {
     Logger logger = root();
@@ -139,7 +139,7 @@ function testRootLogger() {
 
 @test:Config {
     groups: ["logger"],
-    after: testRootLogger
+    dependsOn: [testRootLogger]
 }
 function testChildLogger() {
     Logger childLogger = rootLogger.withContext(child = true, name = `child-logger`, key = isolated function() returns string => "value");

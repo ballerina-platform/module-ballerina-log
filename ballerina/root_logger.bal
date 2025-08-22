@@ -158,7 +158,7 @@ isolated class RootLogger {
             } else {
                 io:Error? result = io:fileWriteString(destination, logOutput + "\n", io:APPEND);
                 if result is error {
-                    io:fprintln(io:stderr, string `failed to write log output to the file: ${result.message()}`);
+                    io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);
                 }
             }
         }

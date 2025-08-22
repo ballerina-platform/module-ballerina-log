@@ -23,6 +23,9 @@ function init() returns error? {
 }
 
 function validateDestinations() returns error? {
+    if destinations.length() == 0 {
+        return error("At least one log destination must be specified.");
+    }
     foreach string destination in destinations {
         if destination != STDERR && destination != STDOUT && !destination.endsWith(".log") {
             return error(string `The given destination path: '${destination}' is not valid. Log destination should be either 'stderr', 'stdout' or a valid file with .log extension.`);
