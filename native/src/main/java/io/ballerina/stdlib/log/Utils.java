@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.log;
 
+import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BString;
@@ -32,23 +33,59 @@ import java.util.Date;
  */
 public class Utils {
 
+    public static final String SIMPLE_DATE_FORMAT = "yyyy-MM-dd'T'HH:mm:ss.SSSXXX";
+    public static final String DOT_REGEX = "\\.";
+    public static final String SLASH = "/";
+    public static final String EMPTY_STRING = "";
+    public static final String OFFSET_VALIDATION_ERROR = "Offset must be greater than or equal to zero";
+    public static final String BALLERINA_LOG_CLASS_NAME = "ballerina.log";
+    public static final String INVOKED_FUNCTION_NAME = "getInvokedModuleName";
+
     private Utils() {
 
     }
 
+    // This method is used to traverse through the thread stacktrace to find the trace which invoked
+    // the method: INVOKED_FUNCTION_NAME. The offset is to move up in the stacktrace.
+    // This is implemented since we do not have a proper way to extract such information from
+    // Ballerina runtime
+    // Related issue: https://github.com/ballerina-platform/ballerina-lang/issues/35083
+    // The proposed solution is to use a code modifier to add the module information, but it caused
+    // performance issue in compilation. We may need to revisit that implementation or get
+    // an API from runtime
     /**
-     * Get the name of the current module.
+     * Get the module name of the caller of the log native function.
      *
-     * @return module name
+     * @param offset The offset to move up in the stack trace
+     * @return The module name of the caller
      */
-    public static BString getModuleNameExtern() {
-        String className = Thread.currentThread().getStackTrace()[5].getClassName();
-        String[] pkgData = className.split("\\.");
-        if (pkgData.length > 1) {
-            String module = IdentifierUtils.decodeIdentifier(pkgData[1]);
-            return StringUtils.fromString(pkgData[0] + "/" + module);
+    public static BString getInvokedModuleName(long offset) {
+        if (offset < 0) {
+            throw ErrorCreator.createError(StringUtils.fromString(OFFSET_VALIDATION_ERROR));
         }
-        return StringUtils.fromString(".");
+        return StackWalker.getInstance()
+                .walk(stackFrameStream -> {
+                    // Skip frames until we find the Ballerina log natives frame
+                    return stackFrameStream
+                            .dropWhile(frame -> {
+                                String className = frame.getClassName();
+                                String methodName = frame.getMethodName();
+                                return !(className.startsWith(BALLERINA_LOG_CLASS_NAME) &&
+                                        methodName.equals(INVOKED_FUNCTION_NAME));
+                            })
+                            .skip(offset + 1)
+                            .findFirst() // Get the next frame (caller)
+                            .map(frame -> {
+                                String className = frame.getClassName();
+                                String[] pkgData = className.split(DOT_REGEX);
+                                if (pkgData.length > 1) {
+                                    String module = IdentifierUtils.decodeIdentifier(pkgData[1]);
+                                    return StringUtils.fromString(pkgData[0] + SLASH + module);
+                                }
+                                return StringUtils.fromString(EMPTY_STRING);
+                            })
+                            .orElse(StringUtils.fromString(EMPTY_STRING));
+                });
     }
 
     /**
@@ -58,7 +95,7 @@ public class Utils {
      */
     public static BString getCurrentTime() {
         return StringUtils.fromString(
-                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
+                new SimpleDateFormat(SIMPLE_DATE_FORMAT)
                         .format(new Date()));
     }
 }
