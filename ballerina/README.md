@@ -57,7 +57,7 @@ By default, logs are written to the `stderr` stream in `logfmt` format. You can 
 ```toml
 [ballerina.log]
 format = "json" # or "logfmt"
-destinations = ["stderr", "./logs/app.log"]
+destinations = ["stderr", {path = "./logs/app.log"}]
 ```
 
 Sample output (JSON):
@@ -68,7 +68,7 @@ Sample output (JSON):
 
 > **Note:**
 >
-> - Destinations can be `stderr`, `stdout`, or a file path ending with `.log`.
+> - Destinations can be `stderr`, `stdout`, or a file destination points to a path with `.log` extension.
 > - The deprecated `log:setOutputFile()` should be avoided; use configuration instead.
 
 ### Root Context

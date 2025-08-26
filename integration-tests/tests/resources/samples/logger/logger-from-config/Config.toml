@@ -5,7 +5,9 @@ nodeId = "test-svc-001"
 [auditLogConfig]
 level = "INFO"
 format = "json"
-destinations = ["./build/tmp/output/audit.log"]
+
+[[auditLogConfig.destinations]]
+path = "./build/tmp/output/audit.log"
 
 [auditLogConfig.keyValues]
 version = "1.0.0"

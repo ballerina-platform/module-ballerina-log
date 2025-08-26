@@ -14,21 +14,31 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/jballerina.java;
 
 function init() returns error? {
     rootLogger = new RootLogger();
-    check validateDestinations();
+    check validateDestinations(destinations);
     setModule();
 }
 
-function validateDestinations() returns error? {
+isolated function validateDestinations(OutputDestination[] destinations) returns Error? {
     if destinations.length() == 0 {
         return error("At least one log destination must be specified.");
     }
-    foreach string destination in destinations {
-        if destination != STDERR && destination != STDOUT && !destination.endsWith(".log") {
-            return error(string `The given destination path: '${destination}' is not valid. Log destination should be either 'stderr', 'stdout' or a valid file with .log extension.`);
+    foreach OutputDestination destination in destinations {
+        if destination !is FileOutputDestination {
+            continue;
+        }
+        if !destination.path.endsWith(".log") {
+            return error Error(string `The given file destination path: '${destination.path}' is not valid. File destination path should be a valid file with .log extension.`);
+        }
+        if destination.clearOnStartup {
+            io:Error? result = io:fileWriteString(destination.path, "");
+            if result is error {
+                return error Error(string `Failed to clear the destination log file: '${destination.path}'`, result);
+            }
         }
     }
 }

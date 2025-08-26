@@ -1,2 +1,2 @@
 [ballerina.log]
-destinations = ["stderr", "stdout", "tests/resources/logs/ballerina.log", "invalid_file"]
+destinations = ["stderr", "stdout", {path = "tests/resources/logs/ballerina.log"}, {path = "invalid_file"}]

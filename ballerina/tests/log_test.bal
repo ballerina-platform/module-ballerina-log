@@ -125,3 +125,13 @@ function test() {
 }
 
 isolated function isValidDateTime(string dateTime) returns boolean = @java:Method {'class: "io.ballerina.stdlib.log.testutils.utils.OSUtils"} external;
+
+@test:Config {}
+function testInvalidDestination() returns error? {
+    OutputDestination[] destinations = [{path: "foo"}];
+    Error? result = validateDestinations(destinations);
+    if result is () {
+        test:assertFail("Expected an error but found none");
+    }
+    test:assertEquals(result.message(), "The given file destination path: 'foo' is not valid. File destination path should be a valid file with .log extension.");
+}

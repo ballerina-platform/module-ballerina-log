@@ -95,9 +95,20 @@ public const STDERR = "stderr";
 # Standard output as destination.
 public const STDOUT = "stdout";
 
-# Destinations is a list of file paths to which the logs should be written.
-# stderr and stdout are supported as special destinations.
-configurable string[] & readonly destinations = [STDERR];
+// Defined as an open record to allow for future extensions
+# File output destination
+public type FileOutputDestination record {
+    # File path(only files with .log extension are supported)
+    string path;
+    # Clear the file on startup
+    boolean clearOnStartup = false;
+};
+
+# Log output destination
+public type OutputDestination STDERR|STDOUT|FileOutputDestination;
+
+# Destinations is a list of file destinations or standard output/error.
+configurable readonly & OutputDestination[] destinations = [STDERR];
 
 type LogRecord record {
     string time;

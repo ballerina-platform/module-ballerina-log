@@ -19,7 +19,7 @@ level = "DEBUG"
 
 [loggerConfig1]
 level = "INFO"
-destinations = ["target/tmp/output/logger1.log", "stderr"]
+destinations = [{path = "target/tmp/output/logger1.log"}, "stderr"]
 
 [loggerConfig1.keyValues]
 name = "logger1"
@@ -28,7 +28,7 @@ env = "prod"
 [loggerConfig2]
 level = "DEBUG"
 format = "logfmt"
-destinations = ["target/tmp/output/logger2.log", "stdout"]
+destinations = [{path = "target/tmp/output/logger2.log", clearOnStartup = true}, "stdout"]
 
 [loggerConfig2.keyValues]
 name = "logger2"

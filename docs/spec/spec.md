@@ -141,16 +141,28 @@ keyValues = {env = "prod", nodeId = "delivery-svc-001"}
 
 The root logger destinations can be configured in the `Config.toml` file. This will determine where the log messages are sent.
 
-```toml
-[ballerina.log]
-destinations = ["stderr", "./logs/app.log"]
+Destinations can be specified as `stderr`(standard error stream) or `stdout`(standard output stream) or a file destination. The default destination is `stderr`.
+
+The file destination is defined as follows:
+
+```ballerina
+public type FileOutputDestination record {
+    string path;
+    boolean clearOnStartup = false;
+};
 ```
 
-Destinations can be specified as `stderr`(standard error stream) or `stdout`(standard output stream) or a file path with `.log` extension. The default destination is `stderr`.
+The file destination only supports file paths with `.log` extension. When `clearOnStartup` is set to `true`, the file will be cleared on startup. All the log lines are appended to the file.
+
+Example configuration:
+
+```toml
+[ballerina.log]
+destinations = ["stderr", {path = "./logs/app.log"}]
+```
 
 > **Note**:
 >
-> - When a file path is defined as destination, the log messages will be appended to the file content.
 > - The `log:setOutputFile()` function can set the destination at runtime. But this function usage is deprecated and the destination files should be provided using the above configuration at startup.
 
 ## 4. Contextual logging

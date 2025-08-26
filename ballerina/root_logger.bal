@@ -24,7 +24,7 @@ public type Config record {|
     # Log level to use. Default is the logger level configured in the module level
     Level level = level;
     # List of destinations to log to. Default is the logger destinations configured in the module level
-    readonly & string[] destinations = destinations;
+    readonly & OutputDestination[] destinations = destinations;
     # Additional key-value pairs to include in the log messages. Default is the key-values configured in the module level
     readonly & AnydataKeyValues keyValues = {...keyValues};
 |};
@@ -32,7 +32,7 @@ public type Config record {|
 type ConfigInternal record {|
     LogFormat format = format;
     Level level = level;
-    readonly & string[] destinations = destinations;
+    readonly & OutputDestination[] destinations = destinations;
     readonly & KeyValues keyValues = {...keyValues};
 |};
 
@@ -47,7 +47,8 @@ public isolated function root() returns Logger => rootLogger;
 #
 # + config - The configuration to use for the new logger
 # + return - The newly created logger
-public isolated function fromConfig(*Config config) returns Logger {
+public isolated function fromConfig(*Config config) returns Logger|Error {
+    check validateDestinations(config.destinations);
     // Copy the initial context from the global configs
     // Only the key value pair
     AnydataKeyValues newKeyValues = {...keyValues};
@@ -68,7 +69,7 @@ isolated class RootLogger {
 
     private final LogFormat format;
     private final Level level;
-    private final readonly & string[] destinations;
+    private final readonly & (STDERR|STDOUT|FileOutputDestination)[] destinations;
     private final readonly & KeyValues keyValues;
 
     public isolated function init(Config|ConfigInternal config = <Config>{}) {
@@ -150,13 +151,13 @@ isolated class RootLogger {
             }
         }
 
-        foreach string destination in self.destinations {
+        foreach OutputDestination destination in self.destinations {
             if destination == STDERR {
                 io:fprintln(io:stderr, logOutput);
             } else if destination == STDOUT {
                 io:fprintln(io:stdout, logOutput);
             } else {
-                io:Error? result = io:fileWriteString(destination, logOutput + "\n", io:APPEND);
+                io:Error? result = io:fileWriteString(destination.path, logOutput + "\n", io:APPEND);
                 if result is error {
                     io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);
                 }

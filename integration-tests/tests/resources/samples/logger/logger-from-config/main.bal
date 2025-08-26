@@ -18,8 +18,8 @@ import ballerina/log;
 
 configurable log:Config auditLogConfig = ?;
 
-public function main() {
+public function main() returns error? {
     log:printInfo("Hello World from the root logger!");
-    log:Logger auditLogger = log:fromConfig(auditLogConfig);
+    log:Logger auditLogger = check log:fromConfig(auditLogConfig);
     auditLogger.printInfo("Hello World from the audit logger!");
 }

@@ -78,7 +78,7 @@ public function testInvalidGlobalDestination() returns error? {
     string outText = check sc.read(100000);
     string[] logLines = re`\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
-    test:assertTrue(logLines[5].includes("error: The given destination path: 'invalid_file' is not valid. Log destination should be either 'stderr', 'stdout' or a valid file with .log extension."));
+    test:assertTrue(logLines[5].includes("error: The given file destination path: 'invalid_file' is not valid. File destination path should be a valid file with .log extension."));
 }
 
 @test:Config {
