@@ -34,7 +34,7 @@ isolated function validateDestinations(OutputDestination[] destinations) returns
         if !destination.path.endsWith(".log") {
             return error Error(string `The given file destination path: '${destination.path}' is not valid. File destination path should be a valid file with .log extension.`);
         }
-        if destination.clearOnStartup {
+        if destination.mode == TRUNCATE {
             io:Error? result = io:fileWriteString(destination.path, "");
             if result is error {
                 return error Error(string `Failed to clear the destination log file: '${destination.path}'`, result);

@@ -146,24 +146,33 @@ Destinations can be specified as `stderr`(standard error stream) or `stdout`(sta
 The file destination is defined as follows:
 
 ```ballerina
-public type FileOutputDestination record {
-    string path;
-    boolean clearOnStartup = false;
+public enum FileOutputMode {
+    TRUNCATE,
+    APPEND
 };
-```
 
-The file destination only supports file paths with `.log` extension. When `clearOnStartup` is set to `true`, the file will be cleared on startup. All the log lines are appended to the file.
-
-Example configuration:
-
-```toml
-[ballerina.log]
-destinations = ["stderr", {path = "./logs/app.log"}]
+public type FileOutputDestination record {
+    readonly FILE 'type = FILE;
+    string path;
+    FileOutputMode mode = APPEND;
+};
 ```
 
 > **Note**:
 >
+> - The file destination only supports file paths with `.log` extension.
+> - The file output mode can be configured to either `TRUNCATE` or `APPEND`. Both modes will create the file if it doesn't exist. But `TRUNCATE` will clear the file contents before writing, while `APPEND` will add to the existing contents.
 > - The `log:setOutputFile()` function can set the destination at runtime. But this function usage is deprecated and the destination files should be provided using the above configuration at startup.
+
+Example configuration:
+
+```toml
+[[ballerina.log.destinations]]
+type = "stderr"
+
+[[ballerina.log.destinations]]
+path = "./logs/app.log"
+```
 
 ## 4. Contextual logging
 
@@ -267,7 +276,7 @@ public type Config record {|
     # Log level to use. Default is the logger level configured in the module level
     Level level = level;
     # List of destinations to log to. Default is the logger destinations configured in the module level
-    readonly & string[] destinations = destinations;
+    readonly & OutputDestination[] = destinations;
     # Additional key-value pairs to include in the log messages. Default is the key-values configured in the module level
     readonly & AnydataKeyValues keyValues = {...keyValues};
 |};
@@ -279,7 +288,7 @@ Sample usage:
 log:Config auditLogConfig = {
     level: log:INFO,
     format: "json",
-    destinations: ["./logs/audit.log"]
+    destinations: [{path: "./logs/audit.log"}]
 };
 
 log:Logger auditLogger = log:fromConfig(auditLogConfig);

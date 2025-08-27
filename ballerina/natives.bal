@@ -74,7 +74,9 @@ type Module record {
 
 # Represents supported log formats.
 public enum LogFormat {
+    # JSON log format.
     JSON_FORMAT = "json",
+    # Logfmt log format.
     LOGFMT = "logfmt"
 };
 
@@ -90,25 +92,49 @@ configurable table<Module> key(name) & readonly modules = table [];
 # Default key-values to add to the root logger.
 configurable AnydataKeyValues & readonly keyValues = {};
 
-# Standard error output as destination.
-public const STDERR = "stderr";
-# Standard output as destination.
-public const STDOUT = "stdout";
+# Output destination types.
+public enum DestinationType {
+    # Standard error output as destination
+    STDERR = "stderr",
+    # Standard output as destination
+    STDOUT = "stdout",
+    # File output as destination
+    FILE = "file"
+};
+
+# Standard destination.
+public type StandardDestination record {|
+    # Type of the standard destination. Allowed values are "stderr" and "stdout"
+    readonly STDERR|STDOUT 'type = STDERR;
+|};
+
+# File output modes.
+public enum FileOutputMode {
+    # Truncates the file before writing. This mode creates a new file if one doesn't exist. 
+    # If the file already exists, its contents are cleared, and new data is written 
+    # from the beginning.
+    TRUNCATE,
+    # Appends to the existing content. This mode creates a new file if one doesn't exist. 
+    # If the file already exists, new data is appended to the end of its current contents.
+    APPEND
+};
 
 // Defined as an open record to allow for future extensions
 # File output destination
 public type FileOutputDestination record {
+    # Type of the file destination. Allowed value is "file".
+    readonly FILE 'type = FILE;
     # File path(only files with .log extension are supported)
     string path;
-    # Clear the file on startup
-    boolean clearOnStartup = false;
+    # File output mode
+    FileOutputMode mode = APPEND;
 };
 
 # Log output destination
-public type OutputDestination STDERR|STDOUT|FileOutputDestination;
+public type OutputDestination StandardDestination|FileOutputDestination;
 
 # Destinations is a list of file destinations or standard output/error.
-configurable readonly & OutputDestination[] destinations = [STDERR];
+configurable readonly & OutputDestination[] destinations = [{'type: STDERR}];
 
 type LogRecord record {
     string time;
@@ -233,8 +259,8 @@ public isolated function printWarn(string|PrintableRawTemplate msg, error? 'erro
 # Add the output file path as part of the `destinations` configurable instead.
 @deprecated
 public isolated function setOutputFile(string path, FileWriteOption option = APPEND) returns Error? {
-    // Deprecated usage warning. The default option is [STDERR]
-    if destinations != [STDERR] {
+    // Deprecated usage warning. The default option is STDERR
+    if destinations != [{'type: STDERR}] {
         io:fprintln(io:stderr, "warning: deprecated `setOutputFile` function is being called along with the destinations configurations. Consider adding the file path set by the `setOutputFile` function to the destinations list.");
     }
     if !path.endsWith(".log") {

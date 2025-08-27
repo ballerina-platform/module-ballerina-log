@@ -22,6 +22,7 @@ const CONFIG_INVALID_MODULE_LOG_LEVEL = "tests/resources/config/invalid/module/C
 const FILE_WRITE_OUTPUT_NEGATIVE = "tests/resources/samples/file-write-output/single-file/set-output-file-negative.bal";
 const CONFIG_INVALID_GLOBAL_DESTINATION = "tests/resources/config/invalid/global/destination/Config.toml";
 const CONFIG_EMPTY_GLOBAL_DESTINATIONS = "tests/resources/config/invalid/global/empty-destination/Config.toml";
+const CONFIG_INVALID_GLOBAL_DESTINATION_TYPE = "tests/resources/config/invalid/global/invalid-destination-type/Config.toml";
 
 @test:Config {}
 public function testGlobalLogLevelNegative() returns error? {
@@ -95,4 +96,20 @@ public function testEmptyGlobalDestinations() returns error? {
     string[] logLines = re`\n`.split(outText.trim());
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[5].includes("error: At least one log destination must be specified."));
+}
+
+@test:Config {
+    groups: ["logger"]
+}
+public function testInvalidDestinationType() returns error? {
+    Process|error execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: CONFIG_INVALID_GLOBAL_DESTINATION_TYPE}, (), "run", LOG_LEVEL_FILE);
+    Process result = check execResult;
+    int _ = check result.waitForExit();
+    int _ = check result.exitCode();
+    io:ReadableByteChannel readableResult = result.stderr();
+    io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
+    string outText = check sc.read(100000);
+    string[] logLines = re`\n`.split(outText.trim());
+    test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
+    test:assertTrue(logLines[5].includes("configurable variable 'destinations' is expected to be of type 'ballerina/log:2:(ballerina/log:2:OutputDestination & readonly)', but found 'record'"));
 }

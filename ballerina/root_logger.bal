@@ -69,7 +69,7 @@ isolated class RootLogger {
 
     private final LogFormat format;
     private final Level level;
-    private final readonly & (STDERR|STDOUT|FileOutputDestination)[] destinations;
+    private final readonly & OutputDestination[] destinations;
     private final readonly & KeyValues keyValues;
 
     public isolated function init(Config|ConfigInternal config = <Config>{}) {
@@ -152,10 +152,12 @@ isolated class RootLogger {
         }
 
         foreach OutputDestination destination in self.destinations {
-            if destination == STDERR {
-                io:fprintln(io:stderr, logOutput);
-            } else if destination == STDOUT {
-                io:fprintln(io:stdout, logOutput);
+            if destination is StandardDestination {
+                if destination.'type == STDERR {
+                    io:fprintln(io:stderr, logOutput);
+                } else {
+                    io:fprintln(io:stdout, logOutput);
+                }
             } else {
                 io:Error? result = io:fileWriteString(destination.path, logOutput + "\n", io:APPEND);
                 if result is error {

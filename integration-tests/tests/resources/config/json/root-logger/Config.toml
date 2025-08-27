@@ -1,7 +1,15 @@
 [ballerina.log]
 level = "ERROR"
 format = "json"
-destinations = ["stderr", "stdout", {path = "./build/tmp/output/root-logger.log"}]
+
+[[ballerina.log.destinations]]
+type = "stderr"
+
+[[ballerina.log.destinations]]
+type = "stdout"
+
+[[ballerina.log.destinations]]
+path = "./build/tmp/output/root-logger.log"
 
 [ballerina.log.keyValues]
 env = "prod"
