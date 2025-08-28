@@ -1,7 +1,7 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina TCP package through the releases.
 
-## [Unreleased]
+## [2.13.0]- 2025-08-28
 
 ### Added
 
