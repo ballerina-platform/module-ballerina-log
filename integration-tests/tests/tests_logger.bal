@@ -42,8 +42,11 @@ function testRootLoggerWithConfig() returns error? {
     io:ReadableCharacterChannel outCharStreamResult = new (outStreamResult, UTF_8);
     string outTextStdout = check outCharStreamResult.read(100000);
     string[] outLogLines = re `\n`.split(outTextStdout.trim());
-    test:assertEquals(outLogLines.length(), 1, INCORRECT_NUMBER_OF_LINES);
-    test:assertTrue(outLogLines[0].includes(string `"level":"ERROR", "module":"", "message":"error log", "env":"prod", "nodeId":"test-svc-001"`));
+    // Standard output has other logs which are related to Ballerina package resolution with central.
+    // Hence checking only the last line.
+    int outLogLinesCount = outLogLines.length();
+    test:assertTrue(outLogLinesCount >= 1, INCORRECT_NUMBER_OF_LINES);
+    test:assertTrue(outLogLines[outLogLinesCount - 1].includes(string `"level":"ERROR", "module":"", "message":"error log", "env":"prod", "nodeId":"test-svc-001"`));
     check outCharStreamResult.close();
 
     string[] fileLogs = check io:fileReadLines("build/tmp/output/root-logger.log");
