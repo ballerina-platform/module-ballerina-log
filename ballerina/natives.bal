@@ -81,16 +81,16 @@ public enum LogFormat {
 };
 
 # Root logger default log format.
-configurable LogFormat format = LOGFMT;
+public configurable LogFormat format = LOGFMT;
 
 # Root logger default log level.
-configurable Level level = INFO;
+public configurable Level level = INFO;
 
 # Modules with their log levels.
-configurable table<Module> key(name) & readonly modules = table [];
+public configurable table<Module> key(name) & readonly modules = table [];
 
 # Default key-values to add to the root logger.
-configurable AnydataKeyValues & readonly keyValues = {};
+public configurable AnydataKeyValues & readonly keyValues = {};
 
 # Output destination types.
 public enum DestinationType {
@@ -130,11 +130,11 @@ public type FileOutputDestination record {
     FileOutputMode mode = APPEND;
 };
 
-# Log output destination
+# Log output destination.
 public type OutputDestination StandardDestination|FileOutputDestination;
 
 # Destinations is a list of file destinations or standard output/error.
-configurable readonly & OutputDestination[] destinations = [{'type: STDERR}];
+public configurable readonly & OutputDestination[] destinations = [{'type: STDERR}];
 
 type LogRecord record {
     string time;
