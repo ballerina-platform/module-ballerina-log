@@ -1,7 +1,7 @@
 name: Update Specifications
 
 env:
-  SPEC_FOLDER_PATH: 'docs/spec/**'
+  SPEC_FOLDER_PATH: 'docs/spec'
 
 on:
   workflow_dispatch:
@@ -9,7 +9,7 @@ on:
     branches:
       - master
     paths:
-      - 'docs/spec'
+      - 'docs/spec/**'
 
 jobs:
   update_specs:
