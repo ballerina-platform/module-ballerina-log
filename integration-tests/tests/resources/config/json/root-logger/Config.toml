@@ -1,0 +1,16 @@
+[ballerina.log]
+level = "ERROR"
+format = "json"
+
+[[ballerina.log.destinations]]
+type = "stderr"
+
+[[ballerina.log.destinations]]
+type = "stdout"
+
+[[ballerina.log.destinations]]
+path = "./build/tmp/output/root-logger.log"
+
+[ballerina.log.keyValues]
+env = "prod"
+nodeId = "test-svc-001"

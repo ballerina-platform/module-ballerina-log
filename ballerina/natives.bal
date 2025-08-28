@@ -17,10 +17,9 @@
 import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/lang.value;
-import ballerina/observe;
 
 # Represents log level types.
-enum LogLevel {
+public enum Level {
     DEBUG,
     ERROR,
     INFO,
@@ -35,7 +34,7 @@ public type Value anydata|Valuer|PrintableRawTemplate;
 # e.g: `The input value is ${val}`
 # + strings - String values of the template as an array
 # + insertions - Parameterized values/expressions after evaluations as an array
-public type PrintableRawTemplate object {
+public type PrintableRawTemplate readonly & object {
     *object:RawTemplate;
     public string[] & readonly strings;
     public Value[] insertions;
@@ -56,16 +55,86 @@ public type KeyValues record {|
     Value...;
 |};
 
-type Module record {
-    readonly string name;
-    string level;
+# Anydata key-value pairs that needs to be displayed in the log.
+public type AnydataKeyValues record {
+    # msg which cannot be a key
+    never msg?;
+    # 'error which cannot be a key
+    never 'error?;
+    # stackTrace which cannot be a key
+    never stackTrace?;
+    # module name which cannot be a key
+    never module?;
 };
 
-configurable string format = "logfmt";
-configurable string level = "INFO";
-configurable table<Module> key(name) & readonly modules = table [];
+type Module record {
+    readonly string name;
+    readonly Level level;
+};
 
-const string JSON_OUTPUT_FORMAT = "json";
+# Represents supported log formats.
+public enum LogFormat {
+    # JSON log format.
+    JSON_FORMAT = "json",
+    # Logfmt log format.
+    LOGFMT = "logfmt"
+};
+
+# Root logger default log format.
+public configurable LogFormat format = LOGFMT;
+
+# Root logger default log level.
+public configurable Level level = INFO;
+
+# Modules with their log levels.
+public configurable table<Module> key(name) & readonly modules = table [];
+
+# Default key-values to add to the root logger.
+public configurable AnydataKeyValues & readonly keyValues = {};
+
+# Output destination types.
+public enum DestinationType {
+    # Standard error output as destination
+    STDERR = "stderr",
+    # Standard output as destination
+    STDOUT = "stdout",
+    # File output as destination
+    FILE = "file"
+};
+
+# Standard destination.
+public type StandardDestination record {|
+    # Type of the standard destination. Allowed values are "stderr" and "stdout"
+    readonly STDERR|STDOUT 'type = STDERR;
+|};
+
+# File output modes.
+public enum FileOutputMode {
+    # Truncates the file before writing. This mode creates a new file if one doesn't exist. 
+    # If the file already exists, its contents are cleared, and new data is written 
+    # from the beginning.
+    TRUNCATE,
+    # Appends to the existing content. This mode creates a new file if one doesn't exist. 
+    # If the file already exists, new data is appended to the end of its current contents.
+    APPEND
+};
+
+// Defined as an open record to allow for future extensions
+# File output destination
+public type FileOutputDestination record {
+    # Type of the file destination. Allowed value is "file".
+    readonly FILE 'type = FILE;
+    # File path(only files with .log extension are supported)
+    string path;
+    # File output mode
+    FileOutputMode mode = APPEND;
+};
+
+# Log output destination.
+public type OutputDestination StandardDestination|FileOutputDestination;
+
+# Destinations is a list of file destinations or standard output/error.
+public configurable readonly & OutputDestination[] destinations = [{'type: STDERR}];
 
 type LogRecord record {
     string time;
@@ -76,10 +145,10 @@ type LogRecord record {
 };
 
 final map<int> & readonly logLevelWeight = {
-    "ERROR": 1000,
-    "WARN": 900,
-    "INFO": 800,
-    "DEBUG": 700
+    ERROR: 1000,
+    WARN: 900,
+    INFO: 800,
+    DEBUG: 700
 };
 
 isolated string? outputFilePath = ();
@@ -97,7 +166,7 @@ public enum FileWriteOption {
 #
 # + template - The raw template to be processed
 # + return - The processed string
-isolated function processTemplate(PrintableRawTemplate template) returns string {
+public isolated function processTemplate(PrintableRawTemplate template) returns string {
     string[] templateStrings = template.strings;
     Value[] insertions = template.insertions;
     string result = templateStrings[0];
@@ -127,10 +196,9 @@ isolated function processMessage(string|PrintableRawTemplate msg) returns string
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-    // Added `stackTrace` as an optional param due to https://github.com/ballerina-platform/ballerina-lang/issues/34572 
-    if isLogLevelEnabled(DEBUG, getModuleName(keyValues)) {
-        print(DEBUG, msg, 'error, stackTrace, keyValues);
-    }
+    // Added `stackTrace` as an optional param due to https://github.com/ballerina-platform/ballerina-lang/issues/34572
+    string moduleName = getModuleName(keyValues);
+    rootLogger.print(DEBUG, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
 # Prints error logs.
@@ -144,9 +212,8 @@ public isolated function printDebug(string|PrintableRawTemplate msg, error? 'err
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printError(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-    if isLogLevelEnabled(ERROR, getModuleName(keyValues)) {
-        print(ERROR, msg, 'error, stackTrace, keyValues);
-    }
+    string moduleName = getModuleName(keyValues);
+    rootLogger.print(ERROR, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
 # Prints info logs.
@@ -159,9 +226,8 @@ public isolated function printError(string|PrintableRawTemplate msg, error? 'err
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-    if isLogLevelEnabled(INFO, getModuleName(keyValues)) {
-        print(INFO, msg, 'error, stackTrace, keyValues);
-    }
+    string moduleName = getModuleName(keyValues);
+    rootLogger.print(INFO, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
 # Prints warn logs.
@@ -174,9 +240,8 @@ public isolated function printInfo(string|PrintableRawTemplate msg, error? 'erro
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
 public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-    if isLogLevelEnabled(WARN, getModuleName(keyValues)) {
-        print(WARN, msg, 'error, stackTrace, keyValues);
-    }
+    string moduleName = getModuleName(keyValues);
+    rootLogger.print(WARN, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
 # Set the log output to a file. Note that all the subsequent logs of the entire application will be written to this file.
@@ -189,7 +254,15 @@ public isolated function printWarn(string|PrintableRawTemplate msg, error? 'erro
 # + option - To indicate whether to overwrite or append the log output
 #
 # + return - A `log:Error` if an invalid file path was provided
+# # Deprecated
+# Setting output file destination using this method is deprecated. 
+# Add the output file path as part of the `destinations` configurable instead.
+@deprecated
 public isolated function setOutputFile(string path, FileWriteOption option = APPEND) returns Error? {
+    // Deprecated usage warning. The default option is STDERR
+    if destinations != [{'type: STDERR}] {
+        io:fprintln(io:stderr, "warning: deprecated `setOutputFile` function is being called along with the destinations configurations. Consider adding the file path set by the `setOutputFile` function to the destinations list.");
+    }
     if !path.endsWith(".log") {
         return error Error("The given path is not valid. Should be a file with .log extension.");
     }
@@ -201,45 +274,6 @@ public isolated function setOutputFile(string path, FileWriteOption option = APP
     }
     lock {
         outputFilePath = path;
-    }
-}
-
-isolated function print(string logLevel, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-    LogRecord logRecord = {
-        time: getCurrentTime(),
-        level: logLevel,
-        module: getModuleNameExtern() == "." ? "" : getModuleNameExtern(),
-        message: processMessage(msg)
-    };
-    if err is error {
-        logRecord.'error = getFullErrorDetails(err);
-    }
-    if stackTrace is error:StackFrame[] {
-        json[] stackTraceArray = [];
-        foreach var element in stackTrace {
-            stackTraceArray.push(element.toString());
-        }
-        logRecord["stackTrace"] = stackTraceArray;
-    }
-    foreach [string, Value] [k, v] in keyValues.entries() {
-        anydata value = v is Valuer ? v() : v is PrintableRawTemplate ? processMessage(v) : v;
-        logRecord[k] = value;
-    }
-    if observe:isTracingEnabled() {
-        map<string> spanContext = observe:getSpanContext();
-        foreach [string, string] [k, v] in spanContext.entries() {
-            logRecord[k] = v;
-        }
-    }
-    string logOutput = format == JSON_OUTPUT_FORMAT ? logRecord.toJsonString() : printLogFmt(logRecord);
-    string? path = ();
-    lock {
-        path = outputFilePath;
-        if path is string {
-            fileWrite(logOutput);
-        } else {
-            io:fprintln(io:stderr, logOutput);
-        }
     }
 }
 
@@ -362,8 +396,8 @@ isolated function replaceString(handle receiver, handle target, handle replaceme
     paramTypes: ["java.lang.CharSequence", "java.lang.CharSequence"]
 } external;
 
-isolated function isLogLevelEnabled(string logLevel, string moduleName) returns boolean {
-    string moduleLogLevel = level;
+isolated function isLogLevelEnabled(string loggerLogLevel, string logLevel, string moduleName) returns boolean {
+    string moduleLogLevel = loggerLogLevel;
     if modules.length() > 0 {
         if modules.hasKey(moduleName) {
             moduleLogLevel = modules.get(moduleName).level;
@@ -372,16 +406,11 @@ isolated function isLogLevelEnabled(string logLevel, string moduleName) returns 
     return logLevelWeight.get(logLevel) >= logLevelWeight.get(moduleLogLevel);
 }
 
-isolated function getModuleName(KeyValues keyValues) returns string {
+isolated function getModuleName(KeyValues keyValues, int offset = 2) returns string {
     Value module = keyValues["module"];
-
-    if module is () {
-        return getModuleNameExtern();
-    } else {
-        return module is string ? module : "";
-    }
+    return module is () ? getInvokedModuleName(offset) : (module is string ? module : "");
 }
 
-isolated function getModuleNameExtern() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
+isolated function getInvokedModuleName(int offset = 0) returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
 
 isolated function getCurrentTime() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;

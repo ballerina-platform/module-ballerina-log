@@ -2,6 +2,9 @@
 level = "DEBUG"
 format = "json"
 
+[ballerina.log.keyValues]
+env = "test"
+
 [[ballerina.log.modules]]
 name = "myorg/myproject"
 level = "ERROR"
@@ -13,3 +16,41 @@ level = "WARN"
 [[ballerina.log.modules]]
 name = "ballerina/log"
 level = "DEBUG"
+
+[loggerConfig1]
+level = "INFO"
+
+[[loggerConfig1.destinations]]
+type = "stderr"
+
+[[loggerConfig1.destinations]]
+path = "target/tmp/output/logger1.log"
+
+[loggerConfig1.keyValues]
+name = "logger1"
+env = "prod"
+
+[loggerConfig2]
+level = "DEBUG"
+format = "logfmt"
+
+[[loggerConfig2.destinations]]
+path = "target/tmp/output/logger2.log"
+mode = "TRUNCATE"
+
+[[loggerConfig2.destinations]]
+type = "stdout"
+
+[loggerConfig2.keyValues]
+name = "logger2"
+env = "dev"
+
+[newLoggerConfig]
+level = "DEBUG"
+format = "logfmt"
+
+[[newLoggerConfig.destinations]]
+type = "stdout"
+
+[newLoggerConfig.keyValues]
+name = "newLogger"

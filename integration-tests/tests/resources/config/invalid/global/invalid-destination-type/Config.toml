@@ -1,0 +1,3 @@
+[[ballerina.log.destinations]]
+type = "stdout"
+path = "tests/resources/logs/ballerina.log"

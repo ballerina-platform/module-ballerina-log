@@ -1,0 +1,11 @@
+[[ballerina.log.destinations]]
+type = "stderr"
+
+[[ballerina.log.destinations]]
+type = "stdout"
+
+[[ballerina.log.destinations]]
+path = "tests/resources/logs/ballerina.log"
+
+[[ballerina.log.destinations]]
+path = "invalid_file"
