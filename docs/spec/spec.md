@@ -1,7 +1,7 @@
 # Specification: Ballerina Log Library
 
-_Authors_: @daneshk @MadhukaHarith92 @TharmiganK
-_Reviewers_: @daneshk @ThisaruGuruge
+_Authors_: @daneshk @MadhukaHarith92 @TharmiganK  
+_Reviewers_: @daneshk @ThisaruGuruge  
 _Created_: 2021/11/15  
 _Updated_: 2025/08/20  
 _Edition_: Swan Lake  
