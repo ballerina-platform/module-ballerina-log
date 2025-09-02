@@ -53,7 +53,10 @@ public class MaskedStringBuilder implements AutoCloseable {
     private static final String LOG_ANNOTATION_PREFIX = "ballerina/log";
     private static final String SENSITIVE_DATA_SUFFIX = ":SensitiveData";
 
-    private static final BString CYCLIC_REFERENCE_ERROR = StringUtils.fromString("Cyclic value reference detected in the record");
+    private static final BString CYCLIC_REFERENCE_ERROR = StringUtils.fromString("Cyclic value reference detected " +
+            "in the record");
+    public static final BString MASKED_STRING_BUILDER_HAS_BEEN_CLOSED = StringUtils.fromString("MaskedStringBuilder" +
+            " has been closed");
 
     private final Runtime runtime;
     private final IdentityHashMap<Object, Boolean> visitedValues;
@@ -84,7 +87,7 @@ public class MaskedStringBuilder implements AutoCloseable {
      */
     public String build(Object value) {
         if (closed) {
-            throw new IllegalStateException("MaskedStringBuilder has been closed");
+            throw ErrorCreator.createError(MASKED_STRING_BUILDER_HAS_BEEN_CLOSED);
         }
 
         try {
@@ -111,6 +114,7 @@ public class MaskedStringBuilder implements AutoCloseable {
 
         // Use identity-based checking for cycle detection
         if (visitedValues.put(value, Boolean.TRUE) != null) {
+            // Panics on cyclic value references
             throw ErrorCreator.createError(CYCLIC_REFERENCE_ERROR);
         }
 
@@ -329,7 +333,7 @@ public class MaskedStringBuilder implements AutoCloseable {
      */
     public void reset() {
         if (closed) {
-            throw new IllegalStateException("MaskedStringBuilder has been closed");
+            throw ErrorCreator.createError(MASKED_STRING_BUILDER_HAS_BEEN_CLOSED);
         }
         visitedValues.clear();
         stringBuilder.setLength(0);
@@ -374,7 +378,8 @@ public class MaskedStringBuilder implements AutoCloseable {
         return new MaskedStringBuilder(runtime, initialCapacity);
     }
 
-    static Optional<BMap<?, ?>> getLogSensitiveDataAnnotation(Map<String, BMap<?, ?>> fieldAnnotations, String fieldName) {
+    static Optional<BMap<?, ?>> getLogSensitiveDataAnnotation(Map<String, BMap<?, ?>> fieldAnnotations,
+                                                              String fieldName) {
         BMap<?, ?> fieldAnnotationMap = fieldAnnotations.get(fieldName);
         if (fieldAnnotationMap == null) {
             return Optional.empty();
@@ -427,7 +432,8 @@ public class MaskedStringBuilder implements AutoCloseable {
                 return Optional.of(replacementStr.getValue());
             }
             if (replacement instanceof BFunctionPointer replacer) {
-                Object replacementString = replacer.call(runtime, StringUtils.fromString(StringUtils.getStringValue(realValue)));
+                Object replacementString = replacer.call(runtime,
+                        StringUtils.fromString(StringUtils.getStringValue(realValue)));
                 if (replacementString instanceof BString replacementStrVal) {
                     return Optional.of(replacementStrVal.getValue());
                 }
