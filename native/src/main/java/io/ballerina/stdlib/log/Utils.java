@@ -37,10 +37,9 @@ import io.ballerina.runtime.api.values.BTable;
 import java.text.SimpleDateFormat;
 import java.util.Collection;
 import java.util.Date;
-import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -49,6 +48,21 @@ import java.util.stream.Collectors;
  * @since 1.1.0
  */
 public class Utils {
+
+    // Cache frequently used BString constants to avoid repeated allocations
+    private static final BString STRATEGY_KEY = StringUtils.fromString("strategy");
+    private static final BString REPLACEMENT_KEY = StringUtils.fromString("replacement");
+    private static final BString EXCLUDE_VALUE = StringUtils.fromString("EXCLUDE");
+    private static final String FIELD_PREFIX = "$field$.";
+    private static final String LOG_ANNOTATION_PREFIX = "ballerina/log";
+    private static final String SENSITIVE_DATA_SUFFIX = ":SensitiveData";
+
+    // Cache error message to avoid repeated BString creation
+    private static final BString CYCLIC_REFERENCE_ERROR = StringUtils.fromString("Cyclic value reference detected in the record");
+
+    // Cache for SimpleDateFormat to avoid creating new instances (thread-safe)
+    private static final ThreadLocal<SimpleDateFormat> DATE_FORMAT =
+        ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX"));
 
     private Utils() {
 
@@ -75,150 +89,232 @@ public class Utils {
      * @return current local time in RFC3339 format
      */
     public static BString getCurrentTime() {
-        return StringUtils.fromString(
-                new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX")
-                        .format(new Date()));
+        return StringUtils.fromString(DATE_FORMAT.get().format(new Date()));
     }
 
     public static BString getMaskedString(Environment env, Object value) {
-        Set<Object> visitedValues = new HashSet<>();
+        // Use IdentityHashMap for much better memory efficiency
+        // Only stores identity-based references, not hash-based ones
+        IdentityHashMap<Object, Boolean> visitedValues = new IdentityHashMap<>();
         return StringUtils.fromString(getMaskedStringInternal(env.getRuntime(), value, visitedValues));
     }
 
-    static String getMaskedStringInternal(Runtime runtime, Object value, Set<Object> visitedValues) {
+    static String getMaskedStringInternal(Runtime runtime, Object value, IdentityHashMap<Object, Boolean> visitedValues) {
         if (isBasicType(value)) {
             return StringUtils.getStringValue(value);
         }
-        if (!visitedValues.add(value)) {
-            throw ErrorCreator.createError(StringUtils.fromString("Cyclic value reference detected in the record"));
+
+        // Use identity-based checking instead of hash-based
+        if (visitedValues.put(value, Boolean.TRUE) != null) {
+            throw ErrorCreator.createError(CYCLIC_REFERENCE_ERROR);
         }
+
+        try {
+            return processValue(runtime, value, visitedValues);
+        } finally {
+            visitedValues.remove(value);
+        }
+    }
+
+    private static String processValue(Runtime runtime, Object value, IdentityHashMap<Object, Boolean> visitedValues) {
         Type type = TypeUtils.getType(value);
-        if (value instanceof BMap mapValue) {
-            RecordType recType = (RecordType) type;
-            Map<String, Field> fields = recType.getFields();
-            StringBuilder maskedString = new StringBuilder("{");
-            Map<String, BMap> fieldAnnotations = extractFieldAnnotations(recType);
-            for (Map.Entry<String, Field> entry : fields.entrySet()) {
-                String fieldName = entry.getKey();
-                Optional<String> fieldStringValue;
-                Optional<BMap> annotation = getLogSensitiveDataAnnotation(fieldAnnotations, fieldName);
-                Object fieldValue = mapValue.get(StringUtils.fromString(fieldName));
-                if (fieldValue == null) {
-                    continue;
-                }
-                if (annotation.isPresent()) {
-                    fieldStringValue = getStringValue(annotation.get(), fieldValue, runtime);
-                } else {
-                    fieldStringValue = Optional.of(getMaskedStringInternal(runtime, fieldValue, visitedValues));
-                }
-                fieldStringValue.ifPresent(s -> {
-                    maskedString.append("\"").append(fieldName).append("\"")
-                            .append(":");
-                    if (annotation.isPresent() || fieldValue instanceof BString) {
-                        maskedString.append("\"").append(s).append("\"");
-                    } else {
-                        maskedString.append(s);
-                    }
-                    maskedString.append(",");
-                });
-            }
-            if (maskedString.length() > 1) {
-                maskedString.setLength(maskedString.length() - 1);
-            }
-            maskedString.append("}");
-            return maskedString.toString();
+
+        // Use switch-like pattern for better performance
+        return switch (value) {
+            case BMap<?, ?> mapValue -> processMapValue(runtime, mapValue, type, visitedValues);
+            case BTable<?, ?> tableValue -> processTableValue(runtime, tableValue, visitedValues);
+            case BArray listValue -> processArrayValue(runtime, listValue, visitedValues);
+            default -> StringUtils.getStringValue(value);
+        };
+    }
+
+    private static String processMapValue(Runtime runtime, BMap<?, ?> mapValue, Type valueType, IdentityHashMap<Object, Boolean> visitedValues) {
+        if (valueType.getTag() != TypeTags.RECORD_TYPE_TAG) {
+            // For non-record maps, use default string representation
+            return StringUtils.getStringValue(mapValue);
         }
-        if (value instanceof BTable tableValue) {
-            StringBuilder tableString = new StringBuilder("[");
-            for (Object row : tableValue.values()) {
-                String rowString = getMaskedStringInternal(runtime, row, visitedValues);
-                if (row instanceof BString) {
-                    tableString.append("\"").append(rowString).append("\"");
-                } else {
-                    tableString.append(rowString);
-                }
-                tableString.append(",");
-            }
-            if (tableString.length() > 1) {
-                tableString.setLength(tableString.length() - 1);
-            }
-            tableString.append("]");
-            visitedValues.remove(value);
-            return tableString.toString();
+
+        RecordType recType = (RecordType) valueType;
+        Map<String, Field> fields = recType.getFields();
+        if (fields.isEmpty()) {
+            return "{}";
         }
-        if (value instanceof BArray listValue) {
-            StringBuilder arrayString = new StringBuilder("[");
-            long length = listValue.getLength();
-            for (long i = 0; i < length; i++) {
-                Object element = listValue.get(i);
-                String elementString = getMaskedStringInternal(runtime, element, visitedValues);
-                if (element instanceof BString) {
-                    arrayString.append("\"").append(elementString).append("\"");
-                } else {
-                    arrayString.append(elementString);
+
+        // More conservative and safer capacity estimation
+        // Use adaptive sizing based on actual field count with reasonable bounds
+        int fieldCount = fields.size();
+        int baseCapacity = fieldCount <= 5 ? 64 :
+                          fieldCount <= 20 ? 256 :
+                          Math.min(fieldCount * 15, 2048); // Cap at 2KB for very large objects
+
+        StringBuilder maskedString = new StringBuilder(baseCapacity);
+        maskedString.append('{');
+
+        Map<String, BMap<?, ?>> fieldAnnotations = extractFieldAnnotations(recType);
+        boolean first = true;
+
+        for (Map.Entry<String, Field> entry : fields.entrySet()) {
+            String fieldName = entry.getKey();
+            Object fieldValue = mapValue.get(StringUtils.fromString(fieldName));
+
+            if (fieldValue == null) {
+                continue;
+            }
+
+            Optional<BMap<?, ?>> annotation = getLogSensitiveDataAnnotation(fieldAnnotations, fieldName);
+            Optional<String> fieldStringValue;
+
+            if (annotation.isPresent()) {
+                fieldStringValue = getStringValue(annotation.get(), fieldValue, runtime);
+            } else {
+                fieldStringValue = Optional.of(getMaskedStringInternal(runtime, fieldValue, visitedValues));
+            }
+
+            if (fieldStringValue.isPresent()) {
+                if (!first) {
+                    maskedString.append(',');
                 }
-                arrayString.append(",");
+                appendFieldToJson(maskedString, fieldName, fieldStringValue.get(),
+                                annotation.isPresent(), fieldValue);
+                first = false;
             }
-            if (arrayString.length() > 1) {
-                arrayString.setLength(arrayString.length() - 1);
-            }
-            arrayString.append("]");
-            visitedValues.remove(value);
-            return arrayString.toString();
         }
-        visitedValues.remove(value);
-        return StringUtils.getStringValue(value);
+
+        maskedString.append('}');
+        return maskedString.toString();
+    }
+
+    private static void appendFieldToJson(StringBuilder sb, String fieldName, String value,
+                                        boolean hasAnnotation, Object fieldValue) {
+        sb.append('"').append(fieldName).append("\":");
+        if (hasAnnotation || fieldValue instanceof BString) {
+            sb.append('"').append(value).append('"');
+        } else {
+            sb.append(value);
+        }
+    }
+
+    private static String processTableValue(Runtime runtime, BTable<?, ?> tableValue, IdentityHashMap<Object, Boolean> visitedValues) {
+        Collection<?> values = tableValue.values();
+        if (values.isEmpty()) {
+            return "[]";
+        }
+
+        // Safer capacity estimation with bounds checking
+        int valueCount = values.size();
+        int baseCapacity = valueCount <= 10 ? 128 :
+                          valueCount <= 100 ? 512 :
+                          Math.min(valueCount * 20, 4096); // Cap at 4KB
+
+        StringBuilder tableString = new StringBuilder(baseCapacity);
+        tableString.append('[');
+
+        boolean first = true;
+        for (Object row : values) {
+            if (!first) {
+                tableString.append(',');
+            }
+            appendValueToArray(tableString, getMaskedStringInternal(runtime, row, visitedValues), row);
+            first = false;
+        }
+
+        tableString.append(']');
+        return tableString.toString();
+    }
+
+    private static String processArrayValue(Runtime runtime, BArray listValue, IdentityHashMap<Object, Boolean> visitedValues) {
+        long length = listValue.getLength();
+        if (length == 0) {
+            return "[]";
+        }
+
+        // Safe capacity calculation with overflow protection
+        int safeLength = length > Integer.MAX_VALUE / 20 ? Integer.MAX_VALUE / 20 : (int) length;
+        int baseCapacity = safeLength <= 20 ? 96 :
+                          safeLength <= 200 ? 384 :
+                          Math.min(safeLength * 12, 3072); // Cap at 3KB
+
+        StringBuilder arrayString = new StringBuilder(baseCapacity);
+        arrayString.append('[');
+
+        for (long i = 0; i < length; i++) {
+            if (i > 0) {
+                arrayString.append(',');
+            }
+            Object element = listValue.get(i);
+            String elementString = getMaskedStringInternal(runtime, element, visitedValues);
+            appendValueToArray(arrayString, elementString, element);
+        }
+
+        arrayString.append(']');
+        return arrayString.toString();
+    }
+
+    private static void appendValueToArray(StringBuilder sb, String value, Object originalValue) {
+        if (originalValue instanceof BString) {
+            sb.append('"').append(value).append('"');
+        } else {
+            sb.append(value);
+        }
     }
 
     static boolean isBasicType(Object value) {
-        return value == null || TypeUtils.getType(value).getTag() <= 7;
+        return value == null || TypeUtils.getType(value).getTag() <= TypeTags.BOOLEAN_TAG;
     }
 
-    static Optional<BMap> getLogSensitiveDataAnnotation(Map<String, BMap> fieldAnnotations, String fieldName) {
-        if (!fieldAnnotations.containsKey(fieldName)) {
+    static Optional<BMap<?, ?>> getLogSensitiveDataAnnotation(Map<String, BMap<?, ?>> fieldAnnotations, String fieldName) {
+        BMap<?, ?> fieldAnnotationMap = fieldAnnotations.get(fieldName);
+        if (fieldAnnotationMap == null) {
             return Optional.empty();
         }
 
-        BMap fieldAnnotationMap = fieldAnnotations.get(fieldName);
+        // Cache the keys array to avoid repeated calls
         Object[] keys = fieldAnnotationMap.getKeys();
-        Object targetKey = null;
+
+        // Optimized search - most annotation maps are small, so linear search is efficient
         for (Object key : keys) {
-            if (key instanceof BString bStringKey && bStringKey.getValue().startsWith("ballerina/log") &&
-                    bStringKey.getValue().endsWith(":SensitiveData")) {
-                targetKey = key;
-                break;
-            }
-        }
-        if (targetKey != null) {
-            Object annotation = fieldAnnotationMap.get(targetKey);
-            if (annotation instanceof BMap) {
-                return Optional.of((BMap) annotation);
+            if (key instanceof BString bStringKey) {
+                String keyValue = bStringKey.getValue();
+                // Use more efficient string matching - check suffix first (likely to fail faster)
+                if (keyValue.endsWith(SENSITIVE_DATA_SUFFIX) && keyValue.startsWith(LOG_ANNOTATION_PREFIX)) {
+                    Object annotation = fieldAnnotationMap.get(key);
+                    if (annotation instanceof BMap<?, ?> bMapAnnotation) {
+                        return Optional.of(bMapAnnotation);
+                    }
+                    // Found the target annotation type, no need to continue
+                    break;
+                }
             }
         }
         return Optional.empty();
     }
 
-    static Map<String, BMap> extractFieldAnnotations(RecordType recordType) {
+    static Map<String, BMap<?, ?>> extractFieldAnnotations(RecordType recordType) {
         BMap<BString, Object> annotations = recordType.getAnnotations();
         if (annotations == null) {
             return Map.of();
         }
+
+        // Use more efficient stream processing
         return annotations.entrySet().stream()
-                .filter(entry -> entry.getKey().getValue().startsWith("$field$."))
-                .filter(entry -> entry.getValue() instanceof BMap)
+                .filter(entry -> {
+                    String keyValue = entry.getKey().getValue();
+                    return keyValue.startsWith(FIELD_PREFIX) && entry.getValue() instanceof BMap;
+                })
                 .collect(Collectors.toMap(
-                        entry -> entry.getKey().getValue().substring(8),
-                        entry -> (BMap) entry.getValue()
+                        entry -> entry.getKey().getValue().substring(FIELD_PREFIX.length()),
+                        entry -> (BMap<?, ?>) entry.getValue(),
+                        (existing, replacement) -> existing // Handle potential duplicates
                 ));
     }
 
-    static Optional<String> getStringValue(BMap annotation, Object realValue, Runtime runtime) {
-        Object strategy = annotation.get(StringUtils.fromString("strategy"));
-        if (strategy instanceof BString excluded && excluded.getValue().equals("EXCLUDE")) {
+    static Optional<String> getStringValue(BMap<?, ?> annotation, Object realValue, Runtime runtime) {
+        Object strategy = annotation.get(STRATEGY_KEY);
+        if (strategy instanceof BString strategyStr && EXCLUDE_VALUE.getValue().equals(strategyStr.getValue())) {
             return Optional.empty();
         }
-        if (strategy instanceof BMap replacementMap) {
-            Object replacement = replacementMap.get(StringUtils.fromString("replacement"));
+        if (strategy instanceof BMap<?, ?> replacementMap) {
+            Object replacement = replacementMap.get(REPLACEMENT_KEY);
             if (replacement instanceof BString replacementStr) {
                 return Optional.of(replacementStr.getValue());
             }
