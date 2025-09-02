@@ -4,7 +4,19 @@ This file contains all the notable changes done to the Ballerina TCP package thr
 ## [Unreleased]
 
 ### Added
+
+- [Introduce contextual logging support](https://github.com/ballerina-platform/ballerina-library/issues/8173)
+
+## [2.12.0] - 2025-03-12
+
+### Added
+
 - [Support logging raw template value in log APIs](https://github.com/ballerina-platform/ballerina-library/issues/3331)
+
+## [2.11.0] - 2025-02-07
+
+### Added
+
 - [Add static code rules](https://github.com/ballerina-platform/ballerina-library/issues/7283)
 
 ## [2.5.1] - 2023-01-04

@@ -14,26 +14,33 @@
 // specific language governing permissions and limitations
 // under the License.
 
+import ballerina/io;
 import ballerina/jballerina.java;
 
 function init() returns error? {
-    if(!(level is LogLevel)) {
-       return  error(string `invalid log level: ${level}`);
-    }
-    boolean invalidModuleLogLevel = false;
-    string invalidModule = "";
-    string invalidLogLevel = "";
-    modules.forEach(function(Module module) {
-        if (!(module.level is LogLevel)) {
-            invalidModuleLogLevel = true;
-            invalidLogLevel = module.level;
-            invalidModule = module.name;
-        }
-    });
-    if invalidModuleLogLevel {
-        return  error(string `invalid log level: ${invalidLogLevel} for module: ${invalidModule}`); 
-    }
+    rootLogger = new RootLogger();
+    check validateDestinations(destinations);
     setModule();
+}
+
+isolated function validateDestinations(OutputDestination[] destinations) returns Error? {
+    if destinations.length() == 0 {
+        return error("At least one log destination must be specified.");
+    }
+    foreach OutputDestination destination in destinations {
+        if destination !is FileOutputDestination {
+            continue;
+        }
+        if !destination.path.endsWith(".log") {
+            return error Error(string `The given file destination path: '${destination.path}' is not valid. File destination path should be a valid file with .log extension.`);
+        }
+        if destination.mode == TRUNCATE {
+            io:Error? result = io:fileWriteString(destination.path, "");
+            if result is error {
+                return error Error(string `Failed to clear the destination log file: '${destination.path}'`, result);
+            }
+        }
+    }
 }
 
 isolated function setModule() = @java:Method {
