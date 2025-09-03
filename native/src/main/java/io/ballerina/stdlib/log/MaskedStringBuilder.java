@@ -130,7 +130,7 @@ public class MaskedStringBuilder implements AutoCloseable {
 
         return switch (value) {
             // Processing only the structured types, since the basic types does not contain the
-            // inherent type information unless they are part of a structured type.
+            // inherent type information.
             case BMap<?, ?> mapValue -> processMapValue(mapValue, type);
             case BTable<?, ?> tableValue -> processTableValue(tableValue);
             case BArray listValue -> processArrayValue(listValue);
@@ -157,9 +157,18 @@ public class MaskedStringBuilder implements AutoCloseable {
 
         for (Map.Entry<String, Field> entry : fields.entrySet()) {
             String fieldName = entry.getKey();
+            BString fieldNameKey = StringUtils.fromString(fieldName);
             Object fieldValue = mapValue.get(StringUtils.fromString(fieldName));
 
             if (fieldValue == null) {
+                // For optional fields with default value as null, the map will contain the key
+                if (mapValue.containsKey(fieldNameKey)) {
+                    // Add the field with null value
+                    if (!first) {
+                        stringBuilder.append(',');
+                    }
+                    appendFieldToJson(fieldName, "null", false, null);
+                }
                 continue;
             }
 

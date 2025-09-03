@@ -45,8 +45,12 @@ public type SensitiveDataConfig record {|
 # + strategy - The masking strategy to apply (default: EXCLUDE)
 public annotation SensitiveDataConfig SensitiveData on record field;
 
-configurable boolean enableSensitiveDataMasking = true;
+configurable boolean enableSensitiveDataMasking = false;
 
-public function getMaskedString(anydata data) returns string = @java:Method {
+# Returns a masked string representation of the given data based on the sensitive data masking configuration.
+#
+# + data - The data to be masked
+# + return - The masked string representation of the data
+public isolated function toMaskedString(anydata data) returns string = @java:Method {
     'class: "io.ballerina.stdlib.log.Utils"
 } external;

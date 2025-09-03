@@ -100,7 +100,7 @@ public class Utils {
                         .format(new Date()));
     }
 
-    public static BString getMaskedString(Environment env, Object value) {
+    public static BString toMaskedString(Environment env, Object value) {
         // Use try-with-resources for automatic cleanup
         try (MaskedStringBuilder builder = MaskedStringBuilder.create(env.getRuntime())) {
             return StringUtils.fromString(builder.build(value));

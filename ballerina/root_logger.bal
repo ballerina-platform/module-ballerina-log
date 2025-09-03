@@ -143,7 +143,9 @@ isolated class RootLogger {
             logRecord[k] = v is Valuer ? v() : v is PrintableRawTemplate ? processMessage(v) : v;
         }
 
-        string logOutput = self.format == JSON_FORMAT ? logRecord.toJsonString() : printLogFmt(logRecord);
+        string logOutput = self.format == JSON_FORMAT ?
+            (enableSensitiveDataMasking ? toMaskedString(logRecord) : logRecord.toJsonString()) :
+            printLogFmt(logRecord);
 
         lock {
             if outputFilePath is string {
