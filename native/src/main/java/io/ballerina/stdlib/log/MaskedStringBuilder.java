@@ -36,11 +36,12 @@ import java.util.Collection;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 /**
  * High-performance builder for creating masked string representations of Ballerina values.
- * Implements Closeable for proper resource management and memory efficiency.
+ * Implements AutoCloseable for proper resource management and memory efficiency.
  *
  * @since 2.14.0
  */
@@ -58,25 +59,41 @@ public class MaskedStringBuilder implements AutoCloseable {
     public static final BString MASKED_STRING_BUILDER_HAS_BEEN_CLOSED = StringUtils.fromString("MaskedStringBuilder" +
             " has been closed");
 
+    // Cache for field annotations to avoid repeated extraction
+    private static final Map<RecordType, Map<String, BMap<?, ?>>> ANNOTATION_CACHE = new ConcurrentHashMap<>();
+    private static final int MAX_CACHE_SIZE = 1000;
+
+    private static final char[] QUOTE_ESCAPE = {'\\', '"'};
+    private static final char[] BACKSLASH_ESCAPE = {'\\', '\\'};
+    private static final char[] NEWLINE_ESCAPE = {'\\', 'n'};
+    private static final char[] TAB_ESCAPE = {'\\', 't'};
+    private static final char[] CARRIAGE_RETURN_ESCAPE = {'\\', 'r'};
+    private static final char[] BACKSPACE_ESCAPE = {'\\', 'b'};
+    private static final char[] FORM_FEED_ESCAPE = {'\\', 'f'};
+
     private final Runtime runtime;
     private final IdentityHashMap<Object, Boolean> visitedValues;
     private StringBuilder stringBuilder;
+    private StringBuilder escapeBuffer;
     private boolean closed = false;
 
     // Initial capacity configuration
     private static final int DEFAULT_INITIAL_CAPACITY = 256;
-    private static final int MAX_REUSABLE_CAPACITY = 8192; // 8KB threshold for reuse
+    private static final int MAX_REUSABLE_CAPACITY = 8192;
+    private static final int ESCAPE_BUFFER_SIZE = 64;
 
     public MaskedStringBuilder(Runtime runtime) {
         this.runtime = runtime;
         this.visitedValues = new IdentityHashMap<>();
         this.stringBuilder = new StringBuilder(DEFAULT_INITIAL_CAPACITY);
+        this.escapeBuffer = new StringBuilder(ESCAPE_BUFFER_SIZE);
     }
 
     public MaskedStringBuilder(Runtime runtime, int initialCapacity) {
         this.runtime = runtime;
         this.visitedValues = new IdentityHashMap<>();
         this.stringBuilder = new StringBuilder(Math.max(initialCapacity, DEFAULT_INITIAL_CAPACITY));
+        this.escapeBuffer = new StringBuilder(ESCAPE_BUFFER_SIZE);
     }
 
     /**
@@ -99,6 +116,11 @@ public class MaskedStringBuilder implements AutoCloseable {
             // If the builder grew too large, replace it with a smaller one for future use
             if (stringBuilder.capacity() > MAX_REUSABLE_CAPACITY) {
                 stringBuilder = new StringBuilder(DEFAULT_INITIAL_CAPACITY);
+            }
+
+            // Reset escape buffer if it grew too large
+            if (escapeBuffer.capacity() > ESCAPE_BUFFER_SIZE * 4) {
+                escapeBuffer = new StringBuilder(ESCAPE_BUFFER_SIZE);
             }
 
             return result;
@@ -152,13 +174,14 @@ public class MaskedStringBuilder implements AutoCloseable {
         int startPos = stringBuilder.length();
         stringBuilder.append('{');
 
-        Map<String, BMap<?, ?>> fieldAnnotations = extractFieldAnnotations(recType);
+        // Use cached field annotations for better performance
+        Map<String, BMap<?, ?>> fieldAnnotations = getCachedFieldAnnotations(recType);
         boolean first = true;
 
         for (Map.Entry<String, Field> entry : fields.entrySet()) {
             String fieldName = entry.getKey();
             BString fieldNameKey = StringUtils.fromString(fieldName);
-            Object fieldValue = mapValue.get(StringUtils.fromString(fieldName));
+            Object fieldValue = mapValue.get(fieldNameKey);
 
             if (fieldValue == null) {
                 // For optional fields with default value as null, the map will contain the key
@@ -167,7 +190,8 @@ public class MaskedStringBuilder implements AutoCloseable {
                     if (!first) {
                         stringBuilder.append(',');
                     }
-                    appendFieldToJson(fieldName, "null", false, null);
+                    appendFieldToJsonOptimized(fieldName, "null", false, null);
+                    first = false;
                 }
                 continue;
             }
@@ -185,7 +209,7 @@ public class MaskedStringBuilder implements AutoCloseable {
                 if (!first) {
                     stringBuilder.append(',');
                 }
-                appendFieldToJson(fieldName, fieldStringValue.get(), annotation.isPresent(), fieldValue);
+                appendFieldToJsonOptimized(fieldName, fieldStringValue.get(), annotation.isPresent(), fieldValue);
                 first = false;
             }
         }
@@ -197,13 +221,79 @@ public class MaskedStringBuilder implements AutoCloseable {
         return result;
     }
 
-    private void appendFieldToJson(String fieldName, String value, boolean hasAnnotation, Object fieldValue) {
-        stringBuilder.append('"').append(escapeJsonString(fieldName)).append("\":");
+    /**
+     * Optimized version of appendFieldToJson that writes directly to StringBuilder
+     * without creating intermediate String objects for better performance.
+     */
+    private void appendFieldToJsonOptimized(String fieldName, String value, boolean hasAnnotation, Object fieldValue) {
+        stringBuilder.append('"');
+        appendEscapedStringOptimized(fieldName);
+        stringBuilder.append("\":");
         if (hasAnnotation || fieldValue instanceof BString) {
-            stringBuilder.append('"').append(escapeJsonString(value)).append('"');
+            stringBuilder.append('"');
+            appendEscapedStringOptimized(value);
+            stringBuilder.append('"');
         } else {
             stringBuilder.append(value);
         }
+    }
+
+    /**
+     * Optimized method to append escaped string directly to the main StringBuilder.
+     * This avoids creating intermediate String objects for better performance.
+     */
+    private void appendEscapedStringOptimized(String input) {
+        if (input == null) {
+            stringBuilder.append("null");
+            return;
+        }
+
+        if (!needsEscaping(input)) {
+            stringBuilder.append(input);
+            return;
+        }
+
+        for (int i = 0; i < input.length(); i++) {
+            char c = input.charAt(i);
+            switch (c) {
+                case '"' -> stringBuilder.append(QUOTE_ESCAPE);
+                case '\\' -> stringBuilder.append(BACKSLASH_ESCAPE);
+                case '\b' -> stringBuilder.append(BACKSPACE_ESCAPE);
+                case '\f' -> stringBuilder.append(FORM_FEED_ESCAPE);
+                case '\n' -> stringBuilder.append(NEWLINE_ESCAPE);
+                case '\r' -> stringBuilder.append(CARRIAGE_RETURN_ESCAPE);
+                case '\t' -> stringBuilder.append(TAB_ESCAPE);
+                default -> {
+                    if (c < 0x20 || c == 0x7F) {
+                        stringBuilder.append("\\u");
+                        stringBuilder.append(String.format("%04x", (int) c));
+                    } else {
+                        stringBuilder.append(c);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Get cached field annotations for better performance.
+     * Implements simple cache eviction when cache grows too large.
+     */
+    private Map<String, BMap<?, ?>> getCachedFieldAnnotations(RecordType recordType) {
+        Map<String, BMap<?, ?>> cached = ANNOTATION_CACHE.get(recordType);
+        if (cached != null) {
+            return cached;
+        }
+
+        // Implement simple cache size management
+        if (ANNOTATION_CACHE.size() >= MAX_CACHE_SIZE) {
+            // Clear half the cache when it gets too large (simple eviction strategy)
+            ANNOTATION_CACHE.entrySet().removeIf(entry -> System.identityHashCode(entry.getKey()) % 2 == 0);
+        }
+
+        Map<String, BMap<?, ?>> annotations = extractFieldAnnotations(recordType);
+        ANNOTATION_CACHE.put(recordType, annotations);
+        return annotations;
     }
 
     private String processTableValue(BTable<?, ?> tableValue) {
@@ -261,51 +351,19 @@ public class MaskedStringBuilder implements AutoCloseable {
 
     private void appendValueToArray(String value, Object originalValue) {
         if (originalValue instanceof BString) {
-            stringBuilder.append('"').append(escapeJsonString(value)).append('"');
+            stringBuilder.append('"');
+            appendEscapedStringOptimized(value);
+            stringBuilder.append('"');
         } else {
             stringBuilder.append(value);
         }
     }
 
     /**
-     * Escape characters in a string for safe JSON representation.
-     * Handles quotes, backslashes, and control characters.
-     *
-     * @param input the input string to escape
-     * @return the escaped string
+     * Check if a value is a basic type that doesn't need complex processing.
      */
-    private static String escapeJsonString(String input) {
-        if (input == null) {
-            return "null";
-        }
-
-        if (!needsEscaping(input)) {
-            return input;
-        }
-
-        StringBuilder escaped = new StringBuilder(input.length() + 16);
-
-        for (int i = 0; i < input.length(); i++) {
-            char c = input.charAt(i);
-            switch (c) {
-                case '"' -> escaped.append("\\\"");
-                case '\\' -> escaped.append("\\\\");
-                case '\b' -> escaped.append("\\b");
-                case '\f' -> escaped.append("\\f");
-                case '\n' -> escaped.append("\\n");
-                case '\r' -> escaped.append("\\r");
-                case '\t' -> escaped.append("\\t");
-                default -> {
-                    if (c < 0x20 || c == 0x7F) {
-                        escaped.append(String.format("\\u%04x", (int) c));
-                    } else {
-                        escaped.append(c);
-                    }
-                }
-            }
-        }
-
-        return escaped.toString();
+    private static boolean isBasicType(Object value) {
+        return value == null || TypeUtils.getType(value).getTag() <= TypeTags.BOOLEAN_TAG;
     }
 
     /**
@@ -315,15 +373,11 @@ public class MaskedStringBuilder implements AutoCloseable {
     private static boolean needsEscaping(String input) {
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
-            if (c == '"' || c == '\\' || c < 0x20 || c == 0x7F) {
+            if (c == '"' || c == '\\' || (c & 0xFFE0) == 0 || c == 0x7F) {
                 return true;
             }
         }
         return false;
-    }
-
-    private static boolean isBasicType(Object value) {
-        return value == null || TypeUtils.getType(value).getTag() <= TypeTags.BOOLEAN_TAG;
     }
 
     /**
@@ -346,6 +400,7 @@ public class MaskedStringBuilder implements AutoCloseable {
         }
         visitedValues.clear();
         stringBuilder.setLength(0);
+        escapeBuffer.setLength(0);
     }
 
     /**
@@ -362,8 +417,24 @@ public class MaskedStringBuilder implements AutoCloseable {
         if (!closed) {
             visitedValues.clear();
             stringBuilder = null;
+            escapeBuffer = null;
             closed = true;
         }
+    }
+
+    /**
+     * Clear the annotation cache to free memory.
+     * Should be called periodically in long-running applications.
+     */
+    public static void clearAnnotationCache() {
+        ANNOTATION_CACHE.clear();
+    }
+
+    /**
+     * Get the size of the annotation cache for monitoring purposes.
+     */
+    public static int getAnnotationCacheSize() {
+        return ANNOTATION_CACHE.size();
     }
 
     /**
