@@ -176,8 +176,8 @@ public isolated function processTemplate(PrintableRawTemplate template) returns 
         string insertionStr = insertion is PrintableRawTemplate ?
             processTemplate(insertion) :
                 insertion is Valuer ?
-                insertion().toString() :
-                insertion.toString();
+                (enableSensitiveDataMasking ? toMaskedString(insertion()) : insertion().toString()) :
+                (enableSensitiveDataMasking ? toMaskedString(insertion) : insertion.toString());
         result += insertionStr + templateStrings[i];
     }
     return result;
@@ -367,7 +367,8 @@ isolated function printLogFmt(LogRecord logRecord) returns string {
                 value = v.toBalString();
             }
             _ => {
-                value = v is string ? string `${escape(v.toString())}` : v.toString();
+                value = v is string ? string `${escape(v.toString())}` :
+                    (enableSensitiveDataMasking ? toMaskedString(v) : v.toString());
             }
         }
         if message == "" {
