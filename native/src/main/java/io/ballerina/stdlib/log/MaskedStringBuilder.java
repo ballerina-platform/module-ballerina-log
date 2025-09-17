@@ -31,6 +31,7 @@ import io.ballerina.runtime.api.values.BFunctionPointer;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTable;
+import io.ballerina.runtime.api.values.BXml;
 
 import java.util.Collection;
 import java.util.IdentityHashMap;
@@ -156,6 +157,7 @@ public class MaskedStringBuilder implements AutoCloseable {
             case BMap<?, ?> mapValue -> processMapValue(mapValue, type);
             case BTable<?, ?> tableValue -> processTableValue(tableValue);
             case BArray listValue -> processArrayValue(listValue);
+            case BXml xmlValue -> String.format("\"%s\"", StringUtils.getStringValue(xmlValue));
             default -> StringUtils.getStringValue(value);
         };
     }
