@@ -131,6 +131,9 @@ public class MaskedStringBuilder implements AutoCloseable {
     }
 
     private String buildInternal(Object value) {
+        if (value == null) {
+            return "null";
+        }
         if (isBasicType(value)) {
             return StringUtils.getStringValue(value);
         }
@@ -157,7 +160,6 @@ public class MaskedStringBuilder implements AutoCloseable {
             case BMap<?, ?> mapValue -> processMapValue(mapValue, type);
             case BTable<?, ?> tableValue -> processTableValue(tableValue);
             case BArray listValue -> processArrayValue(listValue);
-            case BXml xmlValue -> String.format("\"%s\"", StringUtils.getStringValue(xmlValue));
             default -> StringUtils.getStringValue(value);
         };
     }
@@ -170,7 +172,7 @@ public class MaskedStringBuilder implements AutoCloseable {
         RecordType recType = (RecordType) valueType;
         Map<String, Field> fields = recType.getFields();
         if (fields.isEmpty()) {
-            return "{}";
+            return StringUtils.getStringValue(mapValue);
         }
 
         int startPos = stringBuilder.length();
@@ -180,38 +182,36 @@ public class MaskedStringBuilder implements AutoCloseable {
         Map<String, BMap<?, ?>> fieldAnnotations = getCachedFieldAnnotations(recType);
         boolean first = true;
 
-        for (Map.Entry<String, Field> entry : fields.entrySet()) {
-            String fieldName = entry.getKey();
-            BString fieldNameKey = StringUtils.fromString(fieldName);
-            Object fieldValue = mapValue.get(fieldNameKey);
+        for (Object key : mapValue.getKeys()) {
+            if (!(key instanceof BString keyStr)) {
+                continue;
+            }
+            Object fieldValue = mapValue.get(key);
+            String fieldName = keyStr.getValue();
+            if (fields.containsKey(fieldName)) {
+                Optional<BMap<?, ?>> annotation = getLogSensitiveDataAnnotation(fieldAnnotations, fieldName);
+                Optional<String> fieldStringValue;
 
-            if (fieldValue == null) {
-                // For optional fields with default value as null, the map will contain the key
-                if (mapValue.containsKey(fieldNameKey)) {
-                    // Add the field with null value
+                if (annotation.isPresent()) {
+                    fieldStringValue = getStringValue(annotation.get(), fieldValue, runtime);
+                } else {
+                    fieldStringValue = Optional.of(buildInternal(fieldValue));
+                }
+
+                if (fieldStringValue.isPresent()) {
                     if (!first) {
                         stringBuilder.append(',');
                     }
-                    appendFieldToJsonOptimized(fieldName, "null", false, null);
+                    appendFieldToJsonOptimized(fieldName, fieldStringValue.get(), annotation.isPresent(), fieldValue);
                     first = false;
                 }
-                continue;
-            }
-
-            Optional<BMap<?, ?>> annotation = getLogSensitiveDataAnnotation(fieldAnnotations, fieldName);
-            Optional<String> fieldStringValue;
-
-            if (annotation.isPresent()) {
-                fieldStringValue = getStringValue(annotation.get(), fieldValue, runtime);
             } else {
-                fieldStringValue = Optional.of(buildInternal(fieldValue));
-            }
-
-            if (fieldStringValue.isPresent()) {
+                // Handle dynamic fields not defined in the record type
+                String fieldStringValue = buildInternal(fieldValue);
                 if (!first) {
                     stringBuilder.append(',');
                 }
-                appendFieldToJsonOptimized(fieldName, fieldStringValue.get(), annotation.isPresent(), fieldValue);
+                appendFieldToJsonOptimized(fieldName, fieldStringValue, false, fieldValue);
                 first = false;
             }
         }
@@ -231,7 +231,7 @@ public class MaskedStringBuilder implements AutoCloseable {
         stringBuilder.append('"');
         appendEscapedStringOptimized(fieldName);
         stringBuilder.append("\":");
-        if (hasAnnotation || fieldValue instanceof BString) {
+        if (hasAnnotation || fieldValue instanceof BString || fieldValue instanceof BXml) {
             stringBuilder.append('"');
             appendEscapedStringOptimized(value);
             stringBuilder.append('"');
