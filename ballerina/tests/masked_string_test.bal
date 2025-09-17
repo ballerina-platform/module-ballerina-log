@@ -327,3 +327,34 @@ function testMaskedStringWithCyclicSensitiveField() {
     string expectedStr = string `{"name":"name"}`;
     test:assertEquals(maskedRecStr, expectedStr);
 }
+
+@test:Config {
+    groups: ["maskedString"]
+}
+function testMaskedStringWithMap() {
+    map<json> jsonMap = {
+        key1: "value1",
+        key2: 2,
+        key3: true,
+        key4: {nestedKey: "nestedValue"},
+        key5: [1, "two", 3.0]
+    };
+    string maskedMapStr = toMaskedString(jsonMap);
+    string expectedStr = string `{"key1":"value1","key2":2,"key3":true,"key4":{"nestedKey":"nestedValue"},"key5":[1,"two",3.0]}`;
+    test:assertEquals(maskedMapStr, expectedStr);
+
+    User user = {
+        name: "John Doe",
+        ssn: "123-45-6789",
+        password: "password123",
+        mail: "john.doe@example.com",
+        creditCard: "4111-1111-1111-1111"
+    };
+    map<json> mapWithSensitiveData = {
+        normalKey: "normalValue",
+        sensitiveKey: user
+    };
+    string maskedMapWithSensitiveDataStr = toMaskedString(mapWithSensitiveData);
+    string expectedMapWithSensitiveDataStr = string `{"normalKey":"normalValue","sensitiveKey":{"name":"John Doe","password":"*****","mail":"joh**************com"}}`;
+    test:assertEquals(maskedMapWithSensitiveDataStr, expectedMapWithSensitiveDataStr);
+}

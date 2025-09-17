@@ -165,27 +165,25 @@ public class MaskedStringBuilder implements AutoCloseable {
     }
 
     private String processMapValue(BMap<?, ?> mapValue, Type valueType) {
-        if (valueType.getTag() != TypeTags.RECORD_TYPE_TAG) {
-            return StringUtils.getStringValue(mapValue);
+        Map<String, Field> fields = Map.of();
+        Map<String, BMap<?, ?>> fieldAnnotations = Map.of();
+
+        if (valueType.getTag() == TypeTags.RECORD_TYPE_TAG) {
+            RecordType recType = (RecordType) valueType;
+            fields = recType.getFields();
+            // Use cached field annotations for better performance
+            fieldAnnotations = getCachedFieldAnnotations(recType);
         }
 
-        RecordType recType = (RecordType) valueType;
-        Map<String, Field> fields = recType.getFields();
-        if (fields.isEmpty()) {
-            return StringUtils.getStringValue(mapValue);
-        }
-
-        return processRecordValue(mapValue, recType, fields);
+        return processRecordValue(mapValue, fieldAnnotations, fields);
     }
 
-    private String processRecordValue(BMap<?, ?> mapValue, RecordType recType, Map<String, Field> fields) {
+    private String processRecordValue(BMap<?, ?> mapValue, Map<String, BMap<?, ?>> fieldAnnotations,
+                                      Map<String, Field> fields) {
         int startPos = stringBuilder.length();
+
         stringBuilder.append('{');
-
-        // Use cached field annotations for better performance
-        Map<String, BMap<?, ?>> fieldAnnotations = getCachedFieldAnnotations(recType);
         addRecordFields(mapValue, fields, fieldAnnotations);
-
         stringBuilder.append('}');
 
         String result = stringBuilder.substring(startPos);
