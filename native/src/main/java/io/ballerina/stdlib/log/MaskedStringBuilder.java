@@ -175,11 +175,26 @@ public class MaskedStringBuilder implements AutoCloseable {
             return StringUtils.getStringValue(mapValue);
         }
 
+        return processRecordValue(mapValue, recType, fields);
+    }
+
+    private String processRecordValue(BMap<?, ?> mapValue, RecordType recType, Map<String, Field> fields) {
         int startPos = stringBuilder.length();
         stringBuilder.append('{');
 
         // Use cached field annotations for better performance
         Map<String, BMap<?, ?>> fieldAnnotations = getCachedFieldAnnotations(recType);
+        addRecordFields(mapValue, fields, fieldAnnotations);
+
+        stringBuilder.append('}');
+
+        String result = stringBuilder.substring(startPos);
+        stringBuilder.setLength(startPos);
+        return result;
+    }
+
+    private void addRecordFields(BMap<?, ?> mapValue, Map<String, Field> fields,
+                                 Map<String, BMap<?, ?>> fieldAnnotations) {
         boolean first = true;
 
         for (Object key : mapValue.getKeys()) {
@@ -188,39 +203,36 @@ public class MaskedStringBuilder implements AutoCloseable {
             }
             Object fieldValue = mapValue.get(key);
             String fieldName = keyStr.getValue();
-            if (fields.containsKey(fieldName)) {
-                Optional<BMap<?, ?>> annotation = getLogSensitiveDataAnnotation(fieldAnnotations, fieldName);
-                Optional<String> fieldStringValue;
-
-                if (annotation.isPresent()) {
-                    fieldStringValue = getStringValue(annotation.get(), fieldValue, runtime);
-                } else {
-                    fieldStringValue = Optional.of(buildInternal(fieldValue));
-                }
-
-                if (fieldStringValue.isPresent()) {
-                    if (!first) {
-                        stringBuilder.append(',');
-                    }
-                    appendFieldToJsonOptimized(fieldName, fieldStringValue.get(), annotation.isPresent(), fieldValue);
-                    first = false;
-                }
-            } else {
-                // Handle dynamic fields not defined in the record type
-                String fieldStringValue = buildInternal(fieldValue);
-                if (!first) {
-                    stringBuilder.append(',');
-                }
-                appendFieldToJsonOptimized(fieldName, fieldStringValue, false, fieldValue);
-                first = false;
-            }
+            first = fields.containsKey(fieldName) ?
+                    addDefinedFieldValue(fieldAnnotations, fieldName, fieldValue, first) :
+                    addDynamicFieldValue(fieldValue, first, fieldName);
         }
+    }
 
-        stringBuilder.append('}');
+    private boolean addDynamicFieldValue(Object fieldValue, boolean first, String fieldName) {
+        String fieldStringValue = buildInternal(fieldValue);
+        if (!first) {
+            stringBuilder.append(',');
+        }
+        appendFieldToJsonOptimized(fieldName, fieldStringValue, false, fieldValue);
+        return false;
+    }
 
-        String result = stringBuilder.substring(startPos);
-        stringBuilder.setLength(startPos);
-        return result;
+    private boolean addDefinedFieldValue(Map<String, BMap<?, ?>> fieldAnnotations, String fieldName, Object fieldValue,
+                                         boolean first) {
+        Optional<BMap<?, ?>> annotation = getLogSensitiveDataAnnotation(fieldAnnotations, fieldName);
+        Optional<String> fieldStringValue = annotation
+                .map(fieldAnnotation -> getStringValue(fieldAnnotation, fieldValue, runtime))
+                .orElseGet(() -> Optional.of(buildInternal(fieldValue)));
+
+        if (fieldStringValue.isPresent()) {
+            if (!first) {
+                stringBuilder.append(',');
+            }
+            appendFieldToJsonOptimized(fieldName, fieldStringValue.get(), annotation.isPresent(), fieldValue);
+            first = false;
+        }
+        return first;
     }
 
     /**
