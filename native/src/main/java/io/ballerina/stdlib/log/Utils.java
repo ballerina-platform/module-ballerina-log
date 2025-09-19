@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.log;
 
+import io.ballerina.runtime.api.Environment;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
@@ -97,5 +98,12 @@ public class Utils {
         return StringUtils.fromString(
                 new SimpleDateFormat(SIMPLE_DATE_FORMAT)
                         .format(new Date()));
+    }
+
+    public static BString toMaskedString(Environment env, Object value) {
+        // Use try-with-resources for automatic cleanup
+        try (MaskedStringBuilder builder = MaskedStringBuilder.create(env.getRuntime())) {
+            return StringUtils.fromString(builder.build(value));
+        }
     }
 }
