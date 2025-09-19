@@ -30,8 +30,8 @@ import static io.ballerina.stdlib.log.compiler.staticcodeanalyzer.RuleFactory.cr
 public enum LogRule {
     AVOID_LOGGING_CONFIGURABLE_VARIABLES(createRule(1,
             "Potentially-sensitive configurable variables are logged", VULNERABILITY));
-    private final Rule rule;
 
+    private final Rule rule;
 
     LogRule(Rule rule) {
         this.rule = rule;
@@ -41,8 +41,8 @@ public enum LogRule {
         return this.rule.numericId();
     }
 
-    public Rule getRule() {
-        return this.rule;
+    public String getDescription() {
+        return this.rule.description();
     }
 
     @Override
