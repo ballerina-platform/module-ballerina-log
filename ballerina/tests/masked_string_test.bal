@@ -29,6 +29,11 @@ isolated function maskStringPartially(string input) returns string {
     return maskedString;
 };
 
+function checkJsonParsing(string maskedStr) {
+    map<json>|error parsedJson = maskedStr.fromJsonStringWithType();
+    test:assertTrue(parsedJson is map<json>);
+}
+
 type User record {|
     string name;
     @SensitiveData
@@ -90,6 +95,7 @@ function testMaskedStringWithAnydataValues() {
     string maskedAnydataRecStr = toMaskedString(anydataRec);
     string expectedStr = string `{"str":"Test String","num":123.45,"bool":true,"jsonMap":{"key1":"value1","key2":2},"tableData":[{"col1":"row1col1","col2":"row1col2"},{"col1":"row2col1","col2":"row2col2"}],"arr":["elem1",2,{"key":"value"}],"xmlRaw":"<note><to>User</to><from>Admin</from><heading>Reminder</heading><body>Don't forget the meeting!</body></note>","xmlText":"Just some text","tuple":[1,2.5,"three"]}`;
     test:assertEquals(maskedAnydataRecStr, expectedStr);
+    checkJsonParsing(maskedAnydataRecStr);
 }
 
 type OpenAnydataRecord record {
@@ -119,6 +125,7 @@ function testMaskedStringWithOpenAnydataRecord() {
     string maskedOpenRecStr = toMaskedString(openRec);
     string expectedStr = string `{"name":"Open Record","extraField":"extraValue","extraMapField":{"mapKey":"mapValue"},"extraArrayField":[1,"two",3.0],"extraRecordField":{"name":"Field Record","extraField":"extraValue"}}`;
     test:assertEquals(maskedOpenRecStr, expectedStr);
+    checkJsonParsing(maskedOpenRecStr);
 }
 
 type Record1 record {|
@@ -196,6 +203,7 @@ function testMaskedStringWithNestedRecords() {
     string maskedNestedRecStr = toMaskedString(nestedRec);
     string expectedStr = string `{"name":"Nested Record","details2":{"field1":"Field1 Value","field3":{"subField1":"SubField1 Value","subField2":"###","subField3":"Sub*********lue"}},"records":[{"info":"Record1 Info"},{"info":"Record2 Info"}]}`;
     test:assertEquals(maskedNestedRecStr, expectedStr);
+    checkJsonParsing(maskedNestedRecStr);
 }
 
 type NilableSensitiveFieldRecord record {|
@@ -217,6 +225,7 @@ function testMaskedStringWithNilableSensitiveField() {
     string maskedRecWithNilStr = toMaskedString(recWithNil);
     string expectedStr = string `{"name":"Nilable Record","id":null}`;
     test:assertEquals(maskedRecWithNilStr, expectedStr);
+    checkJsonParsing(maskedRecWithNilStr);
 }
 
 type OptionalSensitiveFieldRecord record {|
@@ -237,15 +246,18 @@ function testMaskedStringWithOptionalSensitiveField() {
     string maskedRecWithOptionalStr = toMaskedString(recWithOptional);
     string expectedStr = string `{"name":"Optional Record","id":101}`;
     test:assertEquals(maskedRecWithOptionalStr, expectedStr);
+    checkJsonParsing(maskedRecWithOptionalStr);
 
     recWithOptional.sensitiveField = "Sensitive Data";
     string maskedRecWithOptionalSetStr = toMaskedString(recWithOptional);
     test:assertEquals(maskedRecWithOptionalSetStr, expectedStr);
+    checkJsonParsing(maskedRecWithOptionalSetStr);
 
     recWithOptional.id = ();
     string maskedRecWithOptionalSetNilStr = toMaskedString(recWithOptional);
     string expectedStrWithoutId = string `{"name":"Optional Record"}`;
     test:assertEquals(maskedRecWithOptionalSetNilStr, expectedStrWithoutId);
+    checkJsonParsing(maskedRecWithOptionalSetNilStr);
 }
 
 type NeverSensitiveFieldRecord record {|
@@ -265,6 +277,7 @@ function testMaskedStringWithNeverSensitiveField() {
     string maskedRecStr = toMaskedString(rec);
     string expectedStr = string `{"name":"Never Record"}`;
     test:assertEquals(maskedRecStr, expectedStr);
+    checkJsonParsing(maskedRecStr);
 }
 
 type RecordWithRestField record {|
@@ -287,6 +300,7 @@ function testMaskedStringWithRestField() {
     string maskedRecStr = toMaskedString(rec);
     string expectedStr = string `{"name":"Rest Field Record","extraField1":"extraValue1","extraField2":"extraValue2"}`;
     test:assertEquals(maskedRecStr, expectedStr);
+    checkJsonParsing(maskedRecStr);
 }
 
 type CyclicRecord record {|
@@ -326,6 +340,7 @@ function testMaskedStringWithCyclicSensitiveField() {
     string maskedRecStr = toMaskedString(rec);
     string expectedStr = string `{"name":"name"}`;
     test:assertEquals(maskedRecStr, expectedStr);
+    checkJsonParsing(maskedRecStr);
 }
 
 @test:Config {
@@ -342,6 +357,7 @@ function testMaskedStringWithMap() {
     string maskedMapStr = toMaskedString(jsonMap);
     string expectedStr = string `{"key1":"value1","key2":2,"key3":true,"key4":{"nestedKey":"nestedValue"},"key5":[1,"two",3.0]}`;
     test:assertEquals(maskedMapStr, expectedStr);
+    checkJsonParsing(maskedMapStr);
 
     User user = {
         name: "John Doe",
@@ -357,4 +373,60 @@ function testMaskedStringWithMap() {
     string maskedMapWithSensitiveDataStr = toMaskedString(mapWithSensitiveData);
     string expectedMapWithSensitiveDataStr = string `{"normalKey":"normalValue","sensitiveKey":{"name":"John Doe","password":"*****","mail":"joh**************com"}}`;
     test:assertEquals(maskedMapWithSensitiveDataStr, expectedMapWithSensitiveDataStr);
+    checkJsonParsing(maskedMapWithSensitiveDataStr);
+}
+
+type SpecialCharFieldsRec record {|
+    string field_with_underscores;
+    string FieldWithCamelCase;
+    string field\-With\$pecialChar\!;
+    string 'type;
+    string 'value\\\-Field;
+|};
+
+type SpecialCharSensitiveFieldsRec record {|
+    @SensitiveData {strategy: {replacement: "*****"}}
+    string field_with_underscores;
+    @SensitiveData {strategy: {replacement: "#####"}}
+    string FieldWithCamelCase;
+    @SensitiveData {strategy: {replacement: "1!1!1!"}}
+    string field\-With\$pecialChar\!;
+    @SensitiveData {strategy: {replacement: "[REDACTED]"}}
+    string 'type;
+    @SensitiveData {strategy: {replacement: "~~~~~~"}}
+    string 'value\\\-Field;
+|};
+
+@test:Config {
+    groups: ["maskedString"]
+}
+function testMaskedStringWithSpecialCharFieldsAndSpecialCharValues() {
+    SpecialCharFieldsRec rec = {
+        field_with_underscores: "\"value1\",\"value2\"",
+        FieldWithCamelCase: "value2",
+        field\-With\$pecialChar\!: "value3 & 'value4' <value5>",
+        'type: "exampleType\n\t",
+        'value\\\-Field: "value"
+    };
+    string maskedRecStr = toMaskedString(rec);
+    string expectedStr = string `{"field_with_underscores":"\"value1\",\"value2\"","FieldWithCamelCase":"value2","field-With$pecialChar!":"value3 & 'value4' <value5>","type":"exampleType\n\t","value\\-Field":"value"}`;
+    test:assertEquals(maskedRecStr, expectedStr);
+    checkJsonParsing(maskedRecStr);
+}
+
+@test:Config {
+    groups: ["maskedString"]
+}
+function testMaskedStringWithSpecialCharFields() {
+    SpecialCharSensitiveFieldsRec rec = {
+        field_with_underscores: "\"value1\",\"value2\"",
+        FieldWithCamelCase: "value2",
+        field\-With\$pecialChar\!: "value3 & 'value4' <value5>",
+        'type: "exampleType\n\t",
+        'value\\\-Field: "value"
+    };
+    string maskedRecStr = toMaskedString(rec);
+    string expectedStr = string `{"field_with_underscores":"*****","FieldWithCamelCase":"#####","field-With$pecialChar!":"1!1!1!","type":"[REDACTED]","value\\-Field":"~~~~~~"}`;
+    test:assertEquals(maskedRecStr, expectedStr);
+    checkJsonParsing(maskedRecStr);
 }

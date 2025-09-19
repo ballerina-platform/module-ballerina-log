@@ -24,6 +24,7 @@ import io.ballerina.runtime.api.types.Field;
 import io.ballerina.runtime.api.types.RecordType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.TypeTags;
+import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.utils.TypeUtils;
 import io.ballerina.runtime.api.values.BArray;
@@ -472,7 +473,9 @@ public class MaskedStringBuilder implements AutoCloseable {
 
     static Optional<BMap<?, ?>> getLogSensitiveDataAnnotation(Map<String, BMap<?, ?>> fieldAnnotations,
                                                               String fieldName) {
-        BMap<?, ?> fieldAnnotationMap = fieldAnnotations.get(fieldName);
+        // In the value map keys are unescaped, but the annotation keys are escaped
+        // Moreover runtime does not provide a way to unescape the annotation keys, so we need to escape the field name
+        BMap<?, ?> fieldAnnotationMap = fieldAnnotations.get(IdentifierUtils.escapeSpecialCharacters(fieldName));
         if (fieldAnnotationMap == null) {
             return Optional.empty();
         }
