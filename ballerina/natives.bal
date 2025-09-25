@@ -26,7 +26,7 @@ public enum Level {
     WARN
 }
 
-# A value of `anydata` type or a function pointer or raw template.
+# Represents a value that can be of type `anydata`, a function pointer, or a raw template.
 public type Value anydata|Valuer|PrintableRawTemplate;
 
 # Represents raw templates for logging.
@@ -40,14 +40,16 @@ public type PrintableRawTemplate readonly & object {
     public Value[] insertions;
 };
 
-# A function, which returns `anydata` type.
+# Represents a function that returns a value of type `anydata`.
+# It is particularly useful in scenarios where there is a computation required to retrieve the value.
+# This function is executed only if the specific log level is enabled.
 public type Valuer isolated function () returns anydata;
 
-# Key-Value pairs that needs to be displayed in the log.
+# Represents key-value pairs that need to be displayed in the log.
 #
-# + msg - msg which cannot be a key
-# + 'error - 'error which cannot be a key
-# + stackTrace - error stack trace which cannot be a key
+# + msg - The message, which cannot be used as a key
+# + 'error - The error, which cannot be used as a key
+# + stackTrace - The error stack trace, which cannot be used as a key
 public type KeyValues record {|
     never msg?;
     never 'error?;
@@ -55,15 +57,15 @@ public type KeyValues record {|
     Value...;
 |};
 
-# Anydata key-value pairs that needs to be displayed in the log.
+# Represents anydata key-value pairs that needs to be displayed in the log.
 public type AnydataKeyValues record {
-    # msg which cannot be a key
+    # The message, which cannot be used as a key
     never msg?;
-    # 'error which cannot be a key
+    # The error, which cannot be used as a key
     never 'error?;
-    # stackTrace which cannot be a key
+    # The error stack trace, which cannot be used as a key
     never stackTrace?;
-    # module name which cannot be a key
+    # The module name, which cannot be used as a key
     never module?;
 };
 
@@ -74,66 +76,66 @@ type Module record {
 
 # Represents supported log formats.
 public enum LogFormat {
-    # JSON log format.
+    # The JSON log format.
     JSON_FORMAT = "json",
-    # Logfmt log format.
+    # The Logfmt log format.
     LOGFMT = "logfmt"
 };
 
-# Root logger default log format.
+# Represents root logger default log format.
 public configurable LogFormat format = LOGFMT;
 
-# Root logger default log level.
+# Represents root logger default log level.
 public configurable Level level = INFO;
 
-# Modules with their log levels.
+# Represents modules with their log levels.
 public configurable table<Module> key(name) & readonly modules = table [];
 
-# Default key-values to add to the root logger.
+# Represents default key-values to add to the root logger.
 public configurable AnydataKeyValues & readonly keyValues = {};
 
-# Output destination types.
+# Represents output destination types.
 public enum DestinationType {
-    # Standard error output as destination
+    # Standard error output as the destination
     STDERR = "stderr",
-    # Standard output as destination
+    # Standard output as the destination
     STDOUT = "stdout",
-    # File output as destination
+    # File output as the destination
     FILE = "file"
 };
 
-# Standard destination.
+# Represents a standard destination.
 public type StandardDestination record {|
     # Type of the standard destination. Allowed values are "stderr" and "stdout"
     readonly STDERR|STDOUT 'type = STDERR;
 |};
 
-# File output modes.
+# Represents file output modes.
 public enum FileOutputMode {
-    # Truncates the file before writing. This mode creates a new file if one doesn't exist. 
-    # If the file already exists, its contents are cleared, and new data is written 
+    # Truncates the file before writing. Creates a new file if one doesn't exist.
+    # If the file already exists, its contents are cleared, and new data is written
     # from the beginning.
     TRUNCATE,
-    # Appends to the existing content. This mode creates a new file if one doesn't exist. 
+    # Appends to the existing content. Creates a new file if one doesn't exist.
     # If the file already exists, new data is appended to the end of its current contents.
     APPEND
 };
 
 // Defined as an open record to allow for future extensions
-# File output destination
+# Represents a file output destination.
 public type FileOutputDestination record {
-    # Type of the file destination. Allowed value is "file".
+    # The type of the file destination. The allowed value is "file"
     readonly FILE 'type = FILE;
-    # File path(only files with .log extension are supported)
+    # The file path. Only files with a `.log` extension are supported
     string path;
-    # File output mode
+    # The file output mode. The default value is `APPEND`
     FileOutputMode mode = APPEND;
 };
 
-# Log output destination.
+# Represents the log output destination.
 public type OutputDestination StandardDestination|FileOutputDestination;
 
-# Destinations is a list of file destinations or standard output/error.
+# Represents a list of file destinations or standard output/error.
 public configurable readonly & OutputDestination[] destinations = [{'type: STDERR}];
 
 type LogRecord record {
@@ -155,17 +157,17 @@ isolated string? outputFilePath = ();
 
 # Represents file opening options for writing.
 #
-# + OVERWRITE - Overwrite(truncate the existing content)
-# + APPEND - Append to the existing content
+# + OVERWRITE - Overwrites the file by truncating the existing content
+# + APPEND - Appends new content to the existing file
 public enum FileWriteOption {
     OVERWRITE,
     APPEND
 }
 
-# Process the raw template and return the processed string.
+# Processes the raw template and returns the processed string.
 #
 # + template - The raw template to be processed
-# + return - The processed string
+# + return - The resulting string after processing the template
 public isolated function processTemplate(PrintableRawTemplate template) returns string {
     string[] templateStrings = template.strings;
     Value[] insertions = template.insertions;
@@ -244,13 +246,13 @@ public isolated function printWarn(string|PrintableRawTemplate msg, error? 'erro
     rootLogger.print(WARN, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
-# Set the log output to a file. Note that all the subsequent logs of the entire application will be written to this file.
+# Sets the log output to a file. All subsequent logs of the entire application will be written to this file.
 # ```ballerina
 # var result = log:setOutputFile("./resources/myfile.log");
 # var result = log:setOutputFile("./resources/myfile.log", log:OVERWRITE);
 # ```
 #
-# + path - The path of the file
+# + path - The file path to write the logs. Should be a file with `.log` extension
 # + option - The file write option. Default is `APPEND`
 #
 # + return - A `log:Error` if an invalid file path was provided
