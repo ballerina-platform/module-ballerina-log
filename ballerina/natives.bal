@@ -57,7 +57,7 @@ public type KeyValues record {|
     Value...;
 |};
 
-# Represents anydata key-value pairs that needs to be displayed in the log.
+# Represents anydata key-value pairs that need to be displayed in the log.
 public type AnydataKeyValues record {
     # The message, which cannot be used as a key
     never msg?;
