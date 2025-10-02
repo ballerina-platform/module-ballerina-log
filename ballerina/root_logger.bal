@@ -27,6 +27,8 @@ public type Config record {|
     readonly & OutputDestination[] destinations = destinations;
     # Additional key-value pairs to include in the log messages. Default is the key-values configured in the module level
     readonly & AnydataKeyValues keyValues = {...keyValues};
+    # Enable sensitive data masking. Default is the module level configuration
+    boolean enableSensitiveDataMasking = enableSensitiveDataMasking;
 |};
 
 type ConfigInternal record {|
@@ -34,6 +36,7 @@ type ConfigInternal record {|
     Level level = level;
     readonly & OutputDestination[] destinations = destinations;
     readonly & KeyValues keyValues = {...keyValues};
+    boolean enableSensitiveDataMasking = enableSensitiveDataMasking;
 |};
 
 final RootLogger rootLogger;
@@ -59,7 +62,8 @@ public isolated function fromConfig(*Config config) returns Logger|Error {
         format: config.format,
         level: config.level,
         destinations: config.destinations,
-        keyValues: newKeyValues.cloneReadOnly()
+        keyValues: newKeyValues.cloneReadOnly(),
+        enableSensitiveDataMasking: config.enableSensitiveDataMasking
     };
     return new RootLogger(newConfig);
 }
@@ -71,12 +75,14 @@ isolated class RootLogger {
     private final Level level;
     private final readonly & OutputDestination[] destinations;
     private final readonly & KeyValues keyValues;
+    private final boolean enableSensitiveDataMasking;
 
     public isolated function init(Config|ConfigInternal config = <Config>{}) {
         self.format = config.format;
         self.level = config.level;
         self.destinations = config.destinations;
         self.keyValues = config.keyValues;
+        self.enableSensitiveDataMasking = config.enableSensitiveDataMasking;
     }
 
     public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
@@ -108,7 +114,8 @@ isolated class RootLogger {
             format: self.format,
             level: self.level,
             destinations: self.destinations,
-            keyValues: newKeyValues.cloneReadOnly()
+            keyValues: newKeyValues.cloneReadOnly(),
+            enableSensitiveDataMasking: self.enableSensitiveDataMasking
         };
         return new RootLogger(config);
     }
@@ -144,8 +151,8 @@ isolated class RootLogger {
         }
 
         string logOutput = self.format == JSON_FORMAT ?
-            (enableSensitiveDataMasking ? toMaskedString(logRecord) : logRecord.toJsonString()) :
-            printLogFmt(logRecord);
+            (self.enableSensitiveDataMasking ? toMaskedString(logRecord) : logRecord.toJsonString()) :
+            printLogFmt(logRecord, self.enableSensitiveDataMasking);
 
         lock {
             if outputFilePath is string {

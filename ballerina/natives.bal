@@ -349,7 +349,7 @@ isolated function fileWrite(string logOutput) {
     }
 }
 
-isolated function printLogFmt(LogRecord logRecord) returns string {
+isolated function printLogFmt(LogRecord logRecord, boolean enableSensitiveDataMasking = false) returns string {
     string message = "";
     foreach [string, anydata] [k, v] in logRecord.entries() {
         string value;
@@ -367,8 +367,8 @@ isolated function printLogFmt(LogRecord logRecord) returns string {
                 value = v.toBalString();
             }
             _ => {
-                value = v is string ? string `${escape(v.toString())}` :
-                    (enableSensitiveDataMasking ? toMaskedString(v) : v.toString());
+                string strValue = enableSensitiveDataMasking ? toMaskedString(v) : v.toString();
+                value = v is string ? string `${escape(strValue)}` : strValue;
             }
         }
         if message == "" {
