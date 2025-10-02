@@ -128,7 +128,7 @@ isolated class RootLogger {
             time: getCurrentTime(),
             level: logLevel,
             module: moduleName,
-            message: processMessage(msg)
+            message: processMessage(msg, self.enableSensitiveDataMasking)
         };
         if err is error {
             logRecord.'error = getFullErrorDetails(err);
@@ -138,7 +138,8 @@ isolated class RootLogger {
                 select element.toString();
         }
         foreach [string, Value] [k, v] in keyValues.entries() {
-            logRecord[k] = v is Valuer ? v() : v is PrintableRawTemplate ? processMessage(v) : v;
+            logRecord[k] = v is Valuer ? v() : 
+                (v is PrintableRawTemplate ? processMessage(v, self.enableSensitiveDataMasking) : v);
         }
         if observe:isTracingEnabled() {
             map<string> spanContext = observe:getSpanContext();
@@ -147,7 +148,8 @@ isolated class RootLogger {
             }
         }
         foreach [string, Value] [k, v] in self.keyValues.entries() {
-            logRecord[k] = v is Valuer ? v() : v is PrintableRawTemplate ? processMessage(v) : v;
+            logRecord[k] = v is Valuer ? v() : 
+                (v is PrintableRawTemplate ? processMessage(v, self.enableSensitiveDataMasking) : v);
         }
 
         string logOutput = self.format == JSON_FORMAT ?
