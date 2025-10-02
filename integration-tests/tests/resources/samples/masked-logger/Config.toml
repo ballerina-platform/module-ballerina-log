@@ -1,0 +1,3 @@
+[ballerina.log]
+enableSensitiveDataMasking = true
+level = "DEBUG"
