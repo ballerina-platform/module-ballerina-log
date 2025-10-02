@@ -430,3 +430,64 @@ function testMaskedStringWithSpecialCharFields() {
     test:assertEquals(maskedRecStr, expectedStr);
     checkJsonParsing(maskedRecStr);
 }
+
+type ReadonlyUser1 readonly & record {|
+    string name;
+    @SensitiveData
+    string ssn;
+    @SensitiveData {strategy: {replacement: "*****"}}
+    string password;
+    @SensitiveData {strategy: {replacement: maskStringPartially}}
+    string mail;
+    @SensitiveData {strategy: EXCLUDE}
+    string creditCard;
+|};
+
+type ReadonlyUser2 readonly & User;
+
+@test:Config {
+    groups: ["maskedString"]
+}
+function testMaskedStringWithReadonlyRecords() returns error? {
+    User user = {
+        name: "John Doe",
+        ssn: "123-45-6789",
+        password: "password123",
+        mail: "john.doe@example.com",
+        creditCard: "4111-1111-1111-1111"
+    };
+
+    ReadonlyUser1 readonlyUser1 = {...user};
+    ReadonlyUser2 readonlyUser2 = {...user};
+    readonly & User readonlyUser3 = {...user};
+    ReadonlyUser1 readonlyUser4 = check user.cloneWithType();
+    ReadonlyUser2 readonlyUser5 = check user.cloneWithType();
+    readonly & User readonlyUser6 = check user.cloneWithType();
+    readonly & User readonlyUser7 = user.cloneReadOnly();
+
+    string maskedReadonlyUser1Str = toMaskedString(readonlyUser1);
+    string maskedReadonlyUser2Str = toMaskedString(readonlyUser2);
+    string maskedReadonlyUser3Str = toMaskedString(readonlyUser3);
+    string maskedReadonlyUser4Str = toMaskedString(readonlyUser4);
+    string maskedReadonlyUser5Str = toMaskedString(readonlyUser5);
+    string maskedReadonlyUser6Str = toMaskedString(readonlyUser6);
+    string maskedReadonlyUser7Str = toMaskedString(readonlyUser7);
+
+    string expectedStr = string `{"name":"John Doe","password":"*****","mail":"joh**************com"}`;
+
+    test:assertEquals(maskedReadonlyUser1Str, expectedStr);
+    test:assertEquals(maskedReadonlyUser2Str, expectedStr);
+    test:assertEquals(maskedReadonlyUser3Str, expectedStr);
+    test:assertEquals(maskedReadonlyUser4Str, expectedStr);
+    test:assertEquals(maskedReadonlyUser5Str, expectedStr);
+    test:assertEquals(maskedReadonlyUser6Str, expectedStr);
+    test:assertEquals(maskedReadonlyUser7Str, expectedStr);
+
+    checkJsonParsing(maskedReadonlyUser1Str);
+    checkJsonParsing(maskedReadonlyUser2Str);
+    checkJsonParsing(maskedReadonlyUser3Str);
+    checkJsonParsing(maskedReadonlyUser4Str);
+    checkJsonParsing(maskedReadonlyUser5Str);
+    checkJsonParsing(maskedReadonlyUser6Str);
+    checkJsonParsing(maskedReadonlyUser7Str);
+}

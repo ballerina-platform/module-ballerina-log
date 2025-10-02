@@ -29,18 +29,21 @@ function addMaskedLogs(io:FileOutputStream fileOutputStream, io:Printable... val
     }
 }
 
+final readonly & User user = {
+    name: "John Doe",
+    ssn: "123-45-6789",
+    password: "password123",
+    mail: "john.doe@example.com",
+    creditCard: "4111-1111-1111-1111"
+};
+
+isolated function getUser() returns User => user;
+
 @test:Config {
     groups: ["logMasking"]
 }
 function testLogMasking() returns error? {
     test:when(mock_fprintln).call("addMaskedLogs");
-    User user = {
-        name: "John Doe",
-        ssn: "123-45-6789",
-        password: "password123",
-        mail: "john.doe@example.com",
-        creditCard: "4111-1111-1111-1111"
-    };
     maskerJsonLogger.printInfo("user logged in", user = user);
     string expectedLog = string `"message":"user logged in","user":{"name":"John Doe","password":"*****","mail":"joh**************com"},"env":"test"`;
     test:assertEquals(maskedLogs.length(), 1);
@@ -48,7 +51,7 @@ function testLogMasking() returns error? {
     maskedLogs.removeAll();
 
     maskerLogger.printInfo("user logged in", user = user);
-    expectedLog= string `message="user logged in" user={"name":"John Doe","password":"*****","mail":"joh**************com"} env="test"`;
+    expectedLog = string `message="user logged in" user={"name":"John Doe","password":"*****","mail":"joh**************com"} env="test"`;
     test:assertEquals(maskedLogs.length(), 1);
     test:assertTrue(maskedLogs[0].includes(expectedLog));
     maskedLogs.removeAll();
@@ -67,9 +70,14 @@ function testLogMasking() returns error? {
     test:assertTrue(maskedLogs[0].includes(expectedLog));
     maskedLogs.removeAll();
 
-    user = check userTmp.cloneWithType();
-    maskerLogger.printInfo("user logged in", user = user);
-    expectedLog = string `message="user logged in" user={"name":"John Doe","password":"*****","mail":"joh**************com"} env="test"`;
+    maskerLogger.printDebug(`user login event. user details: ${user}`);
+    expectedLog = string `message="user login event. user details: {\"name\":\"John Doe\",\"password\":\"*****\",\"mail\":\"joh**************com\"}" env="test"`;
+    test:assertEquals(maskedLogs.length(), 1);
+    test:assertTrue(maskedLogs[0].includes(expectedLog));
+    maskedLogs.removeAll();
+
+    maskerLogger.printWarn("user login attempt failed", user = getUser);
+    expectedLog = string `message="user login attempt failed" user={"name":"John Doe","password":"*****","mail":"joh**************com"} env="test"`;
     test:assertEquals(maskedLogs.length(), 1);
     test:assertTrue(maskedLogs[0].includes(expectedLog));
     maskedLogs.removeAll();
