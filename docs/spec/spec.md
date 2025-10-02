@@ -3,7 +3,7 @@
 _Authors_: @daneshk @MadhukaHarith92 @TharmiganK  
 _Reviewers_: @daneshk @ThisaruGuruge  
 _Created_: 2021/11/15  
-_Updated_: 2025/08/20  
+_Updated_: 2025/10/02  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -31,6 +31,10 @@ The conforming implementation of the specification is released and included in t
    * 4.3. [Child logger](#43-child-logger)
      * 4.3.1. [Loggers with additional context](#431-loggers-with-additional-context)
      * 4.3.2. [Loggers with unique logging configuration](#432-loggers-with-unique-logging-configuration)
+5. [Sensitive data masking](#5-sensitive-data-masking)
+   * 5.1. [Sensitive data annotation](#51-sensitive-data-annotation)
+   * 5.2. [Masked string function](#52-masked-string-function)
+   * 5.3. [Configure sensitive data masking](#53-configure-sensitive-data-masking)
 
 ## 1. Overview
 
@@ -279,6 +283,8 @@ public type Config record {|
     readonly & OutputDestination[] destinations = destinations;
     # Additional key-value pairs to include in the log messages. Default is the key-values configured in the module level
     readonly & AnydataKeyValues keyValues = {...keyValues};
+    # Enable sensitive data masking in the logs. Default is false
+    boolean enableSensitiveDataMasking = false;
 |};
 ```
 
@@ -293,4 +299,155 @@ log:Config auditLogConfig = {
 
 log:Logger auditLogger = log:fromConfig(auditLogConfig);
 auditLogger.printInfo("Hello World from the audit logger!");
+```
+
+## 5. Sensitive data masking
+
+The Ballerina log module provides the capability to mask sensitive data in log messages. This is crucial for maintaining data privacy and security, especially when dealing with personally identifiable information (PII) or other sensitive data.
+
+### 5.1. Sensitive data annotation
+
+The `@log:SensitiveData` annotation can be used to mark fields in a record as sensitive. When such fields are logged, their values will be excluded or masked to prevent exposure of sensitive information.
+
+```ballerina
+import ballerina/log;
+
+type User record {
+    string id;
+    @log:SensitiveData
+    string password;
+    string name;
+};
+
+public function main() {
+    User user = {id: "U001", password: "mypassword", name: "John Doe"};
+    log:printInfo("user details", user = user);
+}
+```
+
+Output:
+
+```log
+time=2025-08-20T09:15:30.123+05:30 level=INFO module="" message="user details" user={"id":"U001","name":"John Doe"}
+```
+
+By default, the `@log:SensitiveData` annotation will exclude the sensitive field from the log output when sensitive data masking is enabled.
+
+Additionally, the masking strategy can be configured using the `strategy` field of the annotation. The available strategies are:
+1. `EXCLUDE`: Excludes the field from the log output (default behavior).
+2. `Replacement`: Replaces the field value with a specified replacement string or a function that generates a masked version of the value.
+
+Example:
+
+```ballerina
+import ballerina/log;
+
+isolated function maskString(string input) returns string {
+    if input.length() <= 2 {
+        return "****";
+    }
+    return input.substring(0, 1) + "****" + input.substring(input.length() - 1);
+}
+
+type User record {
+    string id;
+    @log:SensitiveData {
+        strategy: {
+            replacement: "****"
+        }   
+    }
+    string password;
+    @log:SensitiveData {
+        strategy: {
+            replacement: maskString
+        }
+    }
+    string ssn;
+    string name;
+};
+
+public function main() {
+    User user = {id: "U001", password: "mypassword", ssn: "123-45-6789", name: "John Doe"};
+    log:printInfo("user details", user = user);
+}
+```
+
+Output:
+
+```log
+time=2025-08-20T09:20:45.456+05:30 level=INFO module="" message="user details" user={"id":"U001","password":"****","ssn":"1****9","name":"John Doe"}
+```
+
+### 5.2. Masked string function
+
+The `log:toMaskedString()` function can be used to obtain the masked version of a value. This is useful when developers want to implement custom loggers and need to mask sensitive data.
+
+```ballerina
+import ballerina/log;
+import ballerina/io;
+
+type User record {
+    string id;
+    @log:SensitiveData
+    string password;
+    string name;
+};
+
+public function main() {
+    User user = {id: "U001", password: "mypassword", name: "John Doe"};
+    string maskedUser = log:toMaskedString(user);
+    io:println(maskedUser);
+}
+```
+
+Output:
+
+```log
+{"id":"U001","name":"John Doe"}
+```
+
+> **Note:** The masking is based on the type of the value. Since, Ballerina is a structurally typed language, same value can be assigned to different typed variables. So the masking is based on the actual value type which is determined at the value creation time.
+> Example:
+> ```ballerina
+> type User record {
+>    string id;
+>    @log:SensitiveData
+>    string password;
+>    string name;
+> };
+> 
+> type Student record {
+>    string id;
+>    string password; // Not marked as sensitive
+>    string name;
+> };
+> 
+> public function main() returns error? {
+>    User user = {id: "U001", password: "mypassword", name: "John Doe"};
+>    // password will be masked
+>    string maskedUser = log:toMaskedString(user);
+>
+>    Student student = user; // Allowed since both have the same structure 
+>    // password will be masked since the type at value creation is User
+>    string maskedStudent = log:toMaskedString(student);
+> 
+>    student = {id: "S001", password: "studentpass", name: "Jane Doe"}; 
+>    user = student; // Allowed since both have the same structure
+>    // password will not be masked since the type at value creation is Student
+>    maskedStudent = log:toMaskedString(user);
+> 
+>    // Explicity creating a value with type
+>    user = check student.cloneWithType();
+>    // password will be masked since the type at value creation is User
+>    maskedUser = log:toMaskedString(user);
+> }    
+> ```
+
+### 5.3. Configure sensitive data masking
+
+By default, sensitive data masking is disabled. It can be enabled via a configurable variable in the `Config.toml` file.
+
+```toml
+[ballerina.log]
+enableSensitiveDataMasking = true
 ```
