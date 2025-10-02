@@ -21,7 +21,9 @@ package io.ballerina.stdlib.log;
 import io.ballerina.runtime.api.Runtime;
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.types.Field;
+import io.ballerina.runtime.api.types.IntersectionType;
 import io.ballerina.runtime.api.types.RecordType;
+import io.ballerina.runtime.api.types.ReferenceType;
 import io.ballerina.runtime.api.types.Type;
 import io.ballerina.runtime.api.types.TypeTags;
 import io.ballerina.runtime.api.utils.IdentifierUtils;
@@ -36,6 +38,7 @@ import io.ballerina.runtime.api.values.BXml;
 
 import java.util.Collection;
 import java.util.IdentityHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
@@ -153,7 +156,8 @@ public class MaskedStringBuilder implements AutoCloseable {
     }
 
     private String processValue(Object value) {
-        Type type = TypeUtils.getType(value);
+        // Getting implied type to handle intersection types with readonly
+        Type type = getEffectiveType(TypeUtils.getType(value));
 
         return switch (value) {
             // Processing only the structured types, since the basic types does not contain the
@@ -163,6 +167,33 @@ public class MaskedStringBuilder implements AutoCloseable {
             case BArray listValue -> processArrayValue(listValue);
             default -> StringUtils.getStringValue(value);
         };
+    }
+
+    private Type getEffectiveType(Type type) {
+        // For intersection types, get the first constituent type that is not readonly
+        if (type.getTag() == TypeTags.INTERSECTION_TAG) {
+            List<Type> constituentTypes = ((IntersectionType) type).getConstituentTypes();
+            if (constituentTypes.size() == 2) {
+                type = constituentTypes.get(0).getTag() == TypeTags.READONLY_TAG ? constituentTypes.get(1) :
+                        constituentTypes.get(0);
+                return getEffectiveType(type);
+            }
+        }
+
+        // Record types can be intersection types, so unwrap them to get the actual record type
+        if (type.getTag() == TypeTags.RECORD_TYPE_TAG) {
+            Optional<IntersectionType> intersectionType = ((RecordType) type).getIntersectionType();
+            if (intersectionType.isPresent()) {
+                return getEffectiveType(intersectionType.get());
+            }
+        }
+
+        // Unwrap reference types to get the actual referred type
+        if (type.getTag() == TypeTags.TYPE_REFERENCED_TYPE_TAG) {
+            type = ((ReferenceType) type).getReferredType();
+            return getEffectiveType(type);
+        }
+        return type;
     }
 
     private String processMapValue(BMap<?, ?> mapValue, Type valueType) {
