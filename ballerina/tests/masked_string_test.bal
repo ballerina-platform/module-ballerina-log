@@ -491,3 +491,73 @@ function testMaskedStringWithReadonlyRecords() returns error? {
     checkJsonParsing(maskedReadonlyUser6Str);
     checkJsonParsing(maskedReadonlyUser7Str);
 }
+
+type StructurallySimilarUser record {|
+    string name;
+    string ssn;
+    string password;
+    string mail;
+    string creditCard;
+|};
+
+@test:Config {
+    groups: ["maskedString"]
+}
+function testMaskedStringWithStructurallySimilarRecord() returns error? {
+    User user = {
+        name: "John Doe",
+        ssn: "123-45-6789",
+        password: "password123",
+        mail: "john.doe@example.com",
+        creditCard: "4111-1111-1111-1111"
+    };
+
+    StructurallySimilarUser similarUser = user;
+    string maskedSimilarUserStr = toMaskedString(similarUser);
+    string expectedStr = string `{"name":"John Doe","password":"*****","mail":"joh**************com"}`;
+    test:assertEquals(maskedSimilarUserStr, expectedStr);
+    checkJsonParsing(maskedSimilarUserStr);
+
+    similarUser = {
+        name: "John Doe",
+        ssn: "123-45-6789",
+        password: "password123",
+        mail: "john.doe@example.com",
+        creditCard: "4111-1111-1111-1111"
+    };
+    maskedSimilarUserStr = toMaskedString(similarUser);
+    expectedStr = string `{"name":"John Doe","ssn":"123-45-6789","password":"password123","mail":"john.doe@example.com","creditCard":"4111-1111-1111-1111"}`;
+    test:assertEquals(maskedSimilarUserStr, expectedStr);
+    checkJsonParsing(maskedSimilarUserStr);
+
+    user = similarUser;
+    string maskedUserStr = toMaskedString(user);
+    test:assertEquals(maskedUserStr, expectedStr);
+    checkJsonParsing(maskedUserStr);
+
+    // Explicit type casting will not change the runtime type of the value for structural types
+    user = <User> similarUser;
+    maskedUserStr = toMaskedString(user);
+    test:assertEquals(maskedUserStr, expectedStr);
+    checkJsonParsing(maskedUserStr);
+
+    // Ensuretype will not change the runtime type of the value for structural types
+    user = check similarUser.ensureType();
+    maskedUserStr = toMaskedString(user);
+    test:assertEquals(maskedUserStr, expectedStr);
+    checkJsonParsing(maskedUserStr);
+}
+
+@test:Config {
+    groups: ["maskedString"]
+}
+function testMaskedStringWithBasicTypes() {
+    test:assertEquals(toMaskedString(()), "null");
+    test:assertEquals(toMaskedString("Test String"), "Test String");
+    test:assertEquals(toMaskedString(123), "123");
+    test:assertEquals(toMaskedString(45.67), "45.67");
+    test:assertEquals(toMaskedString(45.67d), "45.67");
+    test:assertEquals(toMaskedString(true), "true");
+    test:assertEquals(toMaskedString(xml `<note><to>User</to><from>Admin</from><heading>Reminder</heading><body>Don't forget the meeting!</body></note>`), "<note><to>User</to><from>Admin</from><heading>Reminder</heading><body>Don't forget the meeting!</body></note>");
+    test:assertEquals(toMaskedString(xml `Just some text`), "Just some text");
+}

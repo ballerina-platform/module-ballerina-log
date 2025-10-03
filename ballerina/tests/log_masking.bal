@@ -81,4 +81,10 @@ function testLogMasking() returns error? {
     test:assertEquals(maskedLogs.length(), 1);
     test:assertTrue(maskedLogs[0].includes(expectedLog));
     maskedLogs.removeAll();
+
+    maskerLogger.printInfo("basic types", str = "my string", num = 12345, flag = true, val = (), xmlVal = xml `<foo>bar</foo>`);
+    expectedLog = string `message="basic types" str="my string" num=12345 flag=true val=null xmlVal=<foo>bar</foo> env="test"`;
+    test:assertEquals(maskedLogs.length(), 1);
+    test:assertTrue(maskedLogs[0].includes(expectedLog));
+    maskedLogs.removeAll();
 }
