@@ -406,7 +406,7 @@ Output:
 {"id":"U001","name":"John Doe"}
 ```
 
-> **Note:** The masking is based on the type of the value. Since, Ballerina is a structurally typed language, same value can be assigned to different typed variables. So the masking is based on the actual value type which is determined at the value creation time.
+> **Note:** The masking is based on the type of the value. Since, Ballerina is a structurally typed language, same value can be assigned to different typed variables. So the masking is based on the actual value type which is determined at the value creation time. The original type information can be extracted using the `typeof` operator.
 > Example:
 > ```ballerina
 > type User record {
