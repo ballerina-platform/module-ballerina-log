@@ -560,6 +560,11 @@ function testMaskedStringWithBasicTypes() {
     test:assertEquals(toMaskedString(true), "true");
     test:assertEquals(toMaskedString(xml `<note><to>User</to><from>Admin</from><heading>Reminder</heading><body>Don't forget the meeting!</body></note>`), "<note><to>User</to><from>Admin</from><heading>Reminder</heading><body>Don't forget the meeting!</body></note>");
     test:assertEquals(toMaskedString(xml `Just some text`), "Just some text");
+    test:assertEquals(toMaskedString([]), "[]");
+    test:assertEquals(toMaskedString(table []), "[]");
+    test:assertEquals(toMaskedString({"list": []}), string `{"list":[]}`);
+    record{} emptyRec = {};
+    test:assertEquals(toMaskedString(emptyRec), "{}");
 }
 
 @test:Config {
