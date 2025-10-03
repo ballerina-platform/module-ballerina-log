@@ -68,6 +68,9 @@ public class MaskedStringBuilder implements AutoCloseable {
     private static final Map<RecordType, Map<String, BMap<?, ?>>> ANNOTATION_CACHE = new ConcurrentHashMap<>();
     private static final int MAX_CACHE_SIZE = 1000;
 
+    // Pre-computed hex lookup table for efficient Unicode escaping
+    private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+
     private static final char[] QUOTE_ESCAPE = {'\\', '"'};
     private static final char[] BACKSLASH_ESCAPE = {'\\', '\\'};
     private static final char[] NEWLINE_ESCAPE = {'\\', 'n'};
@@ -309,8 +312,9 @@ public class MaskedStringBuilder implements AutoCloseable {
                 case '\t' -> stringBuilder.append(TAB_ESCAPE);
                 default -> {
                     if (c < 0x20 || c == 0x7F) {
-                        stringBuilder.append("\\u");
-                        stringBuilder.append(String.format("%04x", (int) c));
+                        stringBuilder.append("\\u00");
+                        stringBuilder.append(HEX_CHARS[(c >>> 4) & 0xF]);
+                        stringBuilder.append(HEX_CHARS[c & 0xF]);
                     } else {
                         stringBuilder.append(c);
                     }
