@@ -536,7 +536,7 @@ function testMaskedStringWithStructurallySimilarRecord() returns error? {
     checkJsonParsing(maskedUserStr);
 
     // Explicit type casting will not change the runtime type of the value for structural types
-    user = <User> similarUser;
+    user = <User>similarUser;
     maskedUserStr = toMaskedString(user);
     test:assertEquals(maskedUserStr, expectedStr);
     checkJsonParsing(maskedUserStr);
@@ -560,4 +560,21 @@ function testMaskedStringWithBasicTypes() {
     test:assertEquals(toMaskedString(true), "true");
     test:assertEquals(toMaskedString(xml `<note><to>User</to><from>Admin</from><heading>Reminder</heading><body>Don't forget the meeting!</body></note>`), "<note><to>User</to><from>Admin</from><heading>Reminder</heading><body>Don't forget the meeting!</body></note>");
     test:assertEquals(toMaskedString(xml `Just some text`), "Just some text");
+}
+
+@test:Config {
+    groups: ["maskedString"]
+}
+function testMaskedStringWithCharactersToBeEscaped() {
+    record {} specialCharMap = {
+        "quote": "\"DoubleQuote\"",
+        "backslash": "Back\\slash",
+        "newline": "New\nLine",
+        "tab": "Tab\tCharacter",
+        "carriageReturn": "Carriage\rReturn"
+    };
+    string maskedMapStr = toMaskedString(specialCharMap);
+    string expectedStr = string `{"quote":"\"DoubleQuote\"","backslash":"Back\\slash","newline":"New\nLine","tab":"Tab\tCharacter","carriageReturn":"Carriage\rReturn"}`;
+    test:assertEquals(maskedMapStr, expectedStr);
+    checkJsonParsing(maskedMapStr);
 }
