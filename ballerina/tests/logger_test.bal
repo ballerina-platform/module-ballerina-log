@@ -22,6 +22,9 @@ configurable Config loggerConfig2 = {};
 
 type Context record {|
     string id;
+    // By default root logger is configured not to mask sensitive data
+    // So this is added as a negative test case
+    @SensitiveData
     string msg;
 |};
 
