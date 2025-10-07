@@ -46,10 +46,12 @@ public type Valuer isolated function () returns anydata;
 # Key-Value pairs that needs to be displayed in the log.
 #
 # + msg - msg which cannot be a key
+# + message - message which cannot be a key
 # + 'error - 'error which cannot be a key
-# + stackTrace - error stack trace which cannot be a key
+# + stackTrace - stackTrace which cannot be a key
 public type KeyValues record {|
     never msg?;
+    never message?;
     never 'error?;
     never stackTrace?;
     Value...;
@@ -59,6 +61,8 @@ public type KeyValues record {|
 public type AnydataKeyValues record {
     # msg which cannot be a key
     never msg?;
+    # message which cannot be a key
+    never message?;
     # 'error which cannot be a key
     never 'error?;
     # stackTrace which cannot be a key
