@@ -165,9 +165,12 @@ public enum FileWriteOption {
 # Process the raw template and return the processed string.
 #
 # + template - The raw template to be processed
-# + enableSensitiveDataMasking - Flag to indicate if sensitive data masking is enabled
 # + return - The processed string
-public isolated function processTemplate(PrintableRawTemplate template, boolean enableSensitiveDataMasking = false) returns string {
+# 
+# # Deprecated
+# The `processTemplate` function is deprecated. Use `evaluateTemplate` instead.
+@deprecated
+public isolated function processTemplate(PrintableRawTemplate template) returns string {
     string[] templateStrings = template.strings;
     Value[] insertions = template.insertions;
     string result = templateStrings[0];
@@ -175,7 +178,29 @@ public isolated function processTemplate(PrintableRawTemplate template, boolean 
     foreach int i in 1 ..< templateStrings.length() {
         Value insertion = insertions[i - 1];
         string insertionStr = insertion is PrintableRawTemplate ?
-            processTemplate(insertion, enableSensitiveDataMasking) :
+            processTemplate(insertion) :
+                insertion is Valuer ?
+                insertion().toString() :
+                insertion.toString();
+        result += insertionStr + templateStrings[i];
+    }
+    return result;
+}
+
+# Evaluates the raw template and returns the evaluated string.
+# 
+# + template - The raw template to be evaluated
+# + enableSensitiveDataMasking - Flag to indicate if sensitive data masking is enabled
+# + return - The evaluated string
+public isolated function evaluateTemplate(PrintableRawTemplate template, boolean enableSensitiveDataMasking = false) returns string {
+    string[] templateStrings = template.strings;
+    Value[] insertions = template.insertions;
+    string result = templateStrings[0];
+
+    foreach int i in 1 ..< templateStrings.length() {
+        Value insertion = insertions[i - 1];
+        string insertionStr = insertion is PrintableRawTemplate ?
+            evaluateTemplate(insertion, enableSensitiveDataMasking) :
                 insertion is Valuer ?
                 (enableSensitiveDataMasking ? toMaskedString(insertion()) : insertion().toString()) :
                 (enableSensitiveDataMasking ? toMaskedString(insertion) : insertion.toString());
@@ -185,7 +210,7 @@ public isolated function processTemplate(PrintableRawTemplate template, boolean 
 }
 
 isolated function processMessage(string|PrintableRawTemplate msg, boolean enableSensitiveDataMasking) returns string =>
-    msg !is string ? processTemplate(msg, enableSensitiveDataMasking) : msg;
+    msg !is string ? evaluateTemplate(msg, enableSensitiveDataMasking) : msg;
 
 # Prints debug logs.
 # ```ballerina

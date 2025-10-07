@@ -139,7 +139,7 @@ isolated class RootLogger {
         }
         foreach [string, Value] [k, v] in keyValues.entries() {
             logRecord[k] = v is Valuer ? v() : 
-                (v is PrintableRawTemplate ? processMessage(v, self.enableSensitiveDataMasking) : v);
+                (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
         }
         if observe:isTracingEnabled() {
             map<string> spanContext = observe:getSpanContext();
@@ -149,7 +149,7 @@ isolated class RootLogger {
         }
         foreach [string, Value] [k, v] in self.keyValues.entries() {
             logRecord[k] = v is Valuer ? v() : 
-                (v is PrintableRawTemplate ? processMessage(v, self.enableSensitiveDataMasking) : v);
+                (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
         }
 
         string logOutput = self.format == JSON_FORMAT ?

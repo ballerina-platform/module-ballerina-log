@@ -228,10 +228,10 @@ public type Logger isolated object {
 };
 ```
 
-> **Note:** The Ballerina log module provides a function to process the PrintableRawTemplate to obtain the processed string. This can be used when implementing a logger from the above type.
+> **Note:** The Ballerina log module provides a function to evaluate the `PrintableRawTemplate` to obtain the evaluated string. This can be used when implementing a logger from the above type.
 >
 > ```ballerina
-> public isolated function processTemplate(PrintableRawTemplate) returns string;
+> public isolated function evaluateTemplate(PrintableRawTemplate rawTemplate, boolean enableSensitiveDataMasking = false) returns string;
 > ```
 
 ### 4.2. Root logger
