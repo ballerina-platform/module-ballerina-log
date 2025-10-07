@@ -165,6 +165,7 @@ public enum FileWriteOption {
 # Process the raw template and return the processed string.
 #
 # + template - The raw template to be processed
+# + enableSensitiveDataMasking - Flag to indicate if sensitive data masking is enabled
 # + return - The processed string
 public isolated function processTemplate(PrintableRawTemplate template, boolean enableSensitiveDataMasking = false) returns string {
     string[] templateStrings = template.strings;

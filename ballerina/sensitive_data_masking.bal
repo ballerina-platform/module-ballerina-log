@@ -47,7 +47,8 @@ public annotation SensitiveDataConfig SensitiveData on record field;
 
 configurable boolean enableSensitiveDataMasking = false;
 
-# Returns a masked string representation of the given data based on the sensitive data masking configuration.
+# Returns a masked string representation of the given data based on the sensitive data masking annotation.
+# This method panics if a cyclic value reference is encountered.
 #
 # + data - The data to be masked
 # + return - The masked string representation of the data
