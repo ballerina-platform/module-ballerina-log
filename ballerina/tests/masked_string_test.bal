@@ -36,13 +36,13 @@ function checkJsonParsing(string maskedStr) {
 
 type User record {|
     string name;
-    @SensitiveData
+    @Sensitive
     string ssn;
-    @SensitiveData {strategy: {replacement: "*****"}}
+    @Sensitive {strategy: {replacement: "*****"}}
     string password;
-    @SensitiveData {strategy: {replacement: maskStringPartially}}
+    @Sensitive {strategy: {replacement: maskStringPartially}}
     string mail;
-    @SensitiveData {strategy: EXCLUDE}
+    @Sensitive {strategy: EXCLUDE}
     string creditCard;
 |};
 
@@ -100,7 +100,7 @@ function testMaskedStringWithAnydataValues() {
 
 type OpenAnydataRecord record {
     string name;
-    @SensitiveData
+    @Sensitive
     anydata sensitiveField;
 };
 
@@ -130,30 +130,30 @@ function testMaskedStringWithOpenAnydataRecord() {
 
 type Record1 record {|
     string field1;
-    @SensitiveData
+    @Sensitive
     Record2 field2;
     Record2 field3;
 |};
 
 type Record2 record {|
     string subField1;
-    @SensitiveData {strategy: {replacement: "###"}}
+    @Sensitive {strategy: {replacement: "###"}}
     string subField2;
-    @SensitiveData {strategy: {replacement: maskStringPartially}}
+    @Sensitive {strategy: {replacement: maskStringPartially}}
     string subField3;
-    @SensitiveData {strategy: EXCLUDE}
+    @Sensitive {strategy: EXCLUDE}
     string subField4;
 |};
 
 type Record3 record {|
     string info;
-    @SensitiveData
+    @Sensitive
     string details;
 |};
 
 type NestedRecord record {|
     string name;
-    @SensitiveData
+    @Sensitive
     Record1 details1;
     Record1 details2;
     Record3[] records;
@@ -208,7 +208,7 @@ function testMaskedStringWithNestedRecords() {
 
 type NilableSensitiveFieldRecord record {|
     string name;
-    @SensitiveData
+    @Sensitive
     string? sensitiveField;
     int? id;
 |};
@@ -230,7 +230,7 @@ function testMaskedStringWithNilableSensitiveField() {
 
 type OptionalSensitiveFieldRecord record {|
     string name;
-    @SensitiveData
+    @Sensitive
     string sensitiveField?;
     int id?;
 |};
@@ -262,7 +262,7 @@ function testMaskedStringWithOptionalSensitiveField() {
 
 type NeverSensitiveFieldRecord record {|
     string name;
-    @SensitiveData
+    @Sensitive
     never sensitiveField?;
 |};
 
@@ -282,7 +282,7 @@ function testMaskedStringWithNeverSensitiveField() {
 
 type RecordWithRestField record {|
     string name;
-    @SensitiveData
+    @Sensitive
     string sensitiveField;
     string...;
 |};
@@ -325,7 +325,7 @@ function testMaskedStringWithCyclicRecord() {
 
 type RecordWithCyclicSensitiveField record {|
     string name;
-    @SensitiveData
+    @Sensitive
     RecordWithCyclicSensitiveField child?;
 |};
 
@@ -385,15 +385,15 @@ type SpecialCharFieldsRec record {|
 |};
 
 type SpecialCharSensitiveFieldsRec record {|
-    @SensitiveData {strategy: {replacement: "*****"}}
+    @Sensitive {strategy: {replacement: "*****"}}
     string field_with_underscores;
-    @SensitiveData {strategy: {replacement: "#####"}}
+    @Sensitive {strategy: {replacement: "#####"}}
     string FieldWithCamelCase;
-    @SensitiveData {strategy: {replacement: "1!1!1!"}}
+    @Sensitive {strategy: {replacement: "1!1!1!"}}
     string field\-With\$pecialChar\!;
-    @SensitiveData {strategy: {replacement: "[REDACTED]"}}
+    @Sensitive {strategy: {replacement: "[REDACTED]"}}
     string 'type;
-    @SensitiveData {strategy: {replacement: "~~~~~~"}}
+    @Sensitive {strategy: {replacement: "~~~~~~"}}
     string 'value\\\-Field;
 |};
 
@@ -433,13 +433,13 @@ function testMaskedStringWithSpecialCharFields() {
 
 type ReadonlyUser1 readonly & record {|
     string name;
-    @SensitiveData
+    @Sensitive
     string ssn;
-    @SensitiveData {strategy: {replacement: "*****"}}
+    @Sensitive {strategy: {replacement: "*****"}}
     string password;
-    @SensitiveData {strategy: {replacement: maskStringPartially}}
+    @Sensitive {strategy: {replacement: maskStringPartially}}
     string mail;
-    @SensitiveData {strategy: EXCLUDE}
+    @Sensitive {strategy: EXCLUDE}
     string creditCard;
 |};
 

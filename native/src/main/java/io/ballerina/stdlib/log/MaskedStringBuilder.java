@@ -57,7 +57,7 @@ public class MaskedStringBuilder implements AutoCloseable {
     private static final BString EXCLUDE_VALUE = StringUtils.fromString("EXCLUDE");
     private static final String FIELD_PREFIX = "$field$.";
     private static final String LOG_ANNOTATION_PREFIX = "ballerina/log";
-    private static final String SENSITIVE_DATA_SUFFIX = ":SensitiveData";
+    private static final String SENSITIVE_SUFFIX = ":Sensitive";
 
     private static final BString CYCLIC_REFERENCE_ERROR = StringUtils.fromString("Cyclic value reference detected " +
             "in the record");
@@ -520,7 +520,7 @@ public class MaskedStringBuilder implements AutoCloseable {
         for (Object key : keys) {
             if (key instanceof BString bStringKey) {
                 String keyValue = bStringKey.getValue();
-                if (keyValue.endsWith(SENSITIVE_DATA_SUFFIX) && keyValue.startsWith(LOG_ANNOTATION_PREFIX)) {
+                if (keyValue.endsWith(SENSITIVE_SUFFIX) && keyValue.startsWith(LOG_ANNOTATION_PREFIX)) {
                     Object annotation = fieldAnnotationMap.get(key);
                     if (annotation instanceof BMap<?, ?> bMapAnnotation) {
                         return Optional.of(bMapAnnotation);

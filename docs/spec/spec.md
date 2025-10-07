@@ -307,14 +307,14 @@ The Ballerina log module provides the capability to mask sensitive data in log m
 
 ### 5.1. Sensitive data annotation
 
-The `@log:SensitiveData` annotation can be used to mark fields in a record as sensitive. When such fields are logged, their values will be excluded or masked to prevent exposure of sensitive information.
+The `@log:Sensitive` annotation can be used to mark fields in a record as sensitive. When such fields are logged, their values will be excluded or masked to prevent exposure of sensitive information.
 
 ```ballerina
 import ballerina/log;
 
 type User record {
     string id;
-    @log:SensitiveData
+    @log:Sensitive
     string password;
     string name;
 };
@@ -331,7 +331,7 @@ Output:
 time=2025-08-20T09:15:30.123+05:30 level=INFO module="" message="user details" user={"id":"U001","name":"John Doe"}
 ```
 
-By default, the `@log:SensitiveData` annotation will exclude the sensitive field from the log output when sensitive data masking is enabled.
+By default, the `@log:Sensitive` annotation will exclude the sensitive field from the log output when sensitive data masking is enabled.
 
 Additionally, the masking strategy can be configured using the `strategy` field of the annotation. The available strategies are:
 1. `EXCLUDE`: Excludes the field from the log output (default behavior).
@@ -351,13 +351,13 @@ isolated function maskString(string input) returns string {
 
 type User record {
     string id;
-    @log:SensitiveData {
+    @log:Sensitive {
         strategy: {
             replacement: "****"
         }   
     }
     string password;
-    @log:SensitiveData {
+    @log:Sensitive {
         strategy: {
             replacement: maskString
         }
@@ -388,7 +388,7 @@ import ballerina/io;
 
 type User record {
     string id;
-    @log:SensitiveData
+    @log:Sensitive
     string password;
     string name;
 };
@@ -411,7 +411,7 @@ Output:
 > ```ballerina
 > type User record {
 >    string id;
->    @log:SensitiveData
+>    @log:Sensitive
 >    string password;
 >    string name;
 > };

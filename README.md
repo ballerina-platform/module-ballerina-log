@@ -133,14 +133,14 @@ The log module provides capabilities to mask sensitive data in log messages to m
 
 ### Sensitive Data Annotation
 
-Use the `@log:SensitiveData` annotation to mark fields in records as sensitive. When such fields are logged, their values will be excluded or masked:
+Use the `@log:Sensitive` annotation to mark fields in records as sensitive. When such fields are logged, their values will be excluded or masked:
 
 ```ballerina
 import ballerina/log;
 
 type User record {
     string id;
-    @log:SensitiveData
+    @log:Sensitive
     string password;
     string name;
 };
@@ -173,13 +173,13 @@ isolated function maskString(string input) returns string {
 
 type User record {
     string id;
-    @log:SensitiveData {
+    @log:Sensitive {
         strategy: {
             replacement: "****"
         }   
     }
     string password;
-    @log:SensitiveData {
+    @log:Sensitive {
         strategy: {
             replacement: maskString
         }

@@ -36,14 +36,14 @@ public type MaskingStrategy EXCLUDE|Replacement;
 # Represents sensitive data with a masking strategy
 #
 # + strategy - The masking strategy to apply (default: EXCLUDE)
-public type SensitiveDataConfig record {|
+public type SensitiveConfig record {|
     MaskingStrategy strategy = EXCLUDE;
 |};
 
 # Marks a record field or type as sensitive, excluding it from log output
 #
 # + strategy - The masking strategy to apply (default: EXCLUDE)
-public annotation SensitiveDataConfig SensitiveData on record field;
+public annotation SensitiveConfig Sensitive on record field;
 
 configurable boolean enableSensitiveDataMasking = false;
 

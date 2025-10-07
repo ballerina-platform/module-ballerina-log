@@ -18,13 +18,13 @@ import ballerina/log;
 
 type User record {|
     string name;
-    @log:SensitiveData
+    @log:Sensitive
     string ssn;
-    @log:SensitiveData {strategy: {replacement: "*****"}}
+    @log:Sensitive {strategy: {replacement: "*****"}}
     string password;
-    @log:SensitiveData {strategy: {replacement: maskStringPartially}}
+    @log:Sensitive {strategy: {replacement: maskStringPartially}}
     string mail;
-    @log:SensitiveData {strategy: log:EXCLUDE}
+    @log:Sensitive {strategy: log:EXCLUDE}
     string creditCard;
 |};
 
