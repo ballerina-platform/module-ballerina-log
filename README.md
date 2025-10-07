@@ -162,6 +162,15 @@ time=2025-08-20T09:15:30.123+05:30 level=INFO module="" message="user details" u
 Configure masking strategies using the `strategy` field:
 
 ```ballerina
+import ballerina/log;
+
+isolated function maskString(string input) returns string {
+    if input.length() <= 2 {
+        return "****";
+    }
+    return input.substring(0, 1) + "****" + input.substring(input.length() - 1);
+}
+
 type User record {
     string id;
     @log:SensitiveData {
@@ -172,9 +181,7 @@ type User record {
     string password;
     @log:SensitiveData {
         strategy: {
-            replacement: isolated function(string input) returns string {
-                return input.length() <= 2 ? "****" : input.substring(0, 1) + "****" + input.substring(input.length() - 1);
-            }
+            replacement: maskString
         }
     }
     string ssn;
