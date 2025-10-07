@@ -113,3 +113,86 @@ The log module supports contextual logging, allowing you to create loggers with 
     ```
 
 For more details and advanced usage, see the module specification and API documentation.
+
+## Sensitive Data Masking
+
+The log module provides capabilities to mask sensitive data in log messages to maintain data privacy and security when dealing with personally identifiable information (PII) or other sensitive data.
+
+### Sensitive Data Annotation
+
+Use the `@log:SensitiveData` annotation to mark fields in records as sensitive. When such fields are logged, their values will be excluded or masked:
+
+```ballerina
+import ballerina/log;
+
+type User record {
+    string id;
+    @log:SensitiveData
+    string password;
+    string name;
+};
+
+public function main() {
+    User user = {id: "U001", password: "mypassword", name: "John Doe"};
+    log:printInfo("user details", user = user);
+}
+```
+
+Output (with masking enabled):
+
+```log
+time=2025-08-20T09:15:30.123+05:30 level=INFO module="" message="user details" user={"id":"U001","name":"John Doe"}
+```
+
+### Masking Strategies
+
+Configure masking strategies using the `strategy` field:
+
+```ballerina
+type User record {
+    string id;
+    @log:SensitiveData {
+        strategy: {
+            replacement: "****"
+        }   
+    }
+    string password;
+    @log:SensitiveData {
+        strategy: {
+            replacement: isolated function(string input) returns string {
+                return input.length() <= 2 ? "****" : input.substring(0, 1) + "****" + input.substring(input.length() - 1);
+            }
+        }
+    }
+    string ssn;
+    string name;
+};
+```
+
+### Masked String Function
+
+Use `log:toMaskedString()` to get the masked version of a value for custom logging implementations:
+
+```ballerina
+User user = {id: "U001", password: "mypassword", name: "John Doe"};
+string maskedUser = log:toMaskedString(user);
+io:println(maskedUser); // {"id":"U001","name":"John Doe"}
+```
+
+### Enable Sensitive Data Masking
+
+By default, sensitive data masking is disabled. Enable it in `Config.toml`:
+
+```toml
+[ballerina.log]
+enableSensitiveDataMasking = true
+```
+
+Or configure it per logger:
+
+```ballerina
+log:Config secureConfig = {
+    enableSensitiveDataMasking: true
+};
+log:Logger secureLogger = log:fromConfig(secureConfig);
+```
