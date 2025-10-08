@@ -305,27 +305,25 @@ auditLogger.printInfo("Hello World from the audit logger!");
 
 The Ballerina log module provides the capability to mask sensitive data in log messages. This is crucial for maintaining data privacy and security, especially when dealing with personally identifiable information (PII) or other sensitive data.
 
-By default, sensitive data masking is disabled. Enable it in `Config.toml`:
-
-```toml
-[ballerina.log]
-enableSensitiveDataMasking = true
-```
-
-Or configure it per logger:
-
-```ballerina
-log:Config secureConfig = {
-    enableSensitiveDataMasking: true
-};
-log:Logger secureLogger = log:fromConfig(secureConfig);
-```
+> **Note**: By default, sensitive data masking is disabled. Enable it in `Config.toml`:
+>
+> ```toml
+> [ballerina.log]
+> enableSensitiveDataMasking = true
+> ```
+>
+> Or configure it per logger:
+>
+> ```ballerina
+> log:Config secureConfig = {
+>     enableSensitiveDataMasking: true
+> };
+> log:Logger secureLogger = log:fromConfig(secureConfig);
+> ```
 
 ### 5.1. Sensitive data annotation
 
 The `@log:Sensitive` annotation can be used to mark fields in a record as sensitive. When such fields are logged, their values will be excluded or masked to prevent exposure of sensitive information.
-
-
 
 ```ballerina
 import ballerina/log;
@@ -349,7 +347,7 @@ Output:
 time=2025-08-20T09:15:30.123+05:30 level=INFO module="" message="user details" user={"id":"U001","name":"John Doe"}
 ```
 
-By default, the `@log:Sensitive` annotation will exclude the sensitive field from the log output when sensitive data masking is enabled.
+The `@log:Sensitive` annotation will exclude the sensitive field from the log output when sensitive data masking is enabled.
 
 Additionally, the masking strategy can be configured using the `strategy` field of the annotation. The available strategies are:
 1. `EXCLUDE`: Excludes the field from the log output (default behavior).

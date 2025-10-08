@@ -37,11 +37,12 @@ import io.ballerina.runtime.api.values.BTable;
 import io.ballerina.runtime.api.values.BXml;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
 
 /**
@@ -64,9 +65,8 @@ public class MaskedStringBuilder implements AutoCloseable {
     public static final BString MASKED_STRING_BUILDER_HAS_BEEN_CLOSED = StringUtils.fromString("MaskedStringBuilder" +
             " has been closed");
 
-    // Cache for field annotations to avoid repeated extraction
-    private static final Map<RecordType, Map<String, BMap<?, ?>>> ANNOTATION_CACHE = new ConcurrentHashMap<>();
-    private static final int MAX_CACHE_SIZE = 1000;
+    // Thread-safe LRU cache for field annotations to avoid repeated extraction
+    private static final LRUCache<RecordType, Map<String, BMap<?, ?>>> ANNOTATION_CACHE = new LRUCache<>(1000);
 
     // Pre-computed hex lookup table for efficient Unicode escaping
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
@@ -328,18 +328,12 @@ public class MaskedStringBuilder implements AutoCloseable {
 
     /**
      * Get cached field annotations for better performance.
-     * Implements simple cache eviction when cache grows too large.
+     * Uses LRU cache which automatically handles eviction of least recently used entries.
      */
     private Map<String, BMap<?, ?>> getCachedFieldAnnotations(RecordType recordType) {
         Map<String, BMap<?, ?>> cached = ANNOTATION_CACHE.get(recordType);
         if (cached != null) {
             return cached;
-        }
-
-        // Implement simple cache size management
-        if (ANNOTATION_CACHE.size() >= MAX_CACHE_SIZE) {
-            // Clear half the cache when it gets too large (simple eviction strategy)
-            ANNOTATION_CACHE.entrySet().removeIf(entry -> System.identityHashCode(entry.getKey()) % 2 == 0);
         }
 
         Map<String, BMap<?, ?>> annotations = extractFieldAnnotations(recordType);
@@ -375,7 +369,7 @@ public class MaskedStringBuilder implements AutoCloseable {
 
     private String processArrayValue(BArray listValue) {
         long length = listValue.getLength();
-        if (length == 0) {
+        if (listValue.isEmpty()) {
             return "[]";
         }
 
@@ -414,7 +408,7 @@ public class MaskedStringBuilder implements AutoCloseable {
      * Check if a value is a basic type that doesn't need complex processing.
      */
     private static boolean isBasicType(Object value) {
-        return value == null || TypeUtils.getType(value).getTag() <= TypeTags.BOOLEAN_TAG;
+        return value == null || TypeUtils.getType(value).getTag() < TypeTags.NULL_TAG;
     }
 
     /**
@@ -524,6 +518,9 @@ public class MaskedStringBuilder implements AutoCloseable {
         for (Object key : keys) {
             if (key instanceof BString bStringKey) {
                 String keyValue = bStringKey.getValue();
+                // No runtime API to get the annotation from the org name, package name and annotation name
+                // But the annotation key is in the format: "<orgName>/<packageName>:<major-version>:<annotationName>"
+                // This even works when the package is imported using alias since runtime is using the package name
                 if (keyValue.endsWith(SENSITIVE_SUFFIX) && keyValue.startsWith(LOG_ANNOTATION_PREFIX)) {
                     Object annotation = fieldAnnotationMap.get(key);
                     if (annotation instanceof BMap<?, ?> bMapAnnotation) {
@@ -574,5 +571,149 @@ public class MaskedStringBuilder implements AutoCloseable {
             }
         }
         return Optional.of(StringUtils.getStringValue(realValue));
+    }
+
+    /**
+     * Thread-safe LRU cache implementation using HashMap + Doubly Linked List.
+     *
+     * @param <K> the type of keys maintained by this cache
+     * @param <V> the type of cached values
+     */
+    private static class LRUCache<K, V> {
+        private final int maxSize;
+        private final Map<K, Node<K, V>> cache;
+        private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+        private final ReentrantReadWriteLock.ReadLock readLock = lock.readLock();
+        private final ReentrantReadWriteLock.WriteLock writeLock = lock.writeLock();
+
+        // Dummy head and tail nodes for the doubly linked list
+        private final Node<K, V> head;
+        private final Node<K, V> tail;
+
+        /**
+         * Node class for the doubly linked list.
+         *
+         * @param <K> the type of keys
+         * @param <V> the type of values
+         */
+        private static class Node<K, V> {
+            K key;
+            V value;
+            Node<K, V> prev;
+            Node<K, V> next;
+
+            Node() {
+                // Constructor for dummy nodes
+            }
+
+            Node(K key, V value) {
+                this.key = key;
+                this.value = value;
+            }
+        }
+
+        public LRUCache(int maxSize) {
+            this.maxSize = maxSize;
+            this.cache = new HashMap<>();
+
+            // Initialize dummy head and tail nodes
+            this.head = new Node<>();
+            this.tail = new Node<>();
+            this.head.next = this.tail;
+            this.tail.prev = this.head;
+        }
+
+        public V get(K key) {
+            writeLock.lock();
+            try {
+                Node<K, V> node = cache.get(key);
+                if (node == null) {
+                    return null;
+                }
+
+                // Move to head (most recently used)
+                moveToHead(node);
+                return node.value;
+            } finally {
+                writeLock.unlock();
+            }
+        }
+
+        public V put(K key, V value) {
+            writeLock.lock();
+            try {
+                Node<K, V> existingNode = cache.get(key);
+
+                if (existingNode != null) {
+                    // Update existing node
+                    V oldValue = existingNode.value;
+                    existingNode.value = value;
+                    moveToHead(existingNode);
+                    return oldValue;
+                } else {
+                    // Add new node
+                    Node<K, V> newNode = new Node<>(key, value);
+
+                    if (cache.size() >= maxSize) {
+                        // Remove least recently used node (tail.prev)
+                        Node<K, V> lru = tail.prev;
+                        removeNode(lru);
+                        cache.remove(lru.key);
+                    }
+
+                    cache.put(key, newNode);
+                    addToHead(newNode);
+                    return null;
+                }
+            } finally {
+                writeLock.unlock();
+            }
+        }
+
+        public void clear() {
+            writeLock.lock();
+            try {
+                cache.clear();
+                head.next = tail;
+                tail.prev = head;
+            } finally {
+                writeLock.unlock();
+            }
+        }
+
+        public int size() {
+            readLock.lock();
+            try {
+                return cache.size();
+            } finally {
+                readLock.unlock();
+            }
+        }
+
+        /**
+         * Add node right after head (most recently used position).
+         */
+        private void addToHead(Node<K, V> node) {
+            node.prev = head;
+            node.next = head.next;
+            head.next.prev = node;
+            head.next = node;
+        }
+
+        /**
+         * Remove a node from the doubly linked list.
+         */
+        private void removeNode(Node<K, V> node) {
+            node.prev.next = node.next;
+            node.next.prev = node.prev;
+        }
+
+        /**
+         * Move a node to head (most recently used position).
+         */
+        private void moveToHead(Node<K, V> node) {
+            removeNode(node);
+            addToHead(node);
+        }
     }
 }
