@@ -166,6 +166,10 @@ public enum FileWriteOption {
 #
 # + template - The raw template to be processed
 # + return - The processed string
+# 
+# # Deprecated
+# The `processTemplate` function is deprecated. Use `evaluateTemplate` instead.
+@deprecated
 public isolated function processTemplate(PrintableRawTemplate template) returns string {
     string[] templateStrings = template.strings;
     Value[] insertions = template.insertions;
@@ -183,8 +187,30 @@ public isolated function processTemplate(PrintableRawTemplate template) returns 
     return result;
 }
 
-isolated function processMessage(string|PrintableRawTemplate msg) returns string =>
-    msg !is string ? processTemplate(msg) : msg;
+# Evaluates the raw template and returns the evaluated string.
+# 
+# + template - The raw template to be evaluated
+# + enableSensitiveDataMasking - Flag to indicate if sensitive data masking is enabled
+# + return - The evaluated string
+public isolated function evaluateTemplate(PrintableRawTemplate template, boolean enableSensitiveDataMasking = false) returns string {
+    string[] templateStrings = template.strings;
+    Value[] insertions = template.insertions;
+    string result = templateStrings[0];
+
+    foreach int i in 1 ..< templateStrings.length() {
+        Value insertion = insertions[i - 1];
+        string insertionStr = insertion is PrintableRawTemplate ?
+            evaluateTemplate(insertion, enableSensitiveDataMasking) :
+                insertion is Valuer ?
+                (enableSensitiveDataMasking ? toMaskedString(insertion()) : insertion().toString()) :
+                (enableSensitiveDataMasking ? toMaskedString(insertion) : insertion.toString());
+        result += insertionStr + templateStrings[i];
+    }
+    return result;
+}
+
+isolated function processMessage(string|PrintableRawTemplate msg, boolean enableSensitiveDataMasking) returns string =>
+    msg !is string ? evaluateTemplate(msg, enableSensitiveDataMasking) : msg;
 
 # Prints debug logs.
 # ```ballerina
@@ -349,7 +375,7 @@ isolated function fileWrite(string logOutput) {
     }
 }
 
-isolated function printLogFmt(LogRecord logRecord) returns string {
+isolated function printLogFmt(LogRecord logRecord, boolean enableSensitiveDataMasking = false) returns string {
     string message = "";
     foreach [string, anydata] [k, v] in logRecord.entries() {
         string value;
@@ -367,7 +393,8 @@ isolated function printLogFmt(LogRecord logRecord) returns string {
                 value = v.toBalString();
             }
             _ => {
-                value = v is string ? string `${escape(v.toString())}` : v.toString();
+                string strValue = enableSensitiveDataMasking ? toMaskedString(v) : v.toString();
+                value = v is string ? string `${escape(strValue)}` : strValue;
             }
         }
         if message == "" {

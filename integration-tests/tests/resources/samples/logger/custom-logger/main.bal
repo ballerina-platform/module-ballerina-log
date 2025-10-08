@@ -70,7 +70,7 @@ isolated class CustomLogger {
     public isolated function withContext(*log:KeyValues keyValues) returns log:Logger|error {
         log:AnydataKeyValues newKeyValues = {...self.keyValues};
         foreach [string, log:Value] [k, v] in keyValues.entries() {
-            newKeyValues[k] = v is log:Valuer ? v() : v is anydata ? v : log:processTemplate(v);
+            newKeyValues[k] = v is log:Valuer ? v() : v is anydata ? v : log:evaluateTemplate(v);
         }
         return new CustomLogger(filePath = self.filePath, level = self.level, keyValues = newKeyValues.cloneReadOnly());
     }
@@ -80,7 +80,7 @@ isolated class CustomLogger {
             return;
         }
         string timestamp = time:utcToEmailString(time:utcNow());
-        string message = msg is string ? msg : log:processTemplate(msg);
+        string message = msg is string ? msg : log:evaluateTemplate(msg);
         string logMessage = string `[${timestamp}] {${level}} "${message}" `;
         if 'error is error {
             logMessage += string `error="${'error.message()}"`;
@@ -95,7 +95,7 @@ isolated class CustomLogger {
             logMessage += string ` ${k}="${v.toString()}"`;
         }
         foreach [string, log:Value] [k, v] in keyValues.entries() {
-            anydata value = v is log:Valuer ? v() : v is anydata ? v : log:processTemplate(v);
+            anydata value = v is log:Valuer ? v() : v is anydata ? v : log:evaluateTemplate(v);
             logMessage += string ` ${k}="${value.toString()}"`;
         }
         logMessage += "\n";
