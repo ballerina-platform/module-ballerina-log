@@ -3,7 +3,7 @@
 _Authors_: @daneshk @MadhukaHarith92 @TharmiganK  
 _Reviewers_: @daneshk @ThisaruGuruge  
 _Created_: 2021/11/15  
-_Updated_: 2025/10/02  
+_Updated_: 2025/10/08  
 _Edition_: Swan Lake  
 
 ## Introduction
@@ -34,7 +34,7 @@ The conforming implementation of the specification is released and included in t
 5. [Sensitive data masking](#5-sensitive-data-masking)
    * 5.1. [Sensitive data annotation](#51-sensitive-data-annotation)
    * 5.2. [Masked string function](#52-masked-string-function)
-   * 5.3. [Configure sensitive data masking](#53-configure-sensitive-data-masking)
+   * 5.3. [Type-based masking](#53-type-based-masking)
 
 ## 1. Overview
 
@@ -305,9 +305,27 @@ auditLogger.printInfo("Hello World from the audit logger!");
 
 The Ballerina log module provides the capability to mask sensitive data in log messages. This is crucial for maintaining data privacy and security, especially when dealing with personally identifiable information (PII) or other sensitive data.
 
+By default, sensitive data masking is disabled. Enable it in `Config.toml`:
+
+```toml
+[ballerina.log]
+enableSensitiveDataMasking = true
+```
+
+Or configure it per logger:
+
+```ballerina
+log:Config secureConfig = {
+    enableSensitiveDataMasking: true
+};
+log:Logger secureLogger = log:fromConfig(secureConfig);
+```
+
 ### 5.1. Sensitive data annotation
 
 The `@log:Sensitive` annotation can be used to mark fields in a record as sensitive. When such fields are logged, their values will be excluded or masked to prevent exposure of sensitive information.
+
+
 
 ```ballerina
 import ballerina/log;
@@ -406,48 +424,43 @@ Output:
 {"id":"U001","name":"John Doe"}
 ```
 
-> **Note:** The masking is based on the type of the value. Since, Ballerina is a structurally typed language, same value can be assigned to different typed variables. So the masking is based on the actual value type which is determined at the value creation time. The original type information can be extracted using the `typeof` operator.
-> Example:
-> ```ballerina
-> type User record {
->    string id;
->    @log:Sensitive
->    string password;
->    string name;
-> };
-> 
-> type Student record {
->    string id;
->    string password; // Not marked as sensitive
->    string name;
-> };
-> 
-> public function main() returns error? {
->    User user = {id: "U001", password: "mypassword", name: "John Doe"};
->    // password will be masked
->    string maskedUser = log:toMaskedString(user);
->
->    Student student = user; // Allowed since both have the same structure 
->    // password will be masked since the type at value creation is User
->    string maskedStudent = log:toMaskedString(student);
-> 
->    student = {id: "S001", password: "studentpass", name: "Jane Doe"}; 
->    user = student; // Allowed since both have the same structure
->    // password will not be masked since the type at value creation is Student
->    maskedStudent = log:toMaskedString(user);
-> 
->    // Explicity creating a value with type
->    user = check student.cloneWithType();
->    // password will be masked since the type at value creation is User
->    maskedUser = log:toMaskedString(user);
-> }    
-> ```
+### 5.3. Type-based masking
 
-### 5.3. Configure sensitive data masking
+The masking is based on the type of the value. Since, Ballerina is a structurally typed language, same value can be assigned to different typed variables. So the masking is based on the actual value type which is determined at the value creation time. The original type information can be extracted using the `typeof` operator.
 
-By default, sensitive data masking is disabled. It can be enabled via a configurable variable in the `Config.toml` file.
+Example:
 
-```toml
-[ballerina.log]
-enableSensitiveDataMasking = true
+```ballerina
+type User record {
+   string id;
+   @log:Sensitive
+   string password;
+   string name;
+};
+
+type Student record {
+   string id;
+   string password; // Not marked as sensitive
+   string name;
+};
+
+public function main() returns error? {
+   User user = {id: "U001", password: "mypassword", name: "John Doe"};
+   // password will be masked
+   string maskedUser = log:toMaskedString(user);
+
+   Student student = user; // Allowed since both have the same structure 
+   // password will be masked since the type at value creation is User
+   string maskedStudent = log:toMaskedString(student);
+
+   student = {id: "S001", password: "studentpass", name: "Jane Doe"}; 
+   user = student; // Allowed since both have the same structure
+   // password will not be masked since the type at value creation is Student
+   maskedStudent = log:toMaskedString(user);
+
+   // Explicity creating a value with type
+   user = check student.cloneWithType();
+   // password will be masked since the type at value creation is User
+   maskedUser = log:toMaskedString(user);
+}    
 ```

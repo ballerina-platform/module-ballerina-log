@@ -131,6 +131,22 @@ For more details and advanced usage, see the module specification and API docume
 
 The log module provides capabilities to mask sensitive data in log messages to maintain data privacy and security when dealing with personally identifiable information (PII) or other sensitive data.
 
+By default, sensitive data masking is disabled. Enable it in `Config.toml`:
+
+```toml
+[ballerina.log]
+enableSensitiveDataMasking = true
+```
+
+Or configure it per logger:
+
+```ballerina
+log:Config secureConfig = {
+    enableSensitiveDataMasking: true
+};
+log:Logger secureLogger = log:fromConfig(secureConfig);
+```
+
 ### Sensitive Data Annotation
 
 Use the `@log:Sensitive` annotation to mark fields in records as sensitive. When such fields are logged, their values will be excluded or masked:
@@ -197,24 +213,6 @@ Use `log:toMaskedString()` to get the masked version of a value for custom loggi
 User user = {id: "U001", password: "mypassword", name: "John Doe"};
 string maskedUser = log:toMaskedString(user);
 io:println(maskedUser); // {"id":"U001","name":"John Doe"}
-```
-
-### Enable Sensitive Data Masking
-
-By default, sensitive data masking is disabled. Enable it in `Config.toml`:
-
-```toml
-[ballerina.log]
-enableSensitiveDataMasking = true
-```
-
-Or configure it per logger:
-
-```ballerina
-log:Config secureConfig = {
-    enableSensitiveDataMasking: true
-};
-log:Logger secureLogger = log:fromConfig(secureConfig);
 ```
 
 ## Build from the source

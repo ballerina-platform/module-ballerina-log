@@ -23,10 +23,9 @@ public const EXCLUDE = "EXCLUDE";
 public type ReplacementFunction isolated function (string input) returns string;
 
 # Replacement strategy for sensitive data
-#
-# + replacement - The replacement value. This can be a string which will be used to replace the
-# entire value, or a function that takes the original value and returns a masked version.
 public type Replacement record {|
+    # The replacement value. This can be a string which will be used to replace the
+    # entire value, or a function that takes the original value and returns a masked version.
     string|ReplacementFunction replacement;
 |};
 
@@ -34,15 +33,13 @@ public type Replacement record {|
 public type MaskingStrategy EXCLUDE|Replacement;
 
 # Represents sensitive data with a masking strategy
-#
-# + strategy - The masking strategy to apply (default: EXCLUDE)
 public type SensitiveConfig record {|
+    # The masking strategy to apply
     MaskingStrategy strategy = EXCLUDE;
 |};
 
 # Marks a record field or type as sensitive, excluding it from log output
-#
-# + strategy - The masking strategy to apply (default: EXCLUDE)
+# The default strategy is to exclude the field from log output
 public annotation SensitiveConfig Sensitive on record field;
 
 configurable boolean enableSensitiveDataMasking = false;

@@ -71,6 +71,7 @@ public class MaskedStringBuilder implements AutoCloseable {
     // Pre-computed hex lookup table for efficient Unicode escaping
     private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
+    // JSON escape character arrays for efficient escaping
     private static final char[] QUOTE_ESCAPE = {'\\', '"'};
     private static final char[] BACKSLASH_ESCAPE = {'\\', '\\'};
     private static final char[] NEWLINE_ESCAPE = {'\\', 'n'};
@@ -78,6 +79,10 @@ public class MaskedStringBuilder implements AutoCloseable {
     private static final char[] CARRIAGE_RETURN_ESCAPE = {'\\', 'r'};
     private static final char[] BACKSPACE_ESCAPE = {'\\', 'b'};
     private static final char[] FORM_FEED_ESCAPE = {'\\', 'f'};
+
+    // Control character range constants for Unicode escaping
+    private static final int ASCII_CONTROL_CHAR_LIMIT = 0x20; // Space character (32)
+    private static final int ASCII_DEL_CHAR = 0x7F; // DEL character (127)
 
     private final Runtime runtime;
     private final IdentityHashMap<Object, Boolean> visitedValues;
@@ -91,16 +96,13 @@ public class MaskedStringBuilder implements AutoCloseable {
     private static final int ESCAPE_BUFFER_SIZE = 64;
 
     public MaskedStringBuilder(Runtime runtime) {
-        this.runtime = runtime;
-        this.visitedValues = new IdentityHashMap<>();
-        this.stringBuilder = new StringBuilder(DEFAULT_INITIAL_CAPACITY);
-        this.escapeBuffer = new StringBuilder(ESCAPE_BUFFER_SIZE);
+        this(runtime, DEFAULT_INITIAL_CAPACITY);
     }
 
     public MaskedStringBuilder(Runtime runtime, int initialCapacity) {
         this.runtime = runtime;
         this.visitedValues = new IdentityHashMap<>();
-        this.stringBuilder = new StringBuilder(Math.max(initialCapacity, DEFAULT_INITIAL_CAPACITY));
+        this.stringBuilder = new StringBuilder(initialCapacity < 0 ? DEFAULT_INITIAL_CAPACITY : initialCapacity);
         this.escapeBuffer = new StringBuilder(ESCAPE_BUFFER_SIZE);
     }
 
@@ -111,29 +113,29 @@ public class MaskedStringBuilder implements AutoCloseable {
      * @return the masked string representation
      */
     public String build(Object value) {
-        if (closed) {
+        if (this.closed) {
             throw ErrorCreator.createError(MASKED_STRING_BUILDER_HAS_BEEN_CLOSED);
         }
 
         try {
-            visitedValues.clear();
-            stringBuilder.setLength(0);
+            this.visitedValues.clear();
+            this.stringBuilder.setLength(0);
 
             String result = buildInternal(value);
 
             // If the builder grew too large, replace it with a smaller one for future use
-            if (stringBuilder.capacity() > MAX_REUSABLE_CAPACITY) {
-                stringBuilder = new StringBuilder(DEFAULT_INITIAL_CAPACITY);
+            if (this.stringBuilder.capacity() > MAX_REUSABLE_CAPACITY) {
+                this.stringBuilder = new StringBuilder(DEFAULT_INITIAL_CAPACITY);
             }
 
             // Reset escape buffer if it grew too large
-            if (escapeBuffer.capacity() > ESCAPE_BUFFER_SIZE * 4) {
-                escapeBuffer = new StringBuilder(ESCAPE_BUFFER_SIZE);
+            if (this.escapeBuffer.capacity() > ESCAPE_BUFFER_SIZE * 4) {
+                this.escapeBuffer = new StringBuilder(ESCAPE_BUFFER_SIZE);
             }
 
             return result;
         } finally {
-            visitedValues.clear();
+            this.visitedValues.clear();
         }
     }
 
@@ -146,7 +148,7 @@ public class MaskedStringBuilder implements AutoCloseable {
         }
 
         // Use identity-based checking for cycle detection
-        if (visitedValues.put(value, Boolean.TRUE) != null) {
+        if (this.visitedValues.put(value, Boolean.TRUE) != null) {
             // Panics on cyclic value references
             throw ErrorCreator.createError(CYCLIC_REFERENCE_ERROR);
         }
@@ -154,7 +156,7 @@ public class MaskedStringBuilder implements AutoCloseable {
         try {
             return processValue(value);
         } finally {
-            visitedValues.remove(value);
+            this.visitedValues.remove(value);
         }
     }
 
@@ -215,14 +217,14 @@ public class MaskedStringBuilder implements AutoCloseable {
 
     private String processRecordValue(BMap<?, ?> mapValue, Map<String, BMap<?, ?>> fieldAnnotations,
                                       Map<String, Field> fields) {
-        int startPos = stringBuilder.length();
+        int startPos = this.stringBuilder.length();
 
-        stringBuilder.append('{');
+        this.stringBuilder.append('{');
         addRecordFields(mapValue, fields, fieldAnnotations);
-        stringBuilder.append('}');
+        this.stringBuilder.append('}');
 
-        String result = stringBuilder.substring(startPos);
-        stringBuilder.setLength(startPos);
+        String result = this.stringBuilder.substring(startPos);
+        this.stringBuilder.setLength(startPos);
         return result;
     }
 
@@ -245,9 +247,9 @@ public class MaskedStringBuilder implements AutoCloseable {
     private boolean addDynamicFieldValue(Object fieldValue, boolean first, String fieldName) {
         String fieldStringValue = buildInternal(fieldValue);
         if (!first) {
-            stringBuilder.append(',');
+            this.stringBuilder.append(',');
         }
-        appendFieldToJsonOptimized(fieldName, fieldStringValue, false, fieldValue);
+        appendFieldToJson(fieldName, fieldStringValue, false, fieldValue);
         return false;
     }
 
@@ -260,63 +262,64 @@ public class MaskedStringBuilder implements AutoCloseable {
 
         if (fieldStringValue.isPresent()) {
             if (!first) {
-                stringBuilder.append(',');
+                this.stringBuilder.append(',');
             }
-            appendFieldToJsonOptimized(fieldName, fieldStringValue.get(), annotation.isPresent(), fieldValue);
+            appendFieldToJson(fieldName, fieldStringValue.get(), annotation.isPresent(), fieldValue);
             first = false;
         }
         return first;
     }
 
     /**
-     * Optimized version of appendFieldToJson that writes directly to StringBuilder
+     * Append field to JSON format by writing directly to StringBuilder
      * without creating intermediate String objects for better performance.
      */
-    private void appendFieldToJsonOptimized(String fieldName, String value, boolean hasAnnotation, Object fieldValue) {
-        stringBuilder.append('"');
-        appendEscapedStringOptimized(fieldName);
-        stringBuilder.append("\":");
+    private void appendFieldToJson(String fieldName, String value, boolean hasAnnotation, Object fieldValue) {
+        this.stringBuilder.append('"');
+        appendEscapedString(fieldName);
+        this.stringBuilder.append("\":");
         if (hasAnnotation || fieldValue instanceof BString || fieldValue instanceof BXml) {
-            stringBuilder.append('"');
-            appendEscapedStringOptimized(value);
-            stringBuilder.append('"');
+            this.stringBuilder.append('"');
+            appendEscapedString(value);
+            this.stringBuilder.append('"');
         } else {
-            stringBuilder.append(value);
+            this.stringBuilder.append(value);
         }
     }
 
     /**
-     * Optimized method to append escaped string directly to the main StringBuilder.
+     * Append escaped string directly to the main StringBuilder.
      * This avoids creating intermediate String objects for better performance.
      */
-    private void appendEscapedStringOptimized(String input) {
+    private void appendEscapedString(String input) {
         if (input == null) {
-            stringBuilder.append("null");
+            this.stringBuilder.append("null");
             return;
         }
 
         if (!needsEscaping(input)) {
-            stringBuilder.append(input);
+            this.stringBuilder.append(input);
             return;
         }
 
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
             switch (c) {
-                case '"' -> stringBuilder.append(QUOTE_ESCAPE);
-                case '\\' -> stringBuilder.append(BACKSLASH_ESCAPE);
-                case '\b' -> stringBuilder.append(BACKSPACE_ESCAPE);
-                case '\f' -> stringBuilder.append(FORM_FEED_ESCAPE);
-                case '\n' -> stringBuilder.append(NEWLINE_ESCAPE);
-                case '\r' -> stringBuilder.append(CARRIAGE_RETURN_ESCAPE);
-                case '\t' -> stringBuilder.append(TAB_ESCAPE);
+                case '"' -> this.stringBuilder.append(QUOTE_ESCAPE);
+                case '\\' -> this.stringBuilder.append(BACKSLASH_ESCAPE);
+                case '\b' -> this.stringBuilder.append(BACKSPACE_ESCAPE);
+                case '\f' -> this.stringBuilder.append(FORM_FEED_ESCAPE);
+                case '\n' -> this.stringBuilder.append(NEWLINE_ESCAPE);
+                case '\r' -> this.stringBuilder.append(CARRIAGE_RETURN_ESCAPE);
+                case '\t' -> this.stringBuilder.append(TAB_ESCAPE);
                 default -> {
-                    if (c < 0x20 || c == 0x7F) {
-                        stringBuilder.append("\\u00");
-                        stringBuilder.append(HEX_CHARS[(c >>> 4) & 0xF]);
-                        stringBuilder.append(HEX_CHARS[c & 0xF]);
+                    // Escape ASCII control characters (0x00-0x1F) and DEL character (0x7F)
+                    if (c < ASCII_CONTROL_CHAR_LIMIT || c == ASCII_DEL_CHAR) {
+                        this.stringBuilder.append("\\u00");
+                        this.stringBuilder.append(HEX_CHARS[(c >>> 4) & 0xF]);
+                        this.stringBuilder.append(HEX_CHARS[c & 0xF]);
                     } else {
-                        stringBuilder.append(c);
+                        this.stringBuilder.append(c);
                     }
                 }
             }
@@ -350,23 +353,23 @@ public class MaskedStringBuilder implements AutoCloseable {
             return "[]";
         }
 
-        int startPos = stringBuilder.length();
-        stringBuilder.append('[');
+        int startPos = this.stringBuilder.length();
+        this.stringBuilder.append('[');
 
         boolean first = true;
         for (Object row : values) {
             if (!first) {
-                stringBuilder.append(',');
+                this.stringBuilder.append(',');
             }
             String elementString = buildInternal(row);
             appendValueToArray(elementString, row);
             first = false;
         }
 
-        stringBuilder.append(']');
+        this.stringBuilder.append(']');
 
-        String result = stringBuilder.substring(startPos);
-        stringBuilder.setLength(startPos);
+        String result = this.stringBuilder.substring(startPos);
+        this.stringBuilder.setLength(startPos);
         return result;
     }
 
@@ -376,34 +379,34 @@ public class MaskedStringBuilder implements AutoCloseable {
             return "[]";
         }
 
-        int startPos = stringBuilder.length();
-        stringBuilder.append('[');
+        int startPos = this.stringBuilder.length();
+        this.stringBuilder.append('[');
 
         // Using traditional for loop instead of for-each loop since BArray giving
         // this error: Cannot read the array length because "<local5>" is null
         for (long i = 0; i < length; i++) {
             if (i > 0) {
-                stringBuilder.append(',');
+                this.stringBuilder.append(',');
             }
             Object element = listValue.get(i);
             String elementString = buildInternal(element);
             appendValueToArray(elementString, element);
         }
 
-        stringBuilder.append(']');
+        this.stringBuilder.append(']');
 
-        String result = stringBuilder.substring(startPos);
-        stringBuilder.setLength(startPos);
+        String result = this.stringBuilder.substring(startPos);
+        this.stringBuilder.setLength(startPos);
         return result;
     }
 
     private void appendValueToArray(String value, Object originalValue) {
         if (originalValue instanceof BString) {
-            stringBuilder.append('"');
-            appendEscapedStringOptimized(value);
-            stringBuilder.append('"');
+            this.stringBuilder.append('"');
+            appendEscapedString(value);
+            this.stringBuilder.append('"');
         } else {
-            stringBuilder.append(value);
+            this.stringBuilder.append(value);
         }
     }
 
@@ -421,7 +424,8 @@ public class MaskedStringBuilder implements AutoCloseable {
     private static boolean needsEscaping(String input) {
         for (int i = 0; i < input.length(); i++) {
             char c = input.charAt(i);
-            if (c == '"' || c == '\\' || (c & 0xFFE0) == 0 || c == 0x7F) {
+            // Check for quote, backslash, control characters (0x00-0x1F), or DEL character (0x7F)
+            if (c == '"' || c == '\\' || (c & 0xFFE0) == 0 || c == ASCII_DEL_CHAR) {
                 return true;
             }
         }
@@ -435,7 +439,7 @@ public class MaskedStringBuilder implements AutoCloseable {
      * @return current capacity
      */
     public int getCapacity() {
-        return stringBuilder.capacity();
+        return this.stringBuilder.capacity();
     }
 
     /**
@@ -443,12 +447,12 @@ public class MaskedStringBuilder implements AutoCloseable {
      * This is more efficient than creating a new builder instance.
      */
     public void reset() {
-        if (closed) {
+        if (this.closed) {
             throw ErrorCreator.createError(MASKED_STRING_BUILDER_HAS_BEEN_CLOSED);
         }
-        visitedValues.clear();
-        stringBuilder.setLength(0);
-        escapeBuffer.setLength(0);
+        this.visitedValues.clear();
+        this.stringBuilder.setLength(0);
+        this.escapeBuffer.setLength(0);
     }
 
     /**
@@ -457,16 +461,16 @@ public class MaskedStringBuilder implements AutoCloseable {
      * @return true if closed, false otherwise
      */
     public boolean isClosed() {
-        return closed;
+        return this.closed;
     }
 
     @Override
     public void close() {
-        if (!closed) {
-            visitedValues.clear();
-            stringBuilder = null;
-            escapeBuffer = null;
-            closed = true;
+        if (!this.closed) {
+            this.visitedValues.clear();
+            this.stringBuilder = null;
+            this.escapeBuffer = null;
+            this.closed = true;
         }
     }
 
