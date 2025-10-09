@@ -114,7 +114,7 @@ The log module supports contextual logging, allowing you to create loggers with 
 
 For more details and advanced usage, see the module specification and API documentation.
 
-## Sensitive Data Masking
+### Sensitive Data Masking
 
 The log module provides capabilities to mask sensitive data in log messages to maintain data privacy and security when dealing with personally identifiable information (PII) or other sensitive data.
 
@@ -134,7 +134,7 @@ The log module provides capabilities to mask sensitive data in log messages to m
 > log:Logger secureLogger = log:fromConfig(secureConfig);
 > ```
 
-### Sensitive Data Annotation
+#### Sensitive Data Annotation
 
 Use the `@log:Sensitive` annotation to mark fields in records as sensitive. When such fields are logged, their values will be excluded or masked:
 
@@ -160,7 +160,7 @@ Output (with masking enabled):
 time=2025-08-20T09:15:30.123+05:30 level=INFO module="" message="user details" user={"id":"U001","name":"John Doe"}
 ```
 
-### Masking Strategies
+#### Masking Strategies
 
 Configure masking strategies using the `strategy` field:
 
@@ -192,7 +192,7 @@ type User record {
 };
 ```
 
-### Masked String Function
+#### Masked String Function
 
 Use `log:toMaskedString()` to get the masked version of a value for custom logging implementations:
 
