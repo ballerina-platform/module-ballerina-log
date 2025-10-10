@@ -135,3 +135,27 @@ function testInvalidDestination() returns error? {
     }
     test:assertEquals(result.message(), "The given file destination path: 'foo' is not valid. File destination path should be a valid file with .log extension.");
 }
+
+
+//test for fix "When logging having a key called message cases a runtime error #8233" issue
+type MyMessage record { 
+    int id?;
+};
+
+@test:Config {}
+function testRootLoggerMessageKeyWithNonString() {
+    MyMessage myMessage = {};
+
+    // Call logger. This should NOT throw an error anymore
+    var result = trap rootLogger.printInfo("main message", (), (), message = myMessage);
+
+    // Instead of expecting an error, we check that logging succeeded
+    if result is error {
+        io:println("Unexpected error thrown: ", result.message());
+        test:assertFail("Logger should not panic when 'message' key is used");
+    } else {
+        io:println("Logger processed 'message' key with warning. Logging continued successfully.");
+        io:print(result);
+    }
+
+}
