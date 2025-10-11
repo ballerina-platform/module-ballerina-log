@@ -137,10 +137,33 @@ isolated class RootLogger {
             logRecord["stackTrace"] = from var element in stackTrace
                 select element.toString();
         }
-        foreach [string, Value] [k, v] in keyValues.entries() {
-            logRecord[k] = v is Valuer ? v() : 
-                (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
+       foreach [string, Value] [k, v] in keyValues.entries() {
+        // Check for reserved key 'message' by LogRecord
+            if k == "message" {
+                // Convert value to string safely
+                string actualValue;
+                if v is PrintableRawTemplate {
+                    actualValue = evaluateTemplate(v, self.enableSensitiveDataMasking);
+                } else if v is Valuer {
+                    actualValue = v().toString();
+                } else {
+                    actualValue = v.toString();
+                }
+
+                // Show warning instead of stopping
+                io:println(string `Warning: The key '${k}' is reserved. Value passed: ${actualValue}`);
+
+                // still store it in logRecord under 'message'
+                logRecord["message"] = actualValue;
+
+                // Continue to next key without overwriting
+                continue;
+            }
+
+            logRecord[k] = v is Valuer ? v() :
+                        (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
         }
+
         if observe:isTracingEnabled() {
             map<string> spanContext = observe:getSpanContext();
             foreach [string, string] [k, v] in spanContext.entries() {
