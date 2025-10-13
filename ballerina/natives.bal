@@ -47,11 +47,15 @@ public type Valuer isolated function () returns anydata;
 #
 # + msg - msg which cannot be a key
 # + message - message which cannot be a key
+# + time - time which cannot be a key
+# + level - level which cannot be a key
 # + 'error - 'error which cannot be a key
 # + stackTrace - stackTrace which cannot be a key
 public type KeyValues record {|
     never msg?;
     never message?;
+    never time?;
+    never level?;
     never 'error?;
     never stackTrace?;
     Value...;
@@ -63,6 +67,10 @@ public type AnydataKeyValues record {
     never msg?;
     # message which cannot be a key
     never message?;
+    # time which cannot be a key
+    never time?;
+    # level which cannot be a key
+    never level?;
     # 'error which cannot be a key
     never 'error?;
     # stackTrace which cannot be a key
