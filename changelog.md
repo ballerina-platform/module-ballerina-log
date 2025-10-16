@@ -1,6 +1,12 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina TCP package through the releases.
 
+## [2.14.0] - 2025-10-09
+
+### Added
+
+- [Introduce sensitive data masking support](https://github.com/ballerina-platform/ballerina-library/issues/8211)
+
 ## [2.13.0]- 2025-08-28
 
 ### Added
