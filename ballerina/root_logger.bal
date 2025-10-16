@@ -139,6 +139,25 @@ isolated class RootLogger {
                 logRecord[k] = v;
             }
         }
+        if observe:isObservabilityEnabled() {
+            string? runtimeId = observe:getTagValue("runtime");
+            if runtimeId is string {
+                logRecord["runtime"] = runtimeId;
+            }
+            string? componentId = observe:getTagValue("component");
+            if componentId is string {
+                logRecord["component"] = componentId;
+            }
+            string? environmentId = observe:getTagValue("environment");
+            if environmentId is string {
+                logRecord["environment"] = environmentId;
+            }
+            string? projectId = observe:getTagValue("project");
+            if projectId is string {
+                logRecord["project"] = projectId;
+            }
+        }
+
         foreach [string, Value] [k, v] in self.keyValues.entries() {
             logRecord[k] = v is Valuer ? v() : v is PrintableRawTemplate ? processMessage(v) : v;
         }
