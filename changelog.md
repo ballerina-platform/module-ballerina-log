@@ -1,6 +1,13 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina TCP package through the releases.
 
+## [2.15.0] - 2025-10-13
+
+### Fixed
+
+- [Passing time as key in KeyValue pair replaces the logged time with the context value](https://github.com/ballerina-platform/ballerina-library/issues/7728)
+- [Passing message as key in KeyValue pair replaces the logged message with the context value](https://github.com/ballerina-platform/ballerina-library/issues/8232)
+
 ## [2.14.0] - 2025-10-09
 
 ### Added
