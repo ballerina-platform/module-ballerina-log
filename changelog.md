@@ -1,7 +1,7 @@
 # Change Log
 This file contains all the notable changes done to the Ballerina Log package through the releases.
 
-## [2.15.0] - 2025-10-13
+## [Unreleased]
 
 ### Fixed
 
