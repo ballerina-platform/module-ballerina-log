@@ -1,5 +1,18 @@
 # Change Log
-This file contains all the notable changes done to the Ballerina TCP package through the releases.
+This file contains all the notable changes done to the Ballerina Log package through the releases.
+
+## [Unreleased]
+
+### Fixed
+
+- [Passing time as key in KeyValue pair replaces the logged time with the context value](https://github.com/ballerina-platform/ballerina-library/issues/7728)
+- [Passing message as key in KeyValue pair replaces the logged message with the context value](https://github.com/ballerina-platform/ballerina-library/issues/8232)
+
+## [2.14.0] - 2025-10-09
+
+### Added
+
+- [Introduce sensitive data masking support](https://github.com/ballerina-platform/ballerina-library/issues/8211)
 
 ## [2.13.0]- 2025-08-28
 
