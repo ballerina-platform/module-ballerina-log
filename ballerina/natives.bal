@@ -18,7 +18,7 @@ import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/lang.value;
 
-# Represents log level types.
+# Log level types.
 public enum Level {
     DEBUG,
     ERROR,
@@ -26,10 +26,10 @@ public enum Level {
     WARN
 }
 
-# A value of `anydata` type or a function pointer or raw template.
+# A value that can be of type `anydata`, a function pointer, or a raw template.
 public type Value anydata|Valuer|PrintableRawTemplate;
 
-# Represents raw templates for logging.
+# Raw templates for logging.
 #
 # e.g: `The input value is ${val}`
 # + strings - String values of the template as an array
@@ -40,17 +40,19 @@ public type PrintableRawTemplate readonly & object {
     public Value[] insertions;
 };
 
-# A function, which returns `anydata` type.
+# A function that returns a value of type `anydata`.
+# Useful in scenarios where computation is required to retrieve the value.
+# This function is executed only if the specific log level is enabled.
 public type Valuer isolated function () returns anydata;
 
-# Key-Value pairs that needs to be displayed in the log.
+# Key-value pairs to be displayed in the log.
 #
-# + msg - msg which cannot be a key
-# + message - message which cannot be a key
-# + time - time which cannot be a key
-# + level - level which cannot be a key
-# + 'error - 'error which cannot be a key
-# + stackTrace - stackTrace which cannot be a key
+# + msg - The msg, which cannot be used as a key
+# + message - The message, which cannot be used as a key
+# + time - The time, which cannot be used as a key
+# + level - The level, which cannot be used as a key
+# + 'error - The error, which cannot be used as a key
+# + stackTrace - The stackTrace, which cannot be used as a key
 public type KeyValues record {|
     never msg?;
     never message?;
@@ -61,21 +63,21 @@ public type KeyValues record {|
     Value...;
 |};
 
-# Anydata key-value pairs that needs to be displayed in the log.
+# Anydata key-value pairs to be displayed in the log.
 public type AnydataKeyValues record {
-    # msg which cannot be a key
+    # The msg, which cannot be used as a key
     never msg?;
-    # message which cannot be a key
+    # The message, which cannot be used as a key
     never message?;
-    # time which cannot be a key
+    # The time, which cannot be used as a key
     never time?;
-    # level which cannot be a key
+    # The level, which cannot be used as a key
     never level?;
-    # 'error which cannot be a key
+    # The error, , which cannot be used as a key
     never 'error?;
-    # stackTrace which cannot be a key
+    # The stackTrace, which cannot be used as a key
     never stackTrace?;
-    # module name which cannot be a key
+    # The module, which cannot be used as a key
     never module?;
 };
 
@@ -84,11 +86,11 @@ type Module record {
     readonly Level level;
 };
 
-# Represents supported log formats.
+# Supported log formats.
 public enum LogFormat {
-    # JSON log format.
+    # The JSON log format.
     JSON_FORMAT = "json",
-    # Logfmt log format.
+    # The Logfmt log format.
     LOGFMT = "logfmt"
 };
 
@@ -106,15 +108,15 @@ public configurable AnydataKeyValues & readonly keyValues = {};
 
 # Output destination types.
 public enum DestinationType {
-    # Standard error output as destination
+    # Standard error output as the destination
     STDERR = "stderr",
-    # Standard output as destination
+    # Standard output as the destination
     STDOUT = "stdout",
-    # File output as destination
+    # File output as the destination
     FILE = "file"
 };
 
-# Standard destination.
+# A standard destination.
 public type StandardDestination record {|
     # Type of the standard destination. Allowed values are "stderr" and "stdout"
     readonly STDERR|STDOUT 'type = STDERR;
@@ -122,30 +124,30 @@ public type StandardDestination record {|
 
 # File output modes.
 public enum FileOutputMode {
-    # Truncates the file before writing. This mode creates a new file if one doesn't exist. 
-    # If the file already exists, its contents are cleared, and new data is written 
+    # Truncates the file before writing. Creates a new file if one doesn't exist.
+    # If the file already exists, its contents are cleared, and new data is written
     # from the beginning.
     TRUNCATE,
-    # Appends to the existing content. This mode creates a new file if one doesn't exist. 
+    # Appends to the existing content. Creates a new file if one doesn't exist.
     # If the file already exists, new data is appended to the end of its current contents.
     APPEND
 };
 
 // Defined as an open record to allow for future extensions
-# File output destination
+# A file output destination.
 public type FileOutputDestination record {
-    # Type of the file destination. Allowed value is "file".
+    # The type of the file destination. The allowed value is "file"
     readonly FILE 'type = FILE;
-    # File path(only files with .log extension are supported)
+    # The file path. Only files with a `.log` extension are supported
     string path;
-    # File output mode
+    # The file output mode. The default value is `APPEND`
     FileOutputMode mode = APPEND;
 };
 
 # Log output destination.
 public type OutputDestination StandardDestination|FileOutputDestination;
 
-# Destinations is a list of file destinations or standard output/error.
+# A list of file destinations or standard output/error.
 public configurable readonly & OutputDestination[] destinations = [{'type: STDERR}];
 
 type LogRecord record {
@@ -165,19 +167,19 @@ final map<int> & readonly logLevelWeight = {
 
 isolated string? outputFilePath = ();
 
-# Represents file opening options for writing.
+# File opening options for writing.
 #
-# + OVERWRITE - Overwrite(truncate the existing content)
-# + APPEND - Append to the existing content
+# + OVERWRITE - Overwrites the file by truncating the existing content
+# + APPEND - Appends new content to the existing file
 public enum FileWriteOption {
     OVERWRITE,
     APPEND
 }
 
-# Process the raw template and return the processed string.
+# Processes the raw template and returns the processed string.
 #
 # + template - The raw template to be processed
-# + return - The processed string
+# + return - The resulting string after processing the template
 # 
 # # Deprecated
 # The `processTemplate` function is deprecated. Use `evaluateTemplate` instead.
@@ -282,14 +284,14 @@ public isolated function printWarn(string|PrintableRawTemplate msg, error? 'erro
     rootLogger.print(WARN, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
-# Set the log output to a file. Note that all the subsequent logs of the entire application will be written to this file.
+# Sets the log output to a file. All subsequent logs of the entire application will be written to this file.
 # ```ballerina
 # var result = log:setOutputFile("./resources/myfile.log");
 # var result = log:setOutputFile("./resources/myfile.log", log:OVERWRITE);
 # ```
 #
-# + path - The path of the file
-# + option - To indicate whether to overwrite or append the log output
+# + path - The file path to write the logs. Should be a file with `.log` extension
+# + option - The file write option. Default is `APPEND`
 #
 # + return - A `log:Error` if an invalid file path was provided
 # # Deprecated
