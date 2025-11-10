@@ -18,7 +18,7 @@ import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/lang.value;
 
-# Represents log level types.
+# Log level types.
 public enum Level {
     DEBUG,
     ERROR,
@@ -26,10 +26,10 @@ public enum Level {
     WARN
 }
 
-# Represents a value that can be of type `anydata`, a function pointer, or a raw template.
+# A value that can be of type `anydata`, a function pointer, or a raw template.
 public type Value anydata|Valuer|PrintableRawTemplate;
 
-# Represents raw templates for logging.
+# Raw templates for logging.
 #
 # e.g: `The input value is ${val}`
 # + strings - String values of the template as an array
@@ -40,12 +40,12 @@ public type PrintableRawTemplate readonly & object {
     public Value[] insertions;
 };
 
-# Represents a function that returns a value of type `anydata`.
-# It is particularly useful in scenarios where there is a computation required to retrieve the value.
+# A function that returns a value of type `anydata`.
+# Useful in scenarios where computation is required to retrieve the value.
 # This function is executed only if the specific log level is enabled.
 public type Valuer isolated function () returns anydata;
 
-# Represents key-value pairs that need to be displayed in the log.
+# Key-value pairs to be displayed in the log.
 #
 # + msg - The msg, which cannot be used as a key
 # + message - The message, which cannot be used as a key
@@ -63,7 +63,7 @@ public type KeyValues record {|
     Value...;
 |};
 
-# Represents anydata key-value pairs that need to be displayed in the log.
+# Anydata key-value pairs to be displayed in the log.
 public type AnydataKeyValues record {
     # The msg, which cannot be used as a key
     never msg?;
@@ -86,7 +86,7 @@ type Module record {
     readonly Level level;
 };
 
-# Represents supported log formats.
+# Supported log formats.
 public enum LogFormat {
     # The JSON log format.
     JSON_FORMAT = "json",
@@ -94,19 +94,19 @@ public enum LogFormat {
     LOGFMT = "logfmt"
 };
 
-# Represents root logger default log format.
+# Root logger default log format.
 public configurable LogFormat format = LOGFMT;
 
-# Represents root logger default log level.
+# Root logger default log level.
 public configurable Level level = INFO;
 
-# Represents modules with their log levels.
+# Modules with their log levels.
 public configurable table<Module> key(name) & readonly modules = table [];
 
-# Represents default key-values to add to the root logger.
+# Default key-values to add to the root logger.
 public configurable AnydataKeyValues & readonly keyValues = {};
 
-# Represents output destination types.
+# Output destination types.
 public enum DestinationType {
     # Standard error output as the destination
     STDERR = "stderr",
@@ -116,13 +116,13 @@ public enum DestinationType {
     FILE = "file"
 };
 
-# Represents a standard destination.
+# A standard destination.
 public type StandardDestination record {|
     # Type of the standard destination. Allowed values are "stderr" and "stdout"
     readonly STDERR|STDOUT 'type = STDERR;
 |};
 
-# Represents file output modes.
+# File output modes.
 public enum FileOutputMode {
     # Truncates the file before writing. Creates a new file if one doesn't exist.
     # If the file already exists, its contents are cleared, and new data is written
@@ -134,7 +134,7 @@ public enum FileOutputMode {
 };
 
 // Defined as an open record to allow for future extensions
-# Represents a file output destination.
+# A file output destination.
 public type FileOutputDestination record {
     # The type of the file destination. The allowed value is "file"
     readonly FILE 'type = FILE;
@@ -144,10 +144,10 @@ public type FileOutputDestination record {
     FileOutputMode mode = APPEND;
 };
 
-# Represents the log output destination.
+# Log output destination.
 public type OutputDestination StandardDestination|FileOutputDestination;
 
-# Represents a list of file destinations or standard output/error.
+# A list of file destinations or standard output/error.
 public configurable readonly & OutputDestination[] destinations = [{'type: STDERR}];
 
 type LogRecord record {
@@ -167,7 +167,7 @@ final map<int> & readonly logLevelWeight = {
 
 isolated string? outputFilePath = ();
 
-# Represents file opening options for writing.
+# File opening options for writing.
 #
 # + OVERWRITE - Overwrites the file by truncating the existing content
 # + APPEND - Appends new content to the existing file

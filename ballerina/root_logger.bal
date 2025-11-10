@@ -41,7 +41,7 @@ type ConfigInternal record {|
 
 final RootLogger rootLogger;
 
-# Get the root logger instance.
+# Returns the root logger instance.
 #
 # + return - The root logger instance
 public isolated function root() returns Logger => rootLogger;
