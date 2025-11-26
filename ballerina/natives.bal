@@ -51,6 +51,7 @@ public type Valuer isolated function () returns anydata;
 # + level - level which cannot be a key
 # + 'error - 'error which cannot be a key
 # + stackTrace - stackTrace which cannot be a key
+# + icp\.runtimeId - icp.runtimeId which cannot be a key
 public type KeyValues record {|
     never msg?;
     never message?;
@@ -58,6 +59,7 @@ public type KeyValues record {|
     never level?;
     never 'error?;
     never stackTrace?;
+    never icp\.runtimeId?;
     Value...;
 |};
 
@@ -77,6 +79,8 @@ public type AnydataKeyValues record {
     never stackTrace?;
     # module name which cannot be a key
     never module?;
+    # icp.runtimeId which cannot be a key
+    never icp\.runtimeId?;
 };
 
 type Module record {

@@ -148,9 +148,9 @@ isolated class RootLogger {
             }
         }
         if observe:isObservabilityEnabled() {
-            string? runtimeId = observe:getTagValue("icp.runtime");
+            string? runtimeId = observe:getTagValue("icp.runtimeId");
             if runtimeId is string {
-                logRecord["icp.runtime"] = runtimeId;
+                logRecord["icp.runtimeId"] = runtimeId;
             }
         }
 
