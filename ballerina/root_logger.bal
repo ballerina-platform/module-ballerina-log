@@ -39,6 +39,8 @@ type ConfigInternal record {|
     boolean enableSensitiveDataMasking = enableSensitiveDataMasking;
 |};
 
+final string ICP_RUNTIME_ID_KEY = "icp.runtimeId";
+
 final RootLogger rootLogger;
 
 # Get the root logger instance.
@@ -147,6 +149,13 @@ isolated class RootLogger {
                 logRecord[k] = v;
             }
         }
+        if observe:isObservabilityEnabled() {
+            string? runtimeId = observe:getTagValue(ICP_RUNTIME_ID_KEY);
+            if runtimeId is string {
+                logRecord[ICP_RUNTIME_ID_KEY] = runtimeId;
+            }
+        }
+
         foreach [string, Value] [k, v] in self.keyValues.entries() {
             logRecord[k] = v is Valuer ? v() : 
                 (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
