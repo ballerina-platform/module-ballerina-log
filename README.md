@@ -89,6 +89,43 @@ Sample output (JSON):
 > - Destination types can be `stderr`, `stdout`, or `file`. File Destination must point to a path with a `.log` extension.
 > - The deprecated `log:setOutputFile()` should be avoided; use configuration instead.
 
+## Log Rotation
+
+The log module supports automatic log rotation to manage log file growth in production environments. You can configure rotation based on file size, time, or both:
+
+```toml
+[[ballerina.log.destinations]]
+type = "file"
+path = "./logs/app.log"
+
+[ballerina.log.destinations.rotation]
+policy = "BOTH"         # SIZE_BASED, TIME_BASED, BOTH, or NONE
+maxFileSize = 10485760  # 10MB in bytes
+maxAge = 86400000       # 24 hours in milliseconds
+maxBackupFiles = 7      # Keep 7 backup files
+```
+
+Or configure programmatically:
+
+```ballerina
+log:Logger logger = check log:fromConfig(
+    destinations = [
+        {
+            'type: log:FILE,
+            path: "./logs/app.log",
+            rotation: {
+                policy: log:BOTH,
+                maxFileSize: 10485760,  // 10MB
+                maxAge: 86400000,        // 24 hours
+                maxBackupFiles: 7
+            }
+        }
+    ]
+);
+```
+
+When rotation occurs, backup files are created with timestamps (e.g., `app-20251209-143022.log`). Old backups beyond `maxBackupFiles` are automatically deleted.
+
 ## Root Context
 
 You can add a default context to all log messages:

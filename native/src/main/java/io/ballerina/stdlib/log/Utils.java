@@ -106,4 +106,25 @@ public class Utils {
             return StringUtils.fromString(builder.build(value));
         }
     }
+
+    /**
+     * Check and rotate log file if rotation policy conditions are met.
+     *
+     * @param destination The output destination configuration
+     * @return Error if rotation fails, null otherwise
+     */
+    public static Object checkAndRotateLog(Object destination) {
+        if (destination instanceof io.ballerina.runtime.api.values.BMap) {
+            io.ballerina.runtime.api.values.BMap<BString, Object> destMap = 
+                (io.ballerina.runtime.api.values.BMap<BString, Object>) destination;
+            
+            // Only process file destinations
+            BString type = destMap.getStringValue(StringUtils.fromString("type"));
+            if (type != null && "file".equals(type.getValue())) {
+                LogRotationManager manager = LogRotationManager.getInstance(destMap);
+                return manager.checkAndRotate();
+            }
+        }
+        return null;
+    }
 }

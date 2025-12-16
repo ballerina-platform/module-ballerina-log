@@ -14,5 +14,5 @@
 // specific language governing permissions and limitations
 // under the License.
 
-# Represents Log module related errors.
+# Represents errors specific to the Log module.
 public type Error distinct error;

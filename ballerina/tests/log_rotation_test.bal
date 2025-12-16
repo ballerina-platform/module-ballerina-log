@@ -1,0 +1,384 @@
+// Copyright (c) 2025 WSO2 LLC. (https://www.wso2.com).
+//
+// WSO2 LLC. licenses this file to you under the Apache License,
+// Version 2.0 (the "License"); you may not use this file except
+// in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing,
+// software distributed under the License is distributed on an
+// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+// KIND, either express or implied.  See the License for the
+// specific language governing permissions and limitations
+// under the License.
+
+import ballerina/io;
+import ballerina/test;
+import ballerina/lang.runtime;
+import ballerina/jballerina.java;
+import ballerina/data.jsondata;
+
+const string ROTATION_TEST_DIR = "tests/resources/rotation/";
+
+// Native file operation functions to avoid cyclic dependency with ballerina/file module
+isolated function fileExists(string path) returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.TestFileUtils"
+} external;
+
+isolated function isDirectory(string path) returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.TestFileUtils"
+} external;
+
+isolated function listFilesJson(string path) returns string|error = @java:Method {
+    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.TestFileUtils"
+} external;
+
+isolated function removeFile(string path, boolean recursive) returns error? = @java:Method {
+    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.TestFileUtils"
+} external;
+
+isolated function createDirectory(string path) returns error? = @java:Method {
+    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.TestFileUtils"
+} external;
+
+// File metadata record
+type FileInfo record {|
+    string absPath;
+    string name;
+    boolean isDir;
+    int size;
+|};
+
+// Wrapper function to parse JSON and return FileInfo array
+isolated function listFiles(string path) returns FileInfo[]|error {
+    string jsonStr = check listFilesJson(path);
+    return jsondata:parseString(jsonStr);
+}
+
+@test:BeforeSuite
+function setupRotationTests() returns error? {
+    // Create test directory
+    check createDirectory(ROTATION_TEST_DIR);
+    check io:fileWriteString(ROTATION_TEST_DIR + "test.log", "");
+}
+
+@test:AfterSuite
+function cleanupRotationTests() returns error? {
+    // Clean up test files
+    if fileExists(ROTATION_TEST_DIR) {
+        check removeFile(ROTATION_TEST_DIR, true);
+    }
+}
+
+// Test size-based rotation
+@test:Config {}
+function testSizeBasedRotation() returns error? {
+    string logFilePath = ROTATION_TEST_DIR + "size_rotation_test.log";
+    
+    // Configure logger with size-based rotation
+    Logger logger = check fromConfig(
+        destinations = [
+            {
+                'type: FILE,
+                path: logFilePath,
+                mode: TRUNCATE,
+                rotation: {
+                    policy: SIZE_BASED,
+                    maxFileSize: 1024, // 1KB for testing
+                    maxBackupFiles: 3
+                }
+            }
+        ]
+    );
+
+    // Write logs to exceed file size
+    foreach int i in 0...100 {
+        logger.printInfo(string `This is a test log message number ${i} with some extra content to fill the file`);
+    }
+
+    // Give some time for rotation to happen
+    runtime:sleep(1);
+
+    // Check that rotation happened - backup files should exist
+    FileInfo[] files = check listFiles(ROTATION_TEST_DIR);
+    int backupCount = 0;
+    foreach FileInfo fileInfo in files {
+        if fileInfo.absPath.includes("size_rotation_test-") && fileInfo.absPath.endsWith(".log") {
+            backupCount += 1;
+        }
+    }
+
+    test:assertTrue(backupCount > 0, "Size-based rotation should create backup files");
+    test:assertTrue(backupCount <= 3, "Should not exceed max backup files");
+}
+
+// Test time-based rotation
+@test:Config {}
+function testTimeBasedRotation() returns error? {
+    string logFilePath = ROTATION_TEST_DIR + "time_rotation_test.log";
+    
+    // Configure logger with time-based rotation (2 seconds for testing)
+    Logger logger = check fromConfig(
+        destinations = [
+            {
+                'type: FILE,
+                path: logFilePath,
+                mode: TRUNCATE,
+                rotation: {
+                    policy: TIME_BASED,
+                    maxAge: 2000, // 2 seconds
+                    maxBackupFiles: 5
+                }
+            }
+        ]
+    );
+
+    // Write initial logs
+    logger.printInfo("Log before rotation");
+    
+    // Wait for rotation time
+    runtime:sleep(3);
+    
+    // Write more logs to trigger rotation check
+    logger.printInfo("Log after rotation period");
+
+    // Check that rotation happened
+    FileInfo[] files = check listFiles(ROTATION_TEST_DIR);
+    boolean rotatedFileExists = false;
+    foreach FileInfo fileInfo in files {
+        if fileInfo.absPath.includes("time_rotation_test-") && fileInfo.absPath.endsWith(".log") {
+            rotatedFileExists = true;
+            break;
+        }
+    }
+
+    test:assertTrue(rotatedFileExists, "Time-based rotation should create backup files");
+}
+
+// Test combined (BOTH) rotation policy
+@test:Config {}
+function testCombinedRotation() returns error? {
+    string logFilePath = ROTATION_TEST_DIR + "combined_rotation_test.log";
+    
+    // Configure logger with both size and time-based rotation
+    Logger logger = check fromConfig(
+        destinations = [
+            {
+                'type: FILE,
+                path: logFilePath,
+                mode: TRUNCATE,
+                rotation: {
+                    policy: BOTH,
+                    maxFileSize: 2048, // 2KB
+                    maxAge: 5000, // 5 seconds
+                    maxBackupFiles: 3
+                }
+            }
+        ]
+    );
+
+    // Write logs to trigger size-based rotation first
+    foreach int i in 0...150 {
+        logger.printInfo(string `Combined rotation test log message ${i} with additional content`);
+    }
+
+    // Check that rotation happened due to size
+    FileInfo[] files = check listFiles(ROTATION_TEST_DIR);
+    boolean rotatedFileExists = false;
+    foreach FileInfo fileInfo in files {
+        if fileInfo.absPath.includes("combined_rotation_test-") && fileInfo.absPath.endsWith(".log") {
+            rotatedFileExists = true;
+            break;
+        }
+    }
+
+    test:assertTrue(rotatedFileExists, "Combined rotation should create backup files when size limit is reached");
+}
+
+// Test backup file cleanup
+@test:Config {}
+function testBackupFileCleanup() returns error? {
+    string logFilePath = ROTATION_TEST_DIR + "cleanup_test.log";
+    
+    // Configure logger with max 2 backup files
+    Logger logger = check fromConfig(
+        destinations = [
+            {
+                'type: FILE,
+                path: logFilePath,
+                mode: TRUNCATE,
+                rotation: {
+                    policy: SIZE_BASED,
+                    maxFileSize: 512, // Very small for quick rotation
+                    maxBackupFiles: 2
+                }
+            }
+        ]
+    );
+
+    // Write logs to trigger multiple rotations
+    foreach int i in 0...200 {
+        logger.printInfo(string `Cleanup test log message ${i} with sufficient content for rotation`);
+        if i % 50 == 0 {
+            runtime:sleep(0.5); // Small delay to ensure rotations happen
+        }
+    }
+
+    runtime:sleep(1);
+
+    // Count backup files
+    FileInfo[] files = check listFiles(ROTATION_TEST_DIR);
+    int backupCount = 0;
+    foreach FileInfo fileInfo in files {
+        if fileInfo.absPath.includes("cleanup_test-") && fileInfo.absPath.endsWith(".log") {
+            backupCount += 1;
+        }
+    }
+
+    test:assertTrue(backupCount <= 2, string `Should keep at most 2 backup files, found ${backupCount}`);
+}
+
+// Test no rotation when policy is NONE
+@test:Config {}
+function testNoRotation() returns error? {
+    string logFilePath = ROTATION_TEST_DIR + "no_rotation_test.log";
+    
+    // Configure logger without rotation
+    Logger logger = check fromConfig(
+        destinations = [
+            {
+                'type: FILE,
+                path: logFilePath,
+                mode: TRUNCATE,
+                rotation: {
+                    policy: NONE
+                }
+            }
+        ]
+    );
+
+    // Write many logs
+    foreach int i in 0...100 {
+        logger.printInfo(string `No rotation test log message ${i}`);
+    }
+
+    runtime:sleep(1);
+
+    // Check that no backup files were created
+    FileInfo[] files = check listFiles(ROTATION_TEST_DIR);
+    int backupCount = 0;
+    foreach FileInfo fileInfo in files {
+        if fileInfo.absPath.includes("no_rotation_test-") && fileInfo.absPath.endsWith(".log") {
+            backupCount += 1;
+        }
+    }
+
+    test:assertEquals(backupCount, 0, "No rotation should not create backup files");
+}
+
+// Test rotation with multiple log levels
+@test:Config {}
+function testRotationWithMultipleLevels() returns error? {
+    string logFilePath = ROTATION_TEST_DIR + "multilevel_rotation_test.log";
+    
+    Logger logger = check fromConfig(
+        level = DEBUG,
+        destinations = [
+            {
+                'type: FILE,
+                path: logFilePath,
+                mode: TRUNCATE,
+                rotation: {
+                    policy: SIZE_BASED,
+                    maxFileSize: 1024,
+                    maxBackupFiles: 2
+                }
+            }
+        ]
+    );
+
+    // Write logs at different levels
+    foreach int i in 0...50 {
+        logger.printDebug(string `Debug message ${i}`);
+        logger.printInfo(string `Info message ${i}`);
+        logger.printWarn(string `Warn message ${i}`);
+        logger.printError(string `Error message ${i}`);
+    }
+
+    runtime:sleep(1);
+
+    // Verify rotation occurred
+    FileInfo[] files = check listFiles(ROTATION_TEST_DIR);
+    boolean hasBackup = false;
+    foreach FileInfo fileInfo in files {
+        if fileInfo.absPath.includes("multilevel_rotation_test-") {
+            hasBackup = true;
+            break;
+        }
+    }
+
+    test:assertTrue(hasBackup, "Rotation should work with multiple log levels");
+}
+
+// Test default rotation configuration
+@test:Config {}
+function testDefaultRotationConfig() returns error? {
+    string logFilePath = ROTATION_TEST_DIR + "default_rotation_test.log";
+    
+    // Configure logger with default rotation values
+    Logger logger = check fromConfig(
+        destinations = [
+            {
+                'type: FILE,
+                path: logFilePath,
+                mode: TRUNCATE,
+                rotation: {
+                    policy: SIZE_BASED
+                    // Using default maxFileSize (10MB) and maxBackupFiles (10)
+                }
+            }
+        ]
+    );
+
+    // Write some logs
+    foreach int i in 0...10 {
+        logger.printInfo(string `Default config test message ${i}`);
+    }
+
+    // File should exist and be writable
+    test:assertTrue(fileExists(logFilePath), "Log file should exist");
+}
+
+// Test rotation with error logging
+@test:Config {}
+function testRotationWithErrors() returns error? {
+    string logFilePath = ROTATION_TEST_DIR + "error_rotation_test.log";
+    
+    Logger logger = check fromConfig(
+        destinations = [
+            {
+                'type: FILE,
+                path: logFilePath,
+                mode: TRUNCATE,
+                rotation: {
+                    policy: SIZE_BASED,
+                    maxFileSize: 800,
+                    maxBackupFiles: 3
+                }
+            }
+        ]
+    );
+
+    // Write logs with errors
+    foreach int i in 0...50 {
+        error sampleError = error(string `Sample error ${i}`);
+        logger.printError(string `Error log ${i}`, 'error = sampleError);
+    }
+
+    runtime:sleep(1);
+
+    // Verify logs were written and rotation occurred if needed
+    test:assertTrue(fileExists(logFilePath), "Log file should exist");
+}

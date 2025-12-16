@@ -43,7 +43,7 @@ final string ICP_RUNTIME_ID_KEY = "icp.runtimeId";
 
 final RootLogger rootLogger;
 
-# Get the root logger instance.
+# Returns the root logger instance.
 #
 # + return - The root logger instance
 public isolated function root() returns Logger => rootLogger;
@@ -179,6 +179,12 @@ isolated class RootLogger {
                     io:fprintln(io:stdout, logOutput);
                 }
             } else {
+                // Check and rotate log if needed before writing
+                error? rotationResult = checkAndRotateLog(destination);
+                if rotationResult is error {
+                    io:fprintln(io:stderr, string `warning: log rotation check failed: ${rotationResult.message()}`);
+                }
+                
                 io:Error? result = io:fileWriteString(destination.path, logOutput + "\n", io:APPEND);
                 if result is error {
                     io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);

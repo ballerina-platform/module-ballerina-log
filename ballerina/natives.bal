@@ -18,7 +18,7 @@ import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/lang.value;
 
-# Represents log level types.
+# Log level types.
 public enum Level {
     DEBUG,
     ERROR,
@@ -26,10 +26,10 @@ public enum Level {
     WARN
 }
 
-# A value of `anydata` type or a function pointer or raw template.
+# A value that can be of type `anydata`, a function pointer, or a raw template.
 public type Value anydata|Valuer|PrintableRawTemplate;
 
-# Represents raw templates for logging.
+# Raw templates for logging.
 #
 # e.g: `The input value is ${val}`
 # + strings - String values of the template as an array
@@ -40,10 +40,12 @@ public type PrintableRawTemplate readonly & object {
     public Value[] insertions;
 };
 
-# A function, which returns `anydata` type.
+# A function that returns a value of type `anydata`.
+# Useful in scenarios where computation is required to retrieve the value.
+# This function is executed only if the specific log level is enabled.
 public type Valuer isolated function () returns anydata;
 
-# Key-Value pairs that needs to be displayed in the log.
+# Key-value pairs to be displayed in the log.
 #
 # + msg - msg which cannot be a key
 # + message - message which cannot be a key
@@ -63,7 +65,7 @@ public type KeyValues record {|
     Value...;
 |};
 
-# Anydata key-value pairs that needs to be displayed in the log.
+# Anydata key-value pairs to be displayed in the log.
 public type AnydataKeyValues record {
     # msg which cannot be a key
     never msg?;
@@ -88,11 +90,11 @@ type Module record {
     readonly Level level;
 };
 
-# Represents supported log formats.
+# Supported log formats.
 public enum LogFormat {
-    # JSON log format.
+    # The JSON log format.
     JSON_FORMAT = "json",
-    # Logfmt log format.
+    # The Logfmt log format.
     LOGFMT = "logfmt"
 };
 
@@ -110,15 +112,15 @@ public configurable AnydataKeyValues & readonly keyValues = {};
 
 # Output destination types.
 public enum DestinationType {
-    # Standard error output as destination
+    # Standard error output as the destination
     STDERR = "stderr",
-    # Standard output as destination
+    # Standard output as the destination
     STDOUT = "stdout",
-    # File output as destination
+    # File output as the destination
     FILE = "file"
 };
 
-# Standard destination.
+# A standard destination.
 public type StandardDestination record {|
     # Type of the standard destination. Allowed values are "stderr" and "stdout"
     readonly STDERR|STDOUT 'type = STDERR;
@@ -126,17 +128,44 @@ public type StandardDestination record {|
 
 # File output modes.
 public enum FileOutputMode {
-    # Truncates the file before writing. This mode creates a new file if one doesn't exist. 
-    # If the file already exists, its contents are cleared, and new data is written 
+    # Truncates the file before writing. This mode creates a new file if one doesn't exist.
+    # If the file already exists, its contents are cleared, and new data is written
     # from the beginning.
     TRUNCATE,
-    # Appends to the existing content. This mode creates a new file if one doesn't exist. 
+    # Appends to the existing content. This mode creates a new file if one doesn't exist.
     # If the file already exists, new data is appended to the end of its current contents.
     APPEND
 };
 
+# Log rotation policies.
+public enum RotationPolicy {
+    # Rotate logs based on file size only
+    SIZE_BASED = "SIZE_BASED",
+    # Rotate logs based on time only
+    TIME_BASED = "TIME_BASED",
+    # Rotate logs based on both file size and time (whichever condition is met first)
+    BOTH = "BOTH",
+    # No rotation
+    NONE = "NONE"
+};
+
+# Log rotation configuration for file destinations.
+public type RotationConfig record {|
+    # Rotation policy to use
+    RotationPolicy policy = NONE;
+    # Maximum file size in bytes before rotation (used with SIZE_BASED or BOTH policies)
+    # Default: 10MB (10 * 1024 * 1024 bytes)
+    int maxFileSize = 10485760;
+    # Maximum age in milliseconds before rotation (used with TIME_BASED or BOTH policies)
+    # Default: 24 hours (24 * 60 * 60 * 1000 ms)
+    int maxAge = 86400000;
+    # Maximum number of backup files to retain. Older files are deleted.
+    # Default: 10 backup files
+    int maxBackupFiles = 10;
+|};
+
 // Defined as an open record to allow for future extensions
-# File output destination
+# A file output destination.
 public type FileOutputDestination record {
     # Type of the file destination. Allowed value is "file".
     readonly FILE 'type = FILE;
@@ -144,12 +173,14 @@ public type FileOutputDestination record {
     string path;
     # File output mode
     FileOutputMode mode = APPEND;
+    # Log rotation configuration
+    RotationConfig? rotation = ();
 };
 
 # Log output destination.
 public type OutputDestination StandardDestination|FileOutputDestination;
 
-# Destinations is a list of file destinations or standard output/error.
+# A list of file destinations or standard output/error.
 public configurable readonly & OutputDestination[] destinations = [{'type: STDERR}];
 
 type LogRecord record {
@@ -169,7 +200,7 @@ final map<int> & readonly logLevelWeight = {
 
 isolated string? outputFilePath = ();
 
-# Represents file opening options for writing.
+# File opening options for writing.
 #
 # + OVERWRITE - Overwrite(truncate the existing content)
 # + APPEND - Append to the existing content
@@ -286,14 +317,14 @@ public isolated function printWarn(string|PrintableRawTemplate msg, error? 'erro
     rootLogger.print(WARN, moduleName, msg, 'error, stackTrace, keyValues);
 }
 
-# Set the log output to a file. Note that all the subsequent logs of the entire application will be written to this file.
+# Sets the log output to a file. All subsequent logs of the entire application will be written to this file.
 # ```ballerina
 # var result = log:setOutputFile("./resources/myfile.log");
 # var result = log:setOutputFile("./resources/myfile.log", log:OVERWRITE);
 # ```
 #
-# + path - The path of the file
-# + option - To indicate whether to overwrite or append the log output
+# + path - The file path to write the logs. Should be a file with `.log` extension
+# + option - The file write option. Default is `APPEND`
 #
 # + return - A `log:Error` if an invalid file path was provided
 # # Deprecated
@@ -457,3 +488,5 @@ isolated function getModuleName(KeyValues keyValues, int offset = 2) returns str
 isolated function getInvokedModuleName(int offset = 0) returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
 
 isolated function getCurrentTime() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
+
+isolated function checkAndRotateLog(OutputDestination destination) returns error? = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
