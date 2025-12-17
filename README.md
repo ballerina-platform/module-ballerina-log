@@ -101,7 +101,7 @@ path = "./logs/app.log"
 [ballerina.log.destinations.rotation]
 policy = "BOTH"         # SIZE_BASED, TIME_BASED, BOTH, or NONE
 maxFileSize = 10485760  # 10MB in bytes
-maxAge = 86400000       # 24 hours in milliseconds
+maxAge = 86400       # 24 hours in seconds
 maxBackupFiles = 7      # Keep 7 backup files
 ```
 
@@ -116,7 +116,7 @@ log:Logger logger = check log:fromConfig(
             rotation: {
                 policy: log:BOTH,
                 maxFileSize: 10485760,  // 10MB
-                maxAge: 86400000,        // 24 hours
+                maxAge: 86400,        // 24 hours
                 maxBackupFiles: 7
             }
         }
