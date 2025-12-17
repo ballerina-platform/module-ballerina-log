@@ -207,8 +207,8 @@ public class LogRotationManager {
                     name.startsWith(baseName + "-") && name.endsWith(".log"));
 
             if (backupFiles == null || backupFiles.length <= maxBackupFiles) {
-                return ErrorCreator.createError(fromString(
-                        "Failed to cleanup old backups: No backup files found or within limit."));
+                // No backups to clean up or already within limit - this is a success condition
+                return null;
             }
 
             // Sort by creation time (oldest first)

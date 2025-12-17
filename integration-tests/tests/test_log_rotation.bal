@@ -106,7 +106,8 @@ function integrationTestSizeRotation() returns error? {
     FileInfo[] files = check listFiles(INTEGRATION_TEST_DIR);
     int totalLogFiles = 0;
     foreach FileInfo f in files {
-        if f.absPath.endsWith(".log") {
+        // Only count files related to this test (app.log and app-*.log)
+        if f.name == "app.log" || (f.name.startsWith("app-") && f.name.endsWith(".log")) {
             totalLogFiles += 1;
         }
     }
