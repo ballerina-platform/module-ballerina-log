@@ -156,7 +156,7 @@ public type RotationConfig record {|
     # Maximum file size in bytes before rotation (used with SIZE_BASED or BOTH policies)
     # Default: 10MB (10 * 1024 * 1024 bytes)
     int maxFileSize = 10485760;
-    # Maximum age in milliseconds before rotation (used with TIME_BASED or BOTH policies)
+    # Maximum age in seconds before rotation (used with TIME_BASED or BOTH policies)
     # Default: 24 hours (24 * 60 * 60 * 1000 ms)
     int maxAge = 86400;
     # Maximum number of backup files to retain. Older files are deleted.
