@@ -101,7 +101,7 @@ modules = [
 [[package]]
 org = "ballerina"
 name = "log"
-version = "2.15.1"
+version = "2.16.0"
 dependencies = [
 	{org = "ballerina", name = "data.jsondata"},
 	{org = "ballerina", name = "io"},
