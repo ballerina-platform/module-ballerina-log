@@ -128,7 +128,7 @@ function testTimeBasedRotation() returns error? {
                 mode: TRUNCATE,
                 rotation: {
                     policy: TIME_BASED,
-                    maxAge: 2000, // 2 seconds
+                    maxAge: 2, // 2 seconds
                     maxBackupFiles: 5
                 }
             }
@@ -172,7 +172,7 @@ function testCombinedRotation() returns error? {
                 rotation: {
                     policy: BOTH,
                     maxFileSize: 2048, // 2KB
-                    maxAge: 5000, // 5 seconds
+                    maxAge: 5, // 5 seconds
                     maxBackupFiles: 3
                 }
             }
@@ -244,17 +244,14 @@ function testBackupFileCleanup() returns error? {
 @test:Config {}
 function testNoRotation() returns error? {
     string logFilePath = ROTATION_TEST_DIR + "no_rotation_test.log";
-    
-    // Configure logger without rotation
+
+    // Configure logger without rotation (no rotation config provided)
     Logger logger = check fromConfig(
         destinations = [
             {
                 'type: FILE,
                 path: logFilePath,
-                mode: TRUNCATE,
-                rotation: {
-                    policy: NONE
-                }
+                mode: TRUNCATE
             }
         ]
     );
@@ -700,7 +697,7 @@ function testShortTimeInterval() returns error? {
                 mode: TRUNCATE,
                 rotation: {
                     policy: TIME_BASED,
-                    maxAge: 1000, // 1 second
+                    maxAge: 1, // 1 second
                     maxBackupFiles: 2
                 }
             }
@@ -826,7 +823,7 @@ function testBothPolicySizeFirst() returns error? {
                 rotation: {
                     policy: BOTH,
                     maxFileSize: 800,
-                    maxAge: 10000, // 10 seconds (longer than test)
+                    maxAge: 10, // 10 seconds (longer than test)
                     maxBackupFiles: 2
                 }
             }
@@ -867,7 +864,7 @@ function testBothPolicyTimeFirst() returns error? {
                 rotation: {
                     policy: BOTH,
                     maxFileSize: 100000, // Very large (won't trigger)
-                    maxAge: 1500, // 1.5 seconds
+                    maxAge: 2, // 2 seconds
                     maxBackupFiles: 2
                 }
             }

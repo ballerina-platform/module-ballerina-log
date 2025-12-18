@@ -59,7 +59,7 @@ public function main() returns error? {
                 mode: log:TRUNCATE,
                 rotation: {
                     policy: log:TIME_BASED,
-                    maxAge: 5000, // 5 seconds for demo
+                    maxAge: 5, // 5 seconds for demo
                     maxBackupFiles: 2
                 }
             }
@@ -90,7 +90,7 @@ public function main() returns error? {
                 rotation: {
                     policy: log:BOTH,
                     maxFileSize: 2048, // 2KB for demo (use 50-100MB in production)
-                    maxAge: 10000, // 10 seconds (use 24 hours in production)
+                    maxAge: 10, // 10 seconds (use 86400 seconds = 24 hours in production)
                     maxBackupFiles: 5
                 }
             }

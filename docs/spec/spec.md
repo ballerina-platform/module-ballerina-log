@@ -187,14 +187,13 @@ path = "./logs/app.log"
 
 Log rotation helps manage log file sizes by automatically creating backup files when certain conditions are met. This prevents log files from growing indefinitely and consuming excessive disk space.
 
-Log rotation can be configured using a rotation policy that defines when files should be rotated. The following rotation policies are available:
+Log rotation is optional and can be configured for file destinations. If no rotation configuration is provided, logs are written without rotation. When configured, a rotation policy defines when files should be rotated. The following rotation policies are available:
 
 ```ballerina
 public enum RotationPolicy {
-    SIZE,      // Rotate based on file size
-    TIME,      // Rotate based on time interval
-    BOTH,      // Rotate when either size or time threshold is met
-    NONE       // No rotation (default)
+    SIZE_BASED,  // Rotate based on file size only
+    TIME_BASED,  // Rotate based on time interval only
+    BOTH         // Rotate when either size or time threshold is met (whichever comes first)
 };
 ```
 
@@ -202,27 +201,27 @@ The rotation configuration is defined as follows:
 
 ```ballerina
 public type RotationConfig record {|
-    RotationPolicy policy = NONE;
+    RotationPolicy policy = BOTH;
     int maxFileSize = 10485760;  // Default: 10MB (in bytes)
-    int rotationInterval = 3600;  // Default: 1 hour (in seconds)
-    int maxBackupFiles = 10;     // Default: 10 backup files
+    int maxAge = 86400;           // Default: 24 hours (in seconds)
+    int maxBackupFiles = 10;      // Default: 10 backup files
 |};
 ```
 
 Configuration parameters:
-- `policy`: The rotation policy to use (SIZE, TIME, BOTH, or NONE)
-- `maxFileSize`: Maximum file size in bytes before rotation occurs (applies to SIZE and BOTH policies)
-- `rotationInterval`: Time interval in seconds before rotation occurs (applies to TIME and BOTH policies)
+- `policy`: The rotation policy to use (SIZE_BASED, TIME_BASED, or BOTH). Default is BOTH
+- `maxFileSize`: Maximum file size in bytes before rotation occurs (applies to SIZE_BASED and BOTH policies)
+- `maxAge`: Maximum age in seconds before rotation occurs (applies to TIME_BASED and BOTH policies)
 - `maxBackupFiles`: Maximum number of backup files to retain (older backups are automatically deleted)
 
-Example configuration:
+Example configuration for size-based rotation:
 
 ```toml
 [[ballerina.log.destinations]]
 path = "./logs/app.log"
 
 [ballerina.log.destinations.rotation]
-policy = "SIZE"
+policy = "SIZE_BASED"
 maxFileSize = 5242880    # 5MB
 maxBackupFiles = 15
 ```
@@ -234,12 +233,12 @@ Time-based rotation example:
 path = "./logs/app.log"
 
 [ballerina.log.destinations.rotation]
-policy = "TIME"
-rotationInterval = 1800  # 30 minutes
+policy = "TIME_BASED"
+maxAge = 1800            # 30 minutes (in seconds)
 maxBackupFiles = 20
 ```
 
-Rotation using both size and time:
+Rotation using both size and time (default policy):
 
 ```toml
 [[ballerina.log.destinations]]
@@ -248,7 +247,7 @@ path = "./logs/app.log"
 [ballerina.log.destinations.rotation]
 policy = "BOTH"
 maxFileSize = 10485760   # 10MB
-rotationInterval = 3600  # 1 hour
+maxAge = 3600            # 1 hour (in seconds)
 maxBackupFiles = 10
 ```
 

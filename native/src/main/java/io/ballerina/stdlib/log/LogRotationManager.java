@@ -94,13 +94,15 @@ public class LogRotationManager {
                     fromString("policy")).getValue();
             long maxFileSize = rotationConfig.getIntValue(
                     fromString("maxFileSize"));
-            long maxAge = rotationConfig.getIntValue(
+            long maxAgeInSeconds = rotationConfig.getIntValue(
                     fromString("maxAge"));
+            // Convert seconds to milliseconds for internal use
+            long maxAgeInMillis = maxAgeInSeconds * 1000;
             int maxBackupFiles = rotationConfig.getIntValue(
                     fromString("maxBackupFiles")).intValue();
 
-            return new LogRotationManager(filePath, rotationPolicy, maxFileSize, 
-                    maxAge, maxBackupFiles);
+            return new LogRotationManager(filePath, rotationPolicy, maxFileSize,
+                    maxAgeInMillis, maxBackupFiles);
         });
     }
 

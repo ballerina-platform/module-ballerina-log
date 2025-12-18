@@ -130,7 +130,7 @@ function integrationTestTimeRotation() returns error? {
                 mode: log:TRUNCATE,
                 rotation: {
                     policy: log:TIME_BASED,
-                    maxAge: 3000, // 3 seconds
+                    maxAge: 3, // 3 seconds
                     maxBackupFiles: 3
                 }
             }
@@ -207,7 +207,7 @@ function integrationTestProductionScenario() returns error? {
                 rotation: {
                     policy: log:BOTH,
                     maxFileSize: 3072, // 3KB
-                    maxAge: 10000, // 10 seconds
+                    maxAge: 10, // 10 seconds
                     maxBackupFiles: 10
                 }
             }
