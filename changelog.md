@@ -3,6 +3,12 @@ This file contains all the notable changes done to the Ballerina Log package thr
 
 ## [Unreleased]
 
+### Added
+
+- [Introduce log file rotation support](https://github.com/ballerina-platform/ballerina-library/issues/8525)
+
+## [2.15.0] - 2025-12-11
+
 ### Fixed
 
 - [Passing time as key in KeyValue pair replaces the logged time with the context value](https://github.com/ballerina-platform/ballerina-library/issues/7728)
