@@ -114,11 +114,44 @@ public class TestFileUtils {
      * @return Escaped string
      */
     private static String escapeJson(String str) {
-        return str.replace("\\", "\\\\")
-                 .replace("\"", "\\\"")
-                 .replace("\n", "\\n")
-                 .replace("\r", "\\r")
-                 .replace("\t", "\\t");
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < str.length(); i++) {
+            char ch = str.charAt(i);
+            switch (ch) {
+                case '\\':
+                    sb.append("\\\\");
+                    break;
+                case '"':
+                    sb.append("\\\"");
+                    break;
+                case '/':
+                    sb.append("\\/");
+                    break;
+                case '\b':
+                    sb.append("\\b");
+                    break;
+                case '\f':
+                    sb.append("\\f");
+                    break;
+                case '\n':
+                    sb.append("\\n");
+                    break;
+                case '\r':
+                    sb.append("\\r");
+                    break;
+                case '\t':
+                    sb.append("\\t");
+                    break;
+                default:
+                    if (ch <= 0x1F) {
+                        sb.append(String.format("\\u%04x", (int) ch));
+                    } else {
+                        sb.append(ch);
+                    }
+                    break;
+            }
+        }
+        return sb.toString();
     }
 
     /**

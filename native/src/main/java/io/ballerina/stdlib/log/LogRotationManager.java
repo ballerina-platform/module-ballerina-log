@@ -59,7 +59,7 @@ public class LogRotationManager {
     private final long maxAge;
     private final int maxBackupFiles;
     private final ReentrantLock rotationLock;
-    private long lastRotationTime;
+    private volatile long lastRotationTime;
 
     private LogRotationManager(String filePath, String rotationPolicy, long maxFileSize, 
                                long maxAge, int maxBackupFiles) {
@@ -161,10 +161,12 @@ public class LogRotationManager {
                 return null;
             }
 
-            // Generate rotated file name with timestamp
+            // Generate rotated file name with timestamp.
+            // Note: SimpleDateFormat is intentionally created per rotation for thread safety.
             SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd-HHmmss");
             String timestamp = dateFormat.format(new Date());
-            String baseName = filePath.substring(0, filePath.lastIndexOf(".log"));
+            int extensionIndex = filePath.lastIndexOf(".log");
+            String baseName = extensionIndex > 0 ? filePath.substring(0, extensionIndex) : filePath;
             String rotatedFileName = baseName + "-" + timestamp + ".log";
 
             Path source = Paths.get(filePath);
@@ -201,11 +203,17 @@ public class LogRotationManager {
                         "Failed to cleanup old backups: Parent directory is null."));
             }
 
-            String baseName = currentFile.getName().substring(0, 
-                    currentFile.getName().lastIndexOf(".log"));
+            String fileName = currentFile.getName();
+            int logIndex = fileName.lastIndexOf(".log");
+            if (logIndex < 0) {
+                return ErrorCreator.createError(fromString(
+                        "Failed to cleanup old backups: log file name does not contain '.log' extension: "
+                                + fileName));
+            }
+            String baseName = fileName.substring(0, logIndex);
 
             // Find all rotated backup files
-            File[] backupFiles = parentDir.listFiles((dir, name) -> 
+            File[] backupFiles = parentDir.listFiles((dir, name) ->
                     name.startsWith(baseName + "-") && name.endsWith(".log"));
 
             if (backupFiles == null || backupFiles.length <= maxBackupFiles) {
@@ -223,7 +231,7 @@ public class LogRotationManager {
                 try {
                     Files.delete(backupFiles[i].toPath());
                 } catch (IOException e) {
-                    // Log the error but continue cleanup. Collect failed files and as BError.
+                    // Log the error but continue cleanup. Collect failed files and return as BError.
                     failedDeletions.add(backupFiles[i].getName());
                 }
             }
