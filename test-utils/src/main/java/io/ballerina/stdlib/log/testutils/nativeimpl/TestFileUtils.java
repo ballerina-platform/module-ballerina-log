@@ -44,6 +44,16 @@ public class TestFileUtils {
     }
 
     /**
+     * Helper method to create a BError with a message.
+     *
+     * @param message The error message
+     * @return BError with the message
+     */
+    private static BError createError(String message) {
+        return ErrorCreator.createError(StringUtils.fromString(message));
+    }
+
+    /**
      * Check if a file or directory exists.
      *
      * @param path The file or directory path to check
@@ -73,8 +83,7 @@ public class TestFileUtils {
         try {
             File dir = new File(path.getValue());
             if (!dir.exists() || !dir.isDirectory()) {
-                return ErrorCreator.createError(StringUtils.fromString(
-                        "Path does not exist or is not a directory: " + path.getValue()));
+                return createError("Path does not exist or is not a directory: " + path.getValue());
             }
 
             File[] files = dir.listFiles();
@@ -102,8 +111,7 @@ public class TestFileUtils {
 
             return StringUtils.fromString(json.toString());
         } catch (Exception e) {
-            return ErrorCreator.createError(StringUtils.fromString(
-                    "Failed to list files: " + e.getMessage()));
+            return createError("Failed to list files: " + e.getMessage());
         }
     }
 
@@ -185,8 +193,7 @@ public class TestFileUtils {
             }
             return null;
         } catch (IOException e) {
-            return ErrorCreator.createError(StringUtils.fromString(
-                    "Failed to remove file: " + e.getMessage()));
+            return createError("Failed to remove file: " + e.getMessage());
         }
     }
 
@@ -204,8 +211,7 @@ public class TestFileUtils {
             }
             return null;
         } catch (IOException e) {
-            return ErrorCreator.createError(StringUtils.fromString(
-                    "Failed to create directory: " + e.getMessage()));
+            return createError("Failed to create directory: " + e.getMessage());
         }
     }
 
@@ -219,13 +225,11 @@ public class TestFileUtils {
         try {
             File file = new File(path.getValue());
             if (!file.exists() || !file.isFile()) {
-                return ErrorCreator.createError(StringUtils.fromString(
-                        "File does not exist: " + path.getValue()));
+                return createError("File does not exist: " + path.getValue());
             }
             return file.length();
         } catch (Exception e) {
-            return ErrorCreator.createError(StringUtils.fromString(
-                    "Failed to get file size: " + e.getMessage()));
+            return createError("Failed to get file size: " + e.getMessage());
         }
     }
 }
