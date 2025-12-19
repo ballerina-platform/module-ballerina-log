@@ -768,7 +768,7 @@ function testBackupTimestamps() returns error? {
     foreach FileInfo fileInfo in files {
         if fileInfo.absPath.includes("timestamp_test-") && fileInfo.absPath.endsWith(".log") {
             backupCount += 1;
-            // Backup file should have format: timestamp_test-YYYYMMDD-HHMMSS.log
+            // Backup file should have format: timestamp_test-yyyyMMdd-HHmmss.log
             string fileName = fileInfo.name;
             test:assertTrue(fileName.startsWith("timestamp_test-"), "Backup file should have correct prefix");
             test:assertTrue(fileName.length() > 30, "Backup file should have timestamp in name");

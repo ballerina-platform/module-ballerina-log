@@ -36,6 +36,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static io.ballerina.runtime.api.utils.StringUtils.fromString;
@@ -58,10 +59,20 @@ public class LogRotationManager {
     private final long maxFileSize;
     private final long maxAge;
     private final int maxBackupFiles;
-    private final ReentrantLock rotationLock;
+
+    // Thread-safety fields for rotation
+    private final ReentrantLock rotationLock;  // Protects the rotation operation itself
+
+    // AtomicBoolean flag to prevent multiple threads from performing expensive rotation checks
+    // simultaneously. This is a performance optimization to avoid redundant filesystem operations
+    // (file.exists(), file.length()) when rotation is already in progress by another thread.
+    private final AtomicBoolean rotationInProgress;
+
+    // Volatile to ensure all threads see the latest rotation time without synchronization.
+    // This allows fast, lock-free checks for time-based rotation conditions.
     private volatile long lastRotationTime;
 
-    private LogRotationManager(String filePath, String rotationPolicy, long maxFileSize, 
+    private LogRotationManager(String filePath, String rotationPolicy, long maxFileSize,
                                long maxAge, int maxBackupFiles) {
         this.filePath = filePath;
         this.rotationPolicy = rotationPolicy;
@@ -69,6 +80,7 @@ public class LogRotationManager {
         this.maxAge = maxAge;
         this.maxBackupFiles = maxBackupFiles;
         this.rotationLock = new ReentrantLock();
+        this.rotationInProgress = new AtomicBoolean(false);
         this.lastRotationTime = System.currentTimeMillis();
     }
 
@@ -96,10 +108,30 @@ public class LogRotationManager {
                     fromString("maxFileSize"));
             long maxAgeInSeconds = rotationConfig.getIntValue(
                     fromString("maxAge"));
-            // Convert seconds to milliseconds for internal use
-            long maxAgeInMillis = maxAgeInSeconds * 1000;
             int maxBackupFiles = rotationConfig.getIntValue(
                     fromString("maxBackupFiles")).intValue();
+
+            // Validate rotation parameters - fail fast on invalid configuration
+            // For SIZE_BASED or BOTH policies, ensure maxFileSize is positive
+            if ((SIZE_BASED.equals(rotationPolicy) || BOTH.equals(rotationPolicy)) && maxFileSize <= 0) {
+                throw new IllegalArgumentException(
+                    "Invalid rotation configuration: maxFileSize must be positive, got: " + maxFileSize);
+            }
+
+            // For TIME_BASED or BOTH policies, ensure maxAge is positive
+            if ((TIME_BASED.equals(rotationPolicy) || BOTH.equals(rotationPolicy)) && maxAgeInSeconds <= 0) {
+                throw new IllegalArgumentException(
+                    "Invalid rotation configuration: maxAge must be positive, got: " + maxAgeInSeconds);
+            }
+
+            // Ensure maxBackupFiles is not negative (0 is valid - means no backups kept)
+            if (maxBackupFiles < 0) {
+                throw new IllegalArgumentException(
+                    "Invalid rotation configuration: maxBackupFiles cannot be negative, got: " + maxBackupFiles);
+            }
+
+            // Convert seconds to milliseconds for internal use
+            long maxAgeInMillis = maxAgeInSeconds * 1000;
 
             return new LogRotationManager(filePath, rotationPolicy, maxFileSize,
                     maxAgeInMillis, maxBackupFiles);
@@ -109,10 +141,24 @@ public class LogRotationManager {
     /**
      * Check if log rotation is needed and perform rotation if necessary.
      *
+     * Thread-safety and performance optimization:
+     * - Uses an AtomicBoolean flag to prevent multiple threads from performing expensive
+     *   filesystem checks (file.exists(), file.length()) simultaneously
+     * - Only one thread will perform rotation even if multiple threads detect the need
+     * - Other threads skip gracefully without blocking or redundant checks
+     * - The ReentrantLock in performRotation() ensures the rotation operation itself is atomic
+     *
      * @return BError if rotation fails, null otherwise
      */
     public BError checkAndRotate() {
         if (NONE.equals(rotationPolicy)) {
+            return null;
+        }
+
+        // Fast path: if rotation is already in progress by another thread, skip the check.
+        // This prevents multiple threads from doing expensive filesystem operations.
+        // This is a lock-free check (just reads a volatile boolean).
+        if (rotationInProgress.get()) {
             return null;
         }
 
@@ -138,7 +184,21 @@ public class LogRotationManager {
             }
 
             if (shouldRotate) {
-                return performRotation();
+                // Try to acquire the rotation flag atomically using compareAndSet.
+                // This ensures only ONE thread will successfully set the flag from false to true.
+                // If multiple threads reach this point simultaneously, only one will proceed with rotation.
+                if (rotationInProgress.compareAndSet(false, true)) {
+                    try {
+                        return performRotation();
+                    } finally {
+                        // Always clear the flag after rotation attempt (success or failure).
+                        // This ensures other threads can perform future rotations.
+                        rotationInProgress.set(false);
+                    }
+                }
+                // Another thread won the race and is already rotating.
+                // Skip rotation gracefully - no need to wait or retry.
+                return null;
             }
         } catch (Exception e) {
             return ErrorCreator.createError(fromString(
