@@ -261,7 +261,7 @@ When rotation occurs:
 >
 > - Log rotation only applies to file destinations, not to stderr or stdout
 > - Backup files are named using the pattern: `{basename}-{timestamp}.log` (e.g., `app-20251217120530.log`)
-> - The timestamp format is `yyyyMMddHHmmss` in UTC
+> - The timestamp format is `yyyyMMddHHmmss` using the system's default timezone
 > - Rotation checks happen during log write operations, so timing may vary slightly based on application logging activity
 
 ## 4. Contextual logging
