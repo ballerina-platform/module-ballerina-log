@@ -14,7 +14,6 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/data.jsondata;
 import ballerina/io;
 import ballerina/jballerina.java;
 import ballerina/lang.runtime;
@@ -51,7 +50,7 @@ type FileInfo record {|
 // Wrapper function to parse JSON and return FileInfo array
 isolated function listFiles(string path) returns FileInfo[]|error {
     string jsonStr = check listFilesJson(path);
-    return jsondata:parseString(jsonStr);
+    return jsonStr.fromJsonStringWithType();
 }
 
 @test:BeforeSuite
