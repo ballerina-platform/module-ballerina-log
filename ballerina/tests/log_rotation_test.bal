@@ -18,7 +18,6 @@ import ballerina/io;
 import ballerina/test;
 import ballerina/lang.runtime;
 import ballerina/jballerina.java;
-import ballerina/data.jsondata;
 
 const string ROTATION_TEST_DIR = "tests/resources/rotation/";
 
@@ -54,7 +53,7 @@ type FileInfo record {|
 // Wrapper function to parse JSON and return FileInfo array
 isolated function listFiles(string path) returns FileInfo[]|error {
     string jsonStr = check listFilesJson(path);
-    return jsondata:parseString(jsonStr);
+    return jsonStr.fromJsonStringWithType();
 }
 
 @test:BeforeSuite

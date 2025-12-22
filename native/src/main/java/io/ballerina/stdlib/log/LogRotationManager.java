@@ -20,8 +20,6 @@ package io.ballerina.stdlib.log;
 
 import io.ballerina.runtime.api.creators.ErrorCreator;
 import io.ballerina.runtime.api.values.BError;
-import io.ballerina.runtime.api.values.BMap;
-import io.ballerina.runtime.api.values.BString;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +50,6 @@ public class LogRotationManager {
     private static final String SIZE_BASED = "SIZE_BASED";
     private static final String TIME_BASED = "TIME_BASED";
     private static final String BOTH = "BOTH";
-    private static final String NONE = "NONE";
     
     private final String filePath;
     private final String rotationPolicy;
@@ -86,126 +83,84 @@ public class LogRotationManager {
 
     /**
      * Get or create a LogRotationManager instance for a specific file path.
+     * Parameters should be validated in Ballerina before calling this method.
      *
-     * @param destination The file output destination configuration
+     * @param filePath The log file path
+     * @param rotationPolicy The rotation policy (SIZE_BASED, TIME_BASED, BOTH, or NONE)
+     * @param maxFileSize Maximum file size in bytes before rotation
+     * @param maxAgeInMillis Maximum age in milliseconds before rotation
+     * @param maxBackupFiles Maximum number of backup files to keep
      * @return LogRotationManager instance
      */
-    public static LogRotationManager getInstance(BMap<BString, Object> destination) {
-        String filePath = destination.getStringValue(fromString("path")).getValue();
-        
-        return instances.computeIfAbsent(filePath, key -> {
-            BMap<BString, Object> rotationConfig = (BMap<BString, Object>) destination.get(
-                    fromString("rotation"));
-
-            if (rotationConfig == null) {
-                // No rotation configured
-                return new LogRotationManager(filePath, NONE, 0, 0, 0);
-            }
-
-            String rotationPolicy = rotationConfig.getStringValue(
-                    fromString("policy")).getValue();
-            long maxFileSize = rotationConfig.getIntValue(
-                    fromString("maxFileSize"));
-            long maxAgeInSeconds = rotationConfig.getIntValue(
-                    fromString("maxAge"));
-            int maxBackupFiles = rotationConfig.getIntValue(
-                    fromString("maxBackupFiles")).intValue();
-
-            // Validate rotation parameters - fail fast on invalid configuration
-            // For SIZE_BASED or BOTH policies, ensure maxFileSize is positive
-            if ((SIZE_BASED.equals(rotationPolicy) || BOTH.equals(rotationPolicy)) && maxFileSize <= 0) {
-                throw new IllegalArgumentException(
-                    "Invalid rotation configuration: maxFileSize must be positive, got: " + maxFileSize);
-            }
-
-            // For TIME_BASED or BOTH policies, ensure maxAge is positive
-            if ((TIME_BASED.equals(rotationPolicy) || BOTH.equals(rotationPolicy)) && maxAgeInSeconds <= 0) {
-                throw new IllegalArgumentException(
-                    "Invalid rotation configuration: maxAge must be positive, got: " + maxAgeInSeconds);
-            }
-
-            // Ensure maxBackupFiles is not negative (0 is valid - means no backups kept)
-            if (maxBackupFiles < 0) {
-                throw new IllegalArgumentException(
-                    "Invalid rotation configuration: maxBackupFiles cannot be negative, got: " + maxBackupFiles);
-            }
-
-            // Convert seconds to milliseconds for internal use
-            long maxAgeInMillis = maxAgeInSeconds * 1000;
-
-            return new LogRotationManager(filePath, rotationPolicy, maxFileSize,
-                    maxAgeInMillis, maxBackupFiles);
-        });
+    public static LogRotationManager getInstance(String filePath, String rotationPolicy,
+                                                   long maxFileSize, long maxAgeInMillis, int maxBackupFiles) {
+        return instances.computeIfAbsent(filePath, key ->
+                new LogRotationManager(filePath, rotationPolicy, maxFileSize, maxAgeInMillis, maxBackupFiles));
     }
 
     /**
-     * Check if log rotation is needed and perform rotation if necessary.
-     *
-     * Thread-safety and performance optimization:
-     * - Uses an AtomicBoolean flag to prevent multiple threads from performing expensive
-     *   filesystem checks (file.exists(), file.length()) simultaneously
-     * - Only one thread will perform rotation even if multiple threads detect the need
-     * - Other threads skip gracefully without blocking or redundant checks
-     * - The ReentrantLock in performRotation() ensures the rotation operation itself is atomic
+     * Public method to perform log rotation.
+     * Called from Ballerina after determining rotation is needed.
      *
      * @return BError if rotation fails, null otherwise
      */
-    public BError checkAndRotate() {
-        if (NONE.equals(rotationPolicy)) {
-            return null;
-        }
-
-        // Fast path: if rotation is already in progress by another thread, skip the check.
-        // This prevents multiple threads from doing expensive filesystem operations.
-        // This is a lock-free check (just reads a volatile boolean).
-        if (rotationInProgress.get()) {
-            return null;
-        }
-
-        boolean shouldRotate = false;
-        File file = new File(filePath);
-
-        if (!file.exists()) {
-            return null;
-        }
-
-        try {
-            if (SIZE_BASED.equals(rotationPolicy) || BOTH.equals(rotationPolicy)) {
-                if (file.length() >= maxFileSize) {
-                    shouldRotate = true;
-                }
+    public BError rotate() {
+        // Try to acquire the rotation flag atomically
+        if (rotationInProgress.compareAndSet(false, true)) {
+            try {
+                return performRotation();
+            } finally {
+                rotationInProgress.set(false);
             }
-
-            if (TIME_BASED.equals(rotationPolicy) || BOTH.equals(rotationPolicy)) {
-                long currentTime = System.currentTimeMillis();
-                if (currentTime - lastRotationTime >= maxAge) {
-                    shouldRotate = true;
-                }
-            }
-
-            if (shouldRotate) {
-                // Try to acquire the rotation flag atomically using compareAndSet.
-                // This ensures only ONE thread will successfully set the flag from false to true.
-                // If multiple threads reach this point simultaneously, only one will proceed with rotation.
-                if (rotationInProgress.compareAndSet(false, true)) {
-                    try {
-                        return performRotation();
-                    } finally {
-                        // Always clear the flag after rotation attempt (success or failure).
-                        // This ensures other threads can perform future rotations.
-                        rotationInProgress.set(false);
-                    }
-                }
-                // Another thread won the race and is already rotating.
-                // Skip rotation gracefully - no need to wait or retry.
-                return null;
-            }
-        } catch (Exception e) {
-            return ErrorCreator.createError(fromString(
-                    "Failed to check log rotation: " + e.getMessage()));
         }
-
+        // Another thread is already rotating, skip
         return null;
+    }
+
+    /**
+     * Get the current file size in bytes.
+     *
+     * @return File size in bytes, or 0 if file doesn't exist
+     */
+    public long getCurrentFileSize() {
+        File file = new File(filePath);
+        return file.exists() ? file.length() : 0;
+    }
+
+    /**
+     * Get milliseconds since last rotation.
+     *
+     * @return Milliseconds since last rotation
+     */
+    public long getTimeSinceLastRotation() {
+        return System.currentTimeMillis() - lastRotationTime;
+    }
+
+    /**
+     * Get the rotation policy.
+     *
+     * @return Rotation policy string
+     */
+    public String getRotationPolicy() {
+        return rotationPolicy;
+    }
+
+    /**
+     * Get the maximum file size before rotation.
+     *
+     * @return Max file size in bytes
+     */
+    public long getMaxFileSize() {
+        return maxFileSize;
+    }
+
+    /**
+     * Get the maximum age before rotation.
+     *
+     * @return Max age in milliseconds
+     */
+    public long getMaxAge() {
+        return maxAge;
     }
 
     /**

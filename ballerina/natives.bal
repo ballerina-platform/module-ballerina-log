@@ -487,4 +487,8 @@ isolated function getInvokedModuleName(int offset = 0) returns string = @java:Me
 
 isolated function getCurrentTime() returns string = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
 
-isolated function checkAndRotateLog(OutputDestination destination) returns error? = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
+isolated function getCurrentFileSize(string filePath) returns int = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
+
+isolated function getTimeSinceLastRotation(string filePath, string policy, int maxFileSize, int maxAgeInMillis, int maxBackupFiles) returns int = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
+
+isolated function rotateLog(string filePath, string policy, int maxFileSize, int maxAgeInMillis, int maxBackupFiles) returns error? = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;

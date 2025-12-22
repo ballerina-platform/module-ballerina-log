@@ -24,6 +24,7 @@ import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BString;
 
+import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -108,23 +109,52 @@ public class Utils {
     }
 
     /**
-     * Check and rotate log file if rotation policy conditions are met.
+     * Get the current file size for a log file.
+     * Called from Ballerina to check if size-based rotation is needed.
+     * This method directly checks the file size without using LogRotationManager
+     * to avoid caching issues with manager instances.
      *
-     * @param destination The output destination configuration
+     * @param filePath The log file path
+     * @return File size in bytes
+     */
+    public static long getCurrentFileSize(BString filePath) {
+        File file = new File(filePath.getValue());
+        return file.exists() ? file.length() : 0;
+    }
+
+    /**
+     * Get milliseconds since last rotation.
+     * Called from Ballerina to check if time-based rotation is needed.
+     *
+     * @param filePath The log file path
+     * @param rotationPolicy The rotation policy
+     * @param maxFileSize Maximum file size in bytes
+     * @param maxAgeInMillis Maximum age in milliseconds
+     * @param maxBackupFiles Maximum number of backup files
+     * @return Milliseconds since last rotation
+     */
+    public static long getTimeSinceLastRotation(BString filePath, BString rotationPolicy,
+                                                  long maxFileSize, long maxAgeInMillis, long maxBackupFiles) {
+        LogRotationManager manager = LogRotationManager.getInstance(
+                filePath.getValue(), rotationPolicy.getValue(), maxFileSize, maxAgeInMillis, (int) maxBackupFiles);
+        return manager.getTimeSinceLastRotation();
+    }
+
+    /**
+     * Perform log rotation.
+     * Called from Ballerina after determining rotation is needed.
+     *
+     * @param filePath The log file path
+     * @param rotationPolicy The rotation policy
+     * @param maxFileSize Maximum file size in bytes
+     * @param maxAgeInMillis Maximum age in milliseconds
+     * @param maxBackupFiles Maximum number of backup files
      * @return Error if rotation fails, null otherwise
      */
-    public static Object checkAndRotateLog(Object destination) {
-        if (destination instanceof io.ballerina.runtime.api.values.BMap) {
-            io.ballerina.runtime.api.values.BMap<BString, Object> destMap = 
-                (io.ballerina.runtime.api.values.BMap<BString, Object>) destination;
-            
-            // Only process file destinations
-            BString type = destMap.getStringValue(StringUtils.fromString("type"));
-            if (type != null && "file".equals(type.getValue())) {
-                LogRotationManager manager = LogRotationManager.getInstance(destMap);
-                return manager.checkAndRotate();
-            }
-        }
-        return null;
+    public static Object rotateLog(BString filePath, BString rotationPolicy,
+                                    long maxFileSize, long maxAgeInMillis, long maxBackupFiles) {
+        LogRotationManager manager = LogRotationManager.getInstance(
+                filePath.getValue(), rotationPolicy.getValue(), maxFileSize, maxAgeInMillis, (int) maxBackupFiles);
+        return manager.rotate();
     }
 }

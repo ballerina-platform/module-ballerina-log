@@ -179,17 +179,80 @@ isolated class RootLogger {
                     io:fprintln(io:stdout, logOutput);
                 }
             } else {
-                // Check and rotate log if needed before writing
-                error? rotationResult = checkAndRotateLog(destination);
+                // Check if rotation is needed and perform rotation
+                error? rotationResult = checkAndPerformRotation(destination);
                 if rotationResult is error {
-                    io:fprintln(io:stderr, string `warning: log rotation check failed: ${rotationResult.message()}`);
+                    io:fprintln(io:stderr, string `warning: log rotation failed: ${rotationResult.message()}`);
                 }
-                
+
                 io:Error? result = io:fileWriteString(destination.path, logOutput + "\n", io:APPEND);
                 if result is error {
                     io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);
                 }
             }
         }
+    }
+}
+
+// Helper function to check if rotation is needed and perform it
+// This implements the rotation checking logic in Ballerina, calling Java only for the actual rotation
+isolated function checkAndPerformRotation(FileOutputDestination destination) returns error? {
+    RotationConfig? rotationConfig = destination.rotation;
+
+    // No rotation configured
+    if rotationConfig is () {
+        return;
+    }
+
+    // Extract and validate rotation parameters
+    string filePath = destination.path;
+    RotationPolicy policy = rotationConfig.policy;
+    int maxFileSize = rotationConfig.maxFileSize;
+    int maxAge = rotationConfig.maxAge;
+    int maxBackupFiles = rotationConfig.maxBackupFiles;
+
+    // Validate parameters based on policy
+    if policy == SIZE_BASED || policy == BOTH {
+        if maxFileSize <= 0 {
+            return error("Invalid rotation configuration: maxFileSize must be positive, got: " + maxFileSize.toString());
+        }
+    }
+
+    if policy == TIME_BASED || policy == BOTH {
+        if maxAge <= 0 {
+            return error("Invalid rotation configuration: maxAge must be positive, got: " + maxAge.toString());
+        }
+    }
+
+    if maxBackupFiles < 0 {
+        return error("Invalid rotation configuration: maxBackupFiles cannot be negative, got: " + maxBackupFiles.toString());
+    }
+
+    // Check if rotation is needed
+    boolean shouldRotate = false;
+
+    // Check size-based rotation
+    if policy == SIZE_BASED || policy == BOTH {
+        int currentSize = getCurrentFileSize(filePath);
+        if currentSize >= maxFileSize {
+            shouldRotate = true;
+        }
+    }
+
+    // Check time-based rotation
+    if policy == TIME_BASED || policy == BOTH {
+        // Convert maxAge from seconds to milliseconds
+        int maxAgeInMillis = maxAge * 1000;
+        int timeSinceRotation = getTimeSinceLastRotation(filePath, policy, maxFileSize, maxAgeInMillis, maxBackupFiles);
+        if timeSinceRotation >= maxAgeInMillis {
+            shouldRotate = true;
+        }
+    }
+
+    // Perform rotation if needed
+    if shouldRotate {
+        // Convert maxAge to milliseconds for Java
+        int maxAgeInMillis = maxAge * 1000;
+        return rotateLog(filePath, policy, maxFileSize, maxAgeInMillis, maxBackupFiles);
     }
 }
