@@ -179,15 +179,18 @@ isolated class RootLogger {
                     io:fprintln(io:stdout, logOutput);
                 }
             } else {
-                // Check if rotation is needed and perform rotation
-                error? rotationResult = checkAndPerformRotation(destination);
-                if rotationResult is error {
-                    io:fprintln(io:stderr, string `warning: log rotation failed: ${rotationResult.message()}`);
-                }
+                // Use Ballerina lock to ensure thread-safe rotation and writing
+                // This prevents writes from happening during rotation
+                lock {
+                    error? rotationResult = checkAndPerformRotation(destination);
+                    if rotationResult is error {
+                        io:fprintln(io:stderr, string `warning: log rotation failed: ${rotationResult.message()}`);
+                    }
 
-                io:Error? result = io:fileWriteString(destination.path, logOutput + "\n", io:APPEND);
-                if result is error {
-                    io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);
+                    io:Error? result = io:fileWriteString(destination.path, logOutput + "\n", io:APPEND);
+                    if result is error {
+                        io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);
+                    }
                 }
             }
         }

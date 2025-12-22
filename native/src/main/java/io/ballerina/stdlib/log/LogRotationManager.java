@@ -35,7 +35,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static io.ballerina.runtime.api.utils.StringUtils.fromString;
 
@@ -57,12 +56,9 @@ public class LogRotationManager {
     private final long maxAge;
     private final int maxBackupFiles;
 
-    // Thread-safety fields for rotation
-    private final ReentrantLock rotationLock;  // Protects the rotation operation itself
-
-    // AtomicBoolean flag to prevent multiple threads from performing expensive rotation checks
-    // simultaneously. This is a performance optimization to avoid redundant filesystem operations
-    // (file.exists(), file.length()) when rotation is already in progress by another thread.
+    // Thread-safety field for rotation
+    // AtomicBoolean flag to prevent redundant rotations if multiple threads
+    // decide rotation is needed. Thread-safety is primarily handled by Ballerina's lock statement.
     private final AtomicBoolean rotationInProgress;
 
     // Volatile to ensure all threads see the latest rotation time without synchronization.
@@ -76,7 +72,6 @@ public class LogRotationManager {
         this.maxFileSize = maxFileSize;
         this.maxAge = maxAge;
         this.maxBackupFiles = maxBackupFiles;
-        this.rotationLock = new ReentrantLock();
         this.rotationInProgress = new AtomicBoolean(false);
         this.lastRotationTime = System.currentTimeMillis();
     }
@@ -101,11 +96,12 @@ public class LogRotationManager {
     /**
      * Public method to perform log rotation.
      * Called from Ballerina after determining rotation is needed.
+     * Thread-safety is ensured by Ballerina's lock statement at the call site.
      *
      * @return BError if rotation fails, null otherwise
      */
     public BError rotate() {
-        // Try to acquire the rotation flag atomically
+        // Try to acquire the rotation flag atomically to prevent concurrent rotations
         if (rotationInProgress.compareAndSet(false, true)) {
             try {
                 return performRotation();
@@ -165,11 +161,11 @@ public class LogRotationManager {
 
     /**
      * Perform the actual log file rotation.
+     * Thread-safety is handled by Ballerina's lock statement.
      *
      * @return BError if rotation fails, null otherwise
      */
     private BError performRotation() {
-        rotationLock.lock();
         try {
             File currentFile = new File(filePath);
             if (!currentFile.exists()) {
@@ -201,8 +197,6 @@ public class LogRotationManager {
         } catch (IOException e) {
             return ErrorCreator.createError(fromString(
                     "Failed to rotate log file: " + e.getMessage()));
-        } finally {
-            rotationLock.unlock();
         }
     }
 
