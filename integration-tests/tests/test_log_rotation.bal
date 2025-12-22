@@ -286,7 +286,7 @@ function integrationTestContextLoggerRotation() returns error? {
 @test:Config {}
 function integrationTestConcurrentLogging() returns error? {
     string logFile = INTEGRATION_TEST_DIR + "concurrent.log";
-    
+
     log:Logger concurrentLogger = check log:fromConfig(
         destinations = [
             {
@@ -326,4 +326,62 @@ function integrationTestConcurrentLogging() returns error? {
 
     // Verify concurrent logging doesn't cause issues
     test:assertTrue(fileExists(logFile), "Concurrent log file should exist");
+}
+
+// Integration test for rotation using Config.toml configuration
+@test:Config {}
+function integrationTestRotationFromConfig() returns error? {
+    string logFile = "build/tmp/output/rotation-config-test.log";
+    string configFile = "tests/resources/samples/log-rotation-config/Config.toml";
+    string sampleFile = "tests/resources/samples/log-rotation-config/main.bal";
+
+    // Clean up any existing log files from previous runs
+    if fileExists(logFile) {
+        _ = check removeFile(logFile, false);
+    }
+
+    // Clean up any existing rotated files
+    string logDir = "build/tmp/output";
+    if fileExists(logDir) {
+        FileInfo[] files = check listFiles(logDir);
+        foreach FileInfo f in files {
+            if f.name.startsWith("rotation-config-test-") && f.name.endsWith(".log") {
+                _ = check removeFile(f.absPath, false);
+            }
+        }
+    }
+
+    // Run the sample that uses Config.toml for rotation settings
+    // Reusing exec function from tests_logfmt.bal
+    var execResult = exec(bal_exec_path, {BAL_CONFIG_FILES: configFile}, (), "run", sampleFile);
+    if execResult is error {
+        test:assertFail("Failed to execute sample: " + execResult.message());
+    }
+
+    int _ = check execResult.waitForExit();
+    int exitCode = check execResult.exitCode();
+
+    test:assertEquals(exitCode, 0, "Sample should execute successfully");
+
+    runtime:sleep(1);
+
+    // Verify rotation occurred
+    test:assertTrue(fileExists(logFile), "Main log file should exist");
+
+    // Count rotated files
+    FileInfo[] files = check listFiles(logDir);
+    int rotatedFileCount = 0;
+    foreach FileInfo f in files {
+        if f.name.startsWith("rotation-config-test-") && f.name.endsWith(".log") {
+            rotatedFileCount += 1;
+        }
+    }
+
+    test:assertTrue(rotatedFileCount > 0, "Should have created rotated backup files");
+    test:assertTrue(rotatedFileCount <= 3, "Should respect maxBackupFiles setting (3)");
+
+    // Verify log file content
+    string content = check io:fileReadString(logFile);
+    test:assertTrue(content.includes("app"), "Logs should include keyValues from Config.toml");
+    test:assertTrue(content.includes("rotation-test"), "Logs should include app name from Config.toml");
 }
