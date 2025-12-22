@@ -182,10 +182,7 @@ isolated class RootLogger {
                 // File destination
                 if destination.rotation is () {
                     // No rotation configured, write directly without lock
-                    io:Error? result = io:fileWriteString(destination.path, logOutput + "\n", io:APPEND);
-                    if result is error {
-                        io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);
-                    }
+                    writeLogToFile(destination.path, logOutput);
                 } else {
                     // Rotation configured, use lock to ensure thread-safe rotation and writing
                     // This prevents writes from happening during rotation
@@ -194,11 +191,7 @@ isolated class RootLogger {
                         if rotationResult is error {
                             io:fprintln(io:stderr, string `warning: log rotation failed: ${rotationResult.message()}`);
                         }
-
-                        io:Error? result = io:fileWriteString(destination.path, logOutput + "\n", io:APPEND);
-                        if result is error {
-                            io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);
-                        }
+                        writeLogToFile(destination.path, logOutput);
                     }
                 }
             }
@@ -266,5 +259,13 @@ isolated function checkAndPerformRotation(FileOutputDestination destination) ret
         // Convert maxAge to milliseconds for Java
         int maxAgeInMillis = maxAge * 1000;
         return rotateLog(filePath, policy, maxFileSize, maxAgeInMillis, maxBackupFiles);
+    }
+}
+
+// Helper function to write log output to a file
+isolated function writeLogToFile(string filePath, string logOutput) {
+    io:Error? result = io:fileWriteString(filePath, logOutput + "\n", io:APPEND);
+    if result is error {
+        io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);
     }
 }

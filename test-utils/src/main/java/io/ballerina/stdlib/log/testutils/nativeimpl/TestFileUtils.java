@@ -125,41 +125,39 @@ public class TestFileUtils {
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < str.length(); i++) {
             char ch = str.charAt(i);
-            switch (ch) {
-                case '\\':
-                    sb.append("\\\\");
-                    break;
-                case '"':
-                    sb.append("\\\"");
-                    break;
-                case '/':
-                    sb.append("\\/");
-                    break;
-                case '\b':
-                    sb.append("\\b");
-                    break;
-                case '\f':
-                    sb.append("\\f");
-                    break;
-                case '\n':
-                    sb.append("\\n");
-                    break;
-                case '\r':
-                    sb.append("\\r");
-                    break;
-                case '\t':
-                    sb.append("\\t");
-                    break;
-                default:
-                    if (ch <= 0x1F) {
-                        sb.append(String.format("\\u%04x", (int) ch));
-                    } else {
-                        sb.append(ch);
-                    }
-                    break;
-            }
+            String escaped = getEscapedChar(ch);
+            sb.append(escaped != null ? escaped : ch);
         }
         return sb.toString();
+    }
+
+    /**
+     * Get the escaped representation of a character for JSON.
+     *
+     * @param ch The character to escape
+     * @return Escaped string, or null if no escaping needed
+     */
+    private static String getEscapedChar(char ch) {
+        switch (ch) {
+            case '\\':
+                return "\\\\";
+            case '"':
+                return "\\\"";
+            case '/':
+                return "\\/";
+            case '\b':
+                return "\\b";
+            case '\f':
+                return "\\f";
+            case '\n':
+                return "\\n";
+            case '\r':
+                return "\\r";
+            case '\t':
+                return "\\t";
+            default:
+                return ch <= 0x1F ? String.format("\\u%04x", (int) ch) : null;
+        }
     }
 
     /**
