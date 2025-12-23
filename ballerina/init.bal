@@ -40,6 +40,35 @@ isolated function validateDestinations(OutputDestination[] destinations) returns
                 return error Error(string `Failed to clear the destination log file: '${destination.path}'`, result);
             }
         }
+        // Validate rotation configuration if present
+        RotationConfig? rotationConfig = destination.rotation;
+        if rotationConfig is RotationConfig {
+            check validateRotationConfig(rotationConfig);
+        }
+    }
+}
+
+isolated function validateRotationConfig(RotationConfig config) returns Error? {
+    RotationPolicy policy = config.policy;
+    int maxFileSize = config.maxFileSize;
+    int maxAge = config.maxAge;
+    int maxBackupFiles = config.maxBackupFiles;
+
+    // Validate parameters based on policy
+    if policy == SIZE_BASED || policy == BOTH {
+        if maxFileSize <= 0 {
+            return error Error(string `Invalid rotation configuration: maxFileSize must be positive, got: ${maxFileSize}`);
+        }
+    }
+
+    if policy == TIME_BASED || policy == BOTH {
+        if maxAge <= 0 {
+            return error Error(string `Invalid rotation configuration: maxAge must be positive, got: ${maxAge}`);
+        }
+    }
+
+    if maxBackupFiles < 0 {
+        return error Error(string `Invalid rotation configuration: maxBackupFiles cannot be negative, got: ${maxBackupFiles}`);
     }
 }
 

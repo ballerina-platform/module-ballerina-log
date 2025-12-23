@@ -164,6 +164,7 @@ public type FileOutputDestination record {
     readonly FILE 'type = FILE;
     string path;
     FileOutputMode mode = APPEND;
+    RotationConfig? rotation = ();
 };
 ```
 

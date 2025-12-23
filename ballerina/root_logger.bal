@@ -180,14 +180,15 @@ isolated class RootLogger {
                 }
             } else {
                 // File destination
-                if destination.rotation is () {
+                RotationConfig? rotationConfig = destination.rotation;
+                if rotationConfig is () {
                     // No rotation configured, write directly without lock
                     writeLogToFile(destination.path, logOutput);
                 } else {
                     // Rotation configured, use lock to ensure thread-safe rotation and writing
                     // This prevents writes from happening during rotation
                     lock {
-                        error? rotationResult = checkAndPerformRotation(destination);
+                        error? rotationResult = checkAndPerformRotation(destination.path, rotationConfig);
                         if rotationResult is error {
                             io:fprintln(io:stderr, string `warning: log rotation failed: ${rotationResult.message()}`);
                         }
@@ -201,37 +202,12 @@ isolated class RootLogger {
 
 // Helper function to check if rotation is needed and perform it
 // This implements the rotation checking logic in Ballerina, calling Java only for the actual rotation
-isolated function checkAndPerformRotation(FileOutputDestination destination) returns error? {
-    RotationConfig? rotationConfig = destination.rotation;
-
-    // No rotation configured
-    if rotationConfig is () {
-        return;
-    }
-
-    // Extract and validate rotation parameters
-    string filePath = destination.path;
+isolated function checkAndPerformRotation(string filePath, RotationConfig rotationConfig) returns error? {
+    // Rotation parameters are already validated during initialization
     RotationPolicy policy = rotationConfig.policy;
     int maxFileSize = rotationConfig.maxFileSize;
     int maxAge = rotationConfig.maxAge;
     int maxBackupFiles = rotationConfig.maxBackupFiles;
-
-    // Validate parameters based on policy
-    if policy == SIZE_BASED || policy == BOTH {
-        if maxFileSize <= 0 {
-            return error("Invalid rotation configuration: maxFileSize must be positive, got: " + maxFileSize.toString());
-        }
-    }
-
-    if policy == TIME_BASED || policy == BOTH {
-        if maxAge <= 0 {
-            return error("Invalid rotation configuration: maxAge must be positive, got: " + maxAge.toString());
-        }
-    }
-
-    if maxBackupFiles < 0 {
-        return error("Invalid rotation configuration: maxBackupFiles cannot be negative, got: " + maxBackupFiles.toString());
-    }
 
     // Check if rotation is needed
     boolean shouldRotate = false;
