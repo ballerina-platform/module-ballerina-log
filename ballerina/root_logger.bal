@@ -43,7 +43,7 @@ final string ICP_RUNTIME_ID_KEY = "icp.runtimeId";
 
 final RootLogger rootLogger;
 
-# Get the root logger instance.
+# Returns the root logger instance.
 #
 # + return - The root logger instance
 public isolated function root() returns Logger => rootLogger;
@@ -179,11 +179,69 @@ isolated class RootLogger {
                     io:fprintln(io:stdout, logOutput);
                 }
             } else {
-                io:Error? result = io:fileWriteString(destination.path, logOutput + "\n", io:APPEND);
-                if result is error {
-                    io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);
+                // File destination
+                RotationConfig? rotationConfig = destination.rotation;
+                if rotationConfig is () {
+                    // No rotation configured, write directly without lock
+                    writeLogToFile(destination.path, logOutput);
+                } else {
+                    // Rotation configured, use lock to ensure thread-safe rotation and writing
+                    // This prevents writes from happening during rotation
+                    lock {
+                        error? rotationResult = checkAndPerformRotation(destination.path, rotationConfig);
+                        if rotationResult is error {
+                            io:fprintln(io:stderr, string `warning: log rotation failed: ${rotationResult.message()}`);
+                        }
+                        writeLogToFile(destination.path, logOutput);
+                    }
                 }
             }
         }
+    }
+}
+
+// Helper function to check if rotation is needed and perform it
+// This implements the rotation checking logic in Ballerina, calling Java only for the actual rotation
+isolated function checkAndPerformRotation(string filePath, RotationConfig rotationConfig) returns error? {
+    // Rotation parameters are already validated during initialization
+    RotationPolicy policy = rotationConfig.policy;
+    int maxFileSize = rotationConfig.maxFileSize;
+    int maxAge = rotationConfig.maxAge;
+    int maxBackupFiles = rotationConfig.maxBackupFiles;
+
+    // Check if rotation is needed
+    boolean shouldRotate = false;
+
+    // Check size-based rotation
+    if policy == SIZE_BASED || policy == BOTH {
+        int currentSize = getCurrentFileSize(filePath);
+        if currentSize >= maxFileSize {
+            shouldRotate = true;
+        }
+    }
+
+    // Check time-based rotation
+    if policy == TIME_BASED || policy == BOTH {
+        // Convert maxAge from seconds to milliseconds
+        int maxAgeInMillis = maxAge * 1000;
+        int timeSinceRotation = getTimeSinceLastRotation(filePath, policy, maxFileSize, maxAgeInMillis, maxBackupFiles);
+        if timeSinceRotation >= maxAgeInMillis {
+            shouldRotate = true;
+        }
+    }
+
+    // Perform rotation if needed
+    if shouldRotate {
+        // Convert maxAge to milliseconds for Java
+        int maxAgeInMillis = maxAge * 1000;
+        return rotateLog(filePath, policy, maxFileSize, maxAgeInMillis, maxBackupFiles);
+    }
+}
+
+// Helper function to write log output to a file
+isolated function writeLogToFile(string filePath, string logOutput) {
+    io:Error? result = io:fileWriteString(filePath, logOutput + "\n", io:APPEND);
+    if result is error {
+        io:fprintln(io:stderr, string `error: failed to write log output to the file: ${result.message()}`);
     }
 }

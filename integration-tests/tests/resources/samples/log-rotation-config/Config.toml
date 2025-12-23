@@ -1,0 +1,17 @@
+[ballerina.log]
+level = "INFO"
+format = "json"
+
+[[ballerina.log.destinations]]
+type = "file"
+path = "./build/tmp/output/rotation-config-test.log"
+mode = "TRUNCATE"
+
+[ballerina.log.destinations.rotation]
+policy = "SIZE_BASED"
+maxFileSize = 2048
+maxBackupFiles = 3
+
+[ballerina.log.keyValues]
+app = "rotation-test"
+version = "1.0.0"
