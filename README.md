@@ -99,7 +99,7 @@ type = "file"
 path = "./logs/app.log"
 
 [ballerina.log.destinations.rotation]
-policy = "BOTH"         # SIZE_BASED, TIME_BASED, BOTH, or NONE
+policy = "BOTH"         # SIZE_BASED, TIME_BASED, or BOTH
 maxFileSize = 10485760  # 10MB in bytes
 maxAge = 86400       # 24 hours in seconds
 maxBackupFiles = 7      # Keep 7 backup files
