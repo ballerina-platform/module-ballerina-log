@@ -3,6 +3,8 @@ This file contains all the notable changes done to the Ballerina Log package thr
 
 ## [Unreleased]
 
+## [2.16.0] - 2025-12-24
+
 ### Added
 
 - [Introduce log file rotation support](https://github.com/ballerina-platform/ballerina-library/issues/8525)
