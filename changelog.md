@@ -3,6 +3,12 @@ This file contains all the notable changes done to the Ballerina Log package thr
 
 ## [Unreleased]
 
+## [2.16.1] - 2026-01-05
+
+### Fixed
+
+- Update the API docs with the latest log file rotation changes.
+
 ## [2.16.0] - 2025-12-24
 
 ### Added
