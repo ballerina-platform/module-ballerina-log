@@ -126,7 +126,7 @@ public static BMap<BString, Object> getLogConfig()
  *
  * @return the root log level as BString
  */
-public static BString getGlobalLogLevel()
+public static BString getGlobalLogLevel();
 
 /**
  * Set the global root log level.
@@ -134,7 +134,7 @@ public static BString getGlobalLogLevel()
  * @param level the new log level (DEBUG, INFO, WARN, ERROR)
  * @return null on success, BError on invalid level
  */
-public static Object setGlobalLogLevel(BString level)
+public static Object setGlobalLogLevel(BString level);
 ```
 
 #### Module Log Level Management
@@ -156,7 +156,7 @@ public static Object setModuleLevel(BString moduleName, BString level)
  * @param moduleName the module name
  * @return true if removed, false if not found
  */
-public static boolean removeModuleLevel(BString moduleName)
+public static boolean removeModuleLevel(BString moduleName);
 ```
 
 #### Custom Logger Management
@@ -170,7 +170,7 @@ public static boolean removeModuleLevel(BString moduleName)
  * @param level the new log level
  * @return null on success, BError if logger not found or invalid level
  */
-public static Object setLoggerLevel(BString loggerId, BString level)
+public static Object setLoggerLevel(BString loggerId, BString level);
 ```
 
 ### Configuration Response Structure
@@ -239,4 +239,3 @@ The implementation consists of:
 - Support for modifying log format at runtime
 - Support for adding/removing destinations at runtime
 - Ballerina-level public APIs for runtime log modification (if needed beyond ICP)
-- Log level change audit trail/notifications
