@@ -25,6 +25,7 @@ import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
 import io.ballerina.runtime.api.values.BTable;
 
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -120,7 +121,7 @@ public class LogConfigManager {
      * @return null on success, error on invalid level
      */
     public Object setRootLogLevel(String level) {
-        String upperLevel = level.toUpperCase();
+        String upperLevel = level.toUpperCase(Locale.ROOT);
         if (!VALID_LOG_LEVELS.contains(upperLevel)) {
             return ErrorCreator.createError(StringUtils.fromString(
                     "Invalid log level: '" + level + "'. Valid levels are: DEBUG, INFO, WARN, ERROR"));
@@ -156,7 +157,7 @@ public class LogConfigManager {
      * @return null on success, error on invalid level
      */
     public Object setModuleLogLevel(String moduleName, String level) {
-        String upperLevel = level.toUpperCase();
+        String upperLevel = level.toUpperCase(Locale.ROOT);
         if (!VALID_LOG_LEVELS.contains(upperLevel)) {
             return ErrorCreator.createError(StringUtils.fromString(
                     "Invalid log level: '" + level + "'. Valid levels are: DEBUG, INFO, WARN, ERROR"));
@@ -183,7 +184,7 @@ public class LogConfigManager {
      * @return null on success, error if ID already exists
      */
     public Object registerCustomLoggerWithId(String loggerId, String level) {
-        String upperLevel = level.toUpperCase();
+        String upperLevel = level.toUpperCase(Locale.ROOT);
         if (visibleCustomLoggerLevels.containsKey(loggerId)) {
             return ErrorCreator.createError(StringUtils.fromString(
                     "Logger with ID '" + loggerId + "' already exists"));
@@ -202,7 +203,7 @@ public class LogConfigManager {
      */
     public String registerCustomLoggerInternal(String level) {
         String loggerId = "_internal_logger_" + loggerIdCounter.updateAndGet(n -> n + 1);
-        String upperLevel = level.toUpperCase();
+        String upperLevel = level.toUpperCase(Locale.ROOT);
         allCustomLoggerLevels.put(loggerId, upperLevel);
         return loggerId;
     }
@@ -229,7 +230,7 @@ public class LogConfigManager {
             return ErrorCreator.createError(StringUtils.fromString(
                     "Custom logger not found or not configurable: '" + loggerId + "'"));
         }
-        String upperLevel = level.toUpperCase();
+        String upperLevel = level.toUpperCase(Locale.ROOT);
         if (!VALID_LOG_LEVELS.contains(upperLevel)) {
             return ErrorCreator.createError(StringUtils.fromString(
                     "Invalid log level: '" + level + "'. Valid levels are: DEBUG, INFO, WARN, ERROR"));
@@ -266,8 +267,8 @@ public class LogConfigManager {
         }
 
         // Compare log level weights
-        int requestedWeight = LOG_LEVEL_WEIGHT.getOrDefault(logLevel.toUpperCase(), 0);
-        int effectiveWeight = LOG_LEVEL_WEIGHT.getOrDefault(effectiveLevel.toUpperCase(), 800);
+        int requestedWeight = LOG_LEVEL_WEIGHT.getOrDefault(logLevel.toUpperCase(Locale.ROOT), 0);
+        int effectiveWeight = LOG_LEVEL_WEIGHT.getOrDefault(effectiveLevel.toUpperCase(Locale.ROOT), 800);
 
         return requestedWeight >= effectiveWeight;
     }
