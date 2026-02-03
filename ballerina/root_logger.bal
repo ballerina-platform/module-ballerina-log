@@ -19,6 +19,10 @@ import ballerina/observe;
 
 # Configuration for the Ballerina logger
 public type Config record {|
+    # Optional unique identifier for this logger. If provided, the logger will be visible
+    # in the ICP dashboard and its log level can be modified at runtime.
+    # If not provided, the logger's level cannot be changed via ICP.
+    string id?;
     # Log format to use. Default is the logger format configured in the module level
     LogFormat format = format;
     # Log level to use. Default is the logger level configured in the module level
@@ -37,6 +41,9 @@ type ConfigInternal record {|
     readonly & OutputDestination[] destinations = destinations;
     readonly & KeyValues keyValues = {...keyValues};
     boolean enableSensitiveDataMasking = enableSensitiveDataMasking;
+    // Logger ID for custom loggers registered with LogConfigManager
+    // If set, used for runtime log level checking
+    string? loggerId = ();
 |};
 
 final string ICP_RUNTIME_ID_KEY = "icp.runtimeId";
@@ -60,12 +67,28 @@ public isolated function fromConfig(*Config config) returns Logger|Error {
     foreach [string, Value] [k, v] in config.keyValues.entries() {
         newKeyValues[k] = v;
     }
-    Config newConfig = {
+
+    // Register with LogConfigManager based on whether user provided an ID
+    string? loggerId;
+    if config.id is string {
+        // User provided ID - register as visible logger (ICP can configure)
+        error? regResult = registerLoggerWithIdNative(<string>config.id, config.level);
+        if regResult is error {
+            return error Error(regResult.message());
+        }
+        loggerId = config.id;
+    } else {
+        // No user ID - register as internal logger (not visible to ICP)
+        loggerId = registerLoggerInternalNative(config.level);
+    }
+
+    ConfigInternal newConfig = {
         format: config.format,
         level: config.level,
         destinations: config.destinations,
         keyValues: newKeyValues.cloneReadOnly(),
-        enableSensitiveDataMasking: config.enableSensitiveDataMasking
+        enableSensitiveDataMasking: config.enableSensitiveDataMasking,
+        loggerId: loggerId
     };
     return new RootLogger(newConfig);
 }
@@ -78,6 +101,8 @@ isolated class RootLogger {
     private final readonly & OutputDestination[] destinations;
     private final readonly & KeyValues keyValues;
     private final boolean enableSensitiveDataMasking;
+    // Unique ID for custom loggers registered with LogConfigManager
+    private final string? loggerId;
 
     public isolated function init(Config|ConfigInternal config = <Config>{}) {
         self.format = config.format;
@@ -85,6 +110,12 @@ isolated class RootLogger {
         self.destinations = config.destinations;
         self.keyValues = config.keyValues;
         self.enableSensitiveDataMasking = config.enableSensitiveDataMasking;
+        // Use loggerId from ConfigInternal if present (for custom loggers and derived loggers)
+        if config is ConfigInternal {
+            self.loggerId = config.loggerId;
+        } else {
+            self.loggerId = ();
+        }
     }
 
     public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
@@ -117,13 +148,19 @@ isolated class RootLogger {
             level: self.level,
             destinations: self.destinations,
             keyValues: newKeyValues.cloneReadOnly(),
-            enableSensitiveDataMasking: self.enableSensitiveDataMasking
+            enableSensitiveDataMasking: self.enableSensitiveDataMasking,
+            // Preserve the logger ID so derived loggers use the same runtime-configurable level
+            loggerId: self.loggerId
         };
         return new RootLogger(config);
     }
 
     isolated function print(string logLevel, string moduleName, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-        if !isLogLevelEnabled(self.level, logLevel, moduleName) {
+        // Check log level - use custom logger check if registered, otherwise use standard check
+        boolean isEnabled = self.loggerId is string ?
+            checkCustomLoggerLogLevelEnabled(<string>self.loggerId, logLevel, moduleName) :
+            isLogLevelEnabled(self.level, logLevel, moduleName);
+        if !isEnabled {
             return;
         }
         LogRecord logRecord = {

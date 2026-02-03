@@ -469,13 +469,7 @@ isolated function replaceString(handle receiver, handle target, handle replaceme
 } external;
 
 isolated function isLogLevelEnabled(string loggerLogLevel, string logLevel, string moduleName) returns boolean {
-    string moduleLogLevel = loggerLogLevel;
-    if modules.length() > 0 {
-        if modules.hasKey(moduleName) {
-            moduleLogLevel = modules.get(moduleName).level;
-        }
-    }
-    return logLevelWeight.get(logLevel) >= logLevelWeight.get(moduleLogLevel);
+    return checkLogLevelEnabled(loggerLogLevel, logLevel, moduleName);
 }
 
 isolated function getModuleName(KeyValues keyValues, int offset = 2) returns string {
@@ -492,3 +486,30 @@ isolated function getCurrentFileSize(string filePath) returns int = @java:Method
 isolated function getTimeSinceLastRotation(string filePath, string policy, int maxFileSize, int maxAgeInMillis, int maxBackupFiles) returns int = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
 
 isolated function rotateLog(string filePath, string policy, int maxFileSize, int maxAgeInMillis, int maxBackupFiles) returns error? = @java:Method {'class: "io.ballerina.stdlib.log.Utils"} external;
+
+// ========== Internal native function declarations for runtime log configuration ==========
+
+isolated function initializeLogConfig(Level rootLevel, table<Module> key(name) & readonly modules) = @java:Method {
+    'class: "io.ballerina.stdlib.log.LogConfigManager",
+    name: "initializeConfig"
+} external;
+
+isolated function registerLoggerWithIdNative(string loggerId, string logLevel) returns error? = @java:Method {
+    'class: "io.ballerina.stdlib.log.LogConfigManager",
+    name: "registerLoggerWithId"
+} external;
+
+isolated function registerLoggerInternalNative(string logLevel) returns string = @java:Method {
+    'class: "io.ballerina.stdlib.log.LogConfigManager",
+    name: "registerLoggerInternal"
+} external;
+
+isolated function checkLogLevelEnabled(string loggerLogLevel, string logLevel, string moduleName) returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.log.LogConfigManager",
+    name: "checkLogLevelEnabled"
+} external;
+
+isolated function checkCustomLoggerLogLevelEnabled(string loggerId, string logLevel, string moduleName) returns boolean = @java:Method {
+    'class: "io.ballerina.stdlib.log.LogConfigManager",
+    name: "checkCustomLoggerLogLevelEnabled"
+} external;
