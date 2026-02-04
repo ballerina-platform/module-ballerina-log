@@ -180,13 +180,14 @@ public class LogConfigManager {
     }
 
     /**
-     * Register a custom logger with a user-provided ID (visible to ICP).
+     * Register a custom logger with a user-provided ID.
+     * This is used internally by the app's fromConfig function.
      *
      * @param loggerId the user-provided logger ID
      * @param level    the initial log level of the logger
      * @return null on success, error if ID already exists
      */
-    public Object registerCustomLoggerWithId(String loggerId, String level) {
+    Object registerCustomLoggerWithId(String loggerId, String level) {
         String upperLevel = level.toUpperCase(Locale.ROOT);
         if (visibleCustomLoggerLevels.containsKey(loggerId)) {
             return ErrorCreator.createError(StringUtils.fromString(
@@ -198,13 +199,14 @@ public class LogConfigManager {
     }
 
     /**
-     * Register a custom logger without a user-provided ID (not visible to ICP).
+     * Register a custom logger without a user-provided ID.
      * Generates an internal ID for log level checking purposes.
+     * This is used internally by the app's fromConfig function.
      *
      * @param level the initial log level of the logger
      * @return the generated internal logger ID
      */
-    public String registerCustomLoggerInternal(String level) {
+    String registerCustomLoggerInternal(String level) {
         String loggerId = "_internal_logger_" + loggerIdCounter.updateAndGet(n -> n + 1);
         String upperLevel = level.toUpperCase(Locale.ROOT);
         allCustomLoggerLevels.put(loggerId, upperLevel);
@@ -382,7 +384,8 @@ public class LogConfigManager {
     }
 
     /**
-     * Register a custom logger with a user-provided ID from Ballerina (visible to ICP).
+     * Register a custom logger with a user-provided ID from Ballerina.
+     * This is called internally by the app's fromConfig function.
      *
      * @param loggerId the user-provided logger ID
      * @param level    the initial log level
@@ -393,7 +396,8 @@ public class LogConfigManager {
     }
 
     /**
-     * Register a custom logger without ID from Ballerina (not visible to ICP).
+     * Register a custom logger without ID from Ballerina.
+     * This is called internally by the app's fromConfig function.
      *
      * @param level the initial log level
      * @return the generated internal logger ID
