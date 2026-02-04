@@ -395,7 +395,7 @@ auditLogger.printInfo("Hello World from the audit logger!");
 To create a logger with a unique identifier that allows runtime log level modification:
 
 ```ballerina
-log:Logger auditLogger = check log:fromConfig(id = "audit-logger", level = log:INFO, format = "json");
+log:Logger auditLogger = check log:fromConfig(id = "audit-logger", level = log:INFO, format = log:JSON_FORMAT);
 auditLogger.printInfo("Hello World from the audit logger!");
 ```
 

@@ -27,7 +27,7 @@ import io.ballerina.stdlib.log.LogConfigManager;
  * Test utility functions for LogConfigManager.
  * These functions expose the LogConfigManager APIs for testing purposes.
  *
- * @since 2.12.0
+ * @since 2.17.0
  */
 public class LogConfigTestUtils {
 
