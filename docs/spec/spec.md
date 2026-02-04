@@ -362,6 +362,10 @@ The following type defines the configuration options for a Ballerina logger:
 ```ballerina
 # Configuration for the Ballerina logger
 public type Config record {|
+    # Optional unique identifier for this logger. If provided, the logger's log level
+    # can be modified at runtime via ICP.
+    # If not provided, the logger's level cannot be changed at runtime.
+    string id?;
     # Log format to use. Default is the logger format configured in the module level
     LogFormat format = format;
     # Log level to use. Default is the logger level configured in the module level
@@ -384,9 +388,18 @@ log:Config auditLogConfig = {
     destinations: [{path: "./logs/audit.log"}]
 };
 
-log:Logger auditLogger = log:fromConfig(auditLogConfig);
+log:Logger auditLogger = check log:fromConfig(auditLogConfig);
 auditLogger.printInfo("Hello World from the audit logger!");
 ```
+
+To create a logger with a unique identifier that allows runtime log level modification:
+
+```ballerina
+log:Logger auditLogger = check log:fromConfig(id = "audit-logger", level = log:INFO, format = "json");
+auditLogger.printInfo("Hello World from the audit logger!");
+```
+
+> **Note:** The `id` must be unique across all loggers in the application. If a logger with the same ID already exists, an error will be returned.
 
 ## 5. Sensitive data masking
 
