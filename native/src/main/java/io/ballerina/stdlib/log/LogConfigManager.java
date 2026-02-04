@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
  * Manages runtime log configuration for dynamic log level changes.
  * This class provides APIs to get and modify log levels at runtime without application restart.
  *
- * @since 2.12.0
+ * @since 2.17.0
  */
 public class LogConfigManager {
 
