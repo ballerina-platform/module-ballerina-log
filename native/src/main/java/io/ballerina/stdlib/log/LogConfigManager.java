@@ -189,11 +189,11 @@ public class LogConfigManager {
      */
     Object registerCustomLoggerWithId(String loggerId, String level) {
         String upperLevel = level.toUpperCase(Locale.ROOT);
-        if (visibleCustomLoggerLevels.containsKey(loggerId)) {
+        String existing = visibleCustomLoggerLevels.putIfAbsent(loggerId, upperLevel);
+        if (existing != null) {
             return ErrorCreator.createError(StringUtils.fromString(
                     "Logger with ID '" + loggerId + "' already exists"));
         }
-        visibleCustomLoggerLevels.put(loggerId, upperLevel);
         allCustomLoggerLevels.put(loggerId, upperLevel);
         return null;
     }
