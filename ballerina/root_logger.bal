@@ -19,9 +19,8 @@ import ballerina/observe;
 
 # Configuration for the Ballerina logger
 public type Config record {|
-    # Optional unique identifier for this logger. If provided, the logger will be visible
-    # in the ICP dashboard and its log level can be modified at runtime.
-    # If not provided, the logger's level cannot be changed via ICP.
+    # Optional unique identifier for this logger. 
+    # If provided, the logger will be visible in the ICP dashboard, and its log level can be modified at runtime.
     string id?;
     # Log format to use. Default is the logger format configured in the module level
     LogFormat format = format;
