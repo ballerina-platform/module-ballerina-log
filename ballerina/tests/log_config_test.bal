@@ -296,7 +296,7 @@ function testChildLoggerInheritsId() returns error? {
     Logger parentLogger = check fromConfig(id = parentId, level = INFO);
 
     // Create a child logger
-    Logger childLogger = parentLogger.withContext(childKey = "childValue");
+    Logger childLogger = check parentLogger.withContext(childKey = "childValue");
 
     // Change parent's level
     check setCustomLoggerLevelNative(parentId, "DEBUG");

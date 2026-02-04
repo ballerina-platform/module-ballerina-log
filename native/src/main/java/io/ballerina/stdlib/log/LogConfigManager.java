@@ -19,7 +19,10 @@
 package io.ballerina.stdlib.log;
 
 import io.ballerina.runtime.api.creators.ErrorCreator;
+import io.ballerina.runtime.api.creators.TypeCreator;
 import io.ballerina.runtime.api.creators.ValueCreator;
+import io.ballerina.runtime.api.types.MapType;
+import io.ballerina.runtime.api.types.PredefinedTypes;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BMap;
 import io.ballerina.runtime.api.values.BString;
@@ -310,15 +313,18 @@ public class LogConfigManager {
     public static BMap<BString, Object> getLogConfig() {
         LogConfigManager manager = getInstance();
 
+        // Create a map type for map<anydata>
+        MapType mapType = TypeCreator.createMapType(PredefinedTypes.TYPE_ANYDATA);
+
         // Create the result map
-        BMap<BString, Object> result = ValueCreator.createMapValue();
+        BMap<BString, Object> result = ValueCreator.createMapValue(mapType);
 
         // Add root level
         result.put(StringUtils.fromString("rootLevel"), StringUtils.fromString(manager.getRootLogLevel()));
 
         // Add modules as a map (module name -> level)
         Map<String, String> moduleLevels = manager.getAllModuleLogLevels();
-        BMap<BString, Object> modulesMap = ValueCreator.createMapValue();
+        BMap<BString, Object> modulesMap = ValueCreator.createMapValue(mapType);
         for (Map.Entry<String, String> entry : moduleLevels.entrySet()) {
             modulesMap.put(StringUtils.fromString(entry.getKey()), StringUtils.fromString(entry.getValue()));
         }
@@ -326,7 +332,7 @@ public class LogConfigManager {
 
         // Add custom loggers as a map (logger id -> level)
         Map<String, String> customLoggers = manager.getAllCustomLoggerLevels();
-        BMap<BString, Object> customLoggersMap = ValueCreator.createMapValue();
+        BMap<BString, Object> customLoggersMap = ValueCreator.createMapValue(mapType);
         for (Map.Entry<String, String> entry : customLoggers.entrySet()) {
             customLoggersMap.put(StringUtils.fromString(entry.getKey()), StringUtils.fromString(entry.getValue()));
         }
