@@ -87,7 +87,7 @@ public isolated function fromConfig(*Config config) returns Logger|Error {
         destinations: config.destinations,
         keyValues: newKeyValues.cloneReadOnly(),
         enableSensitiveDataMasking: config.enableSensitiveDataMasking,
-        loggerId: loggerId
+        loggerId
     };
     return new RootLogger(newConfig);
 }
