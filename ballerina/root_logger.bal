@@ -42,7 +42,7 @@ type ConfigInternal record {|
     boolean enableSensitiveDataMasking = enableSensitiveDataMasking;
     // Logger ID for custom loggers registered with LogConfigManager
     // If set, used for runtime log level checking
-    string? loggerId = ();
+    string loggerId?;
 |};
 
 final string ICP_RUNTIME_ID_KEY = "icp.runtimeId";
