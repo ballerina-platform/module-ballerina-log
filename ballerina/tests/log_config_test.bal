@@ -131,13 +131,15 @@ function testSetModuleLogLevel() returns error? {
     map<anydata> config = getLogConfigNative();
     map<anydata> modules = <map<anydata>>config["modules"];
     test:assertTrue(modules.hasKey(testModule), "Module should be in config");
-    test:assertEquals(<string>modules[testModule], "DEBUG", "Module level should be DEBUG");
+    map<anydata> moduleConfig = <map<anydata>>modules[testModule];
+    test:assertEquals(<string>moduleConfig["level"], "DEBUG", "Module level should be DEBUG");
 
     // Update module log level
     check setModuleLogLevelNative(testModule, "ERROR");
     config = getLogConfigNative();
     modules = <map<anydata>>config["modules"];
-    test:assertEquals(<string>modules[testModule], "ERROR", "Module level should be updated to ERROR");
+    moduleConfig = <map<anydata>>modules[testModule];
+    test:assertEquals(<string>moduleConfig["level"], "ERROR", "Module level should be updated to ERROR");
 
     // Clean up
     _ = removeModuleLogLevelNative(testModule);
@@ -267,12 +269,14 @@ function testGetLogConfiguration() {
     map<anydata> config = getLogConfigNative();
 
     // Verify structure
-    test:assertTrue(config.hasKey("rootLevel"), "Config should have rootLevel");
+    test:assertTrue(config.hasKey("rootLogger"), "Config should have rootLogger");
     test:assertTrue(config.hasKey("modules"), "Config should have modules");
     test:assertTrue(config.hasKey("customLoggers"), "Config should have customLoggers");
 
-    // Verify rootLevel is a valid level
-    string rootLevel = <string>config["rootLevel"];
+    // Verify rootLogger has level and is a valid level
+    map<anydata> rootLogger = <map<anydata>>config["rootLogger"];
+    test:assertTrue(rootLogger.hasKey("level"), "rootLogger should have level");
+    string rootLevel = <string>rootLogger["level"];
     test:assertTrue(rootLevel == "DEBUG" || rootLevel == "INFO" ||
                     rootLevel == "WARN" || rootLevel == "ERROR",
                     "Root level should be a valid level");

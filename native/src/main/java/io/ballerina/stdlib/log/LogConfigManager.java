@@ -309,34 +309,47 @@ public class LogConfigManager {
 
     /**
      * Get the current log configuration as a Ballerina map.
+     * Returns a nested structure to support future extensibility:
+     * {
+     *   "rootLogger": {"level": "INFO"},
+     *   "modules": {"myorg/payment": {"level": "INFO"}},
+     *   "customLoggers": {"payment-service": {"level": "INFO"}}
+     * }
      *
-     * @return a map containing rootLevel and modules
+     * @return a map containing rootLogger, modules, and customLoggers
      */
     public static BMap<BString, Object> getLogConfig() {
         LogConfigManager manager = getInstance();
 
         // Create a map type for map<anydata>
         MapType mapType = TypeCreator.createMapType(PredefinedTypes.TYPE_ANYDATA);
+        BString levelKey = StringUtils.fromString("level");
 
         // Create the result map
         BMap<BString, Object> result = ValueCreator.createMapValue(mapType);
 
-        // Add root level
-        result.put(StringUtils.fromString("rootLevel"), StringUtils.fromString(manager.getRootLogLevel()));
+        // Add root logger as nested object {"level": "INFO"}
+        BMap<BString, Object> rootLoggerMap = ValueCreator.createMapValue(mapType);
+        rootLoggerMap.put(levelKey, StringUtils.fromString(manager.getRootLogLevel()));
+        result.put(StringUtils.fromString("rootLogger"), rootLoggerMap);
 
-        // Add modules as a map (module name -> level)
+        // Add modules as a map (module name -> {"level": level})
         Map<String, String> moduleLevels = manager.getAllModuleLogLevels();
         BMap<BString, Object> modulesMap = ValueCreator.createMapValue(mapType);
         for (Map.Entry<String, String> entry : moduleLevels.entrySet()) {
-            modulesMap.put(StringUtils.fromString(entry.getKey()), StringUtils.fromString(entry.getValue()));
+            BMap<BString, Object> moduleConfig = ValueCreator.createMapValue(mapType);
+            moduleConfig.put(levelKey, StringUtils.fromString(entry.getValue()));
+            modulesMap.put(StringUtils.fromString(entry.getKey()), moduleConfig);
         }
         result.put(StringUtils.fromString("modules"), modulesMap);
 
-        // Add custom loggers as a map (logger id -> level)
+        // Add custom loggers as a map (logger id -> {"level": level})
         Map<String, String> customLoggers = manager.getAllCustomLoggerLevels();
         BMap<BString, Object> customLoggersMap = ValueCreator.createMapValue(mapType);
         for (Map.Entry<String, String> entry : customLoggers.entrySet()) {
-            customLoggersMap.put(StringUtils.fromString(entry.getKey()), StringUtils.fromString(entry.getValue()));
+            BMap<BString, Object> loggerConfig = ValueCreator.createMapValue(mapType);
+            loggerConfig.put(levelKey, StringUtils.fromString(entry.getValue()));
+            customLoggersMap.put(StringUtils.fromString(entry.getKey()), loggerConfig);
         }
         result.put(StringUtils.fromString("customLoggers"), customLoggersMap);
 
