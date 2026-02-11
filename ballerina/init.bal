@@ -21,6 +21,7 @@ function init() returns error? {
     rootLogger = new RootLogger();
     check validateDestinations(destinations);
     setModule();
+    initializeLogConfig(level, modules);
 }
 
 isolated function validateDestinations(OutputDestination[] destinations) returns Error? {

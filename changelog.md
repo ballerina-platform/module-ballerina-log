@@ -3,6 +3,10 @@ This file contains all the notable changes done to the Ballerina Log package thr
 
 ## [Unreleased]
 
+### Added
+
+- [Add Java APIs for runtime log level modification](https://github.com/ballerina-platform/ballerina-library/issues/6213)
+
 ## [2.16.1] - 2026-01-05
 
 ### Fixed
