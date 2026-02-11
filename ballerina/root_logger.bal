@@ -149,11 +149,9 @@ isolated class RootLogger {
                 logRecord[k] = v;
             }
         }
-        if observe:isObservabilityEnabled() {
-            string? runtimeId = observe:getTagValue(ICP_RUNTIME_ID_KEY);
-            if runtimeId is string {
-                logRecord[ICP_RUNTIME_ID_KEY] = runtimeId;
-            }
+        string? runtimeId = observe:getTagValue(ICP_RUNTIME_ID_KEY);
+        if runtimeId is string {
+            logRecord[ICP_RUNTIME_ID_KEY] = runtimeId;
         }
 
         foreach [string, Value] [k, v] in self.keyValues.entries() {
