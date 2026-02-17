@@ -53,4 +53,18 @@ public type Logger isolated object {
    # + keyValues - The key-value pairs to be added to the logger context
    # + return - A new Logger instance with the given key-values added to its context
    public isolated function withContext(*KeyValues keyValues) returns Logger|error;
+
+   # Returns the effective log level of this logger.
+   # If an explicit level has been set on this logger, returns that level.
+   # Otherwise, returns the inherited level from the parent logger.
+   #
+   # + return - The effective log level
+   public isolated function getLevel() returns Level;
+
+   # Sets the log level for this logger, overriding the inherited level.
+   # Returns an error if the operation is not supported (e.g., on child loggers).
+   #
+   # + level - The new log level to set
+   # + return - An error if the operation is not supported, nil on success
+   public isolated function setLevel(Level level) returns error?;
 };

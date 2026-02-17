@@ -499,9 +499,19 @@ isolated function registerLoggerWithIdNative(string loggerId, string logLevel) r
     name: "registerLoggerWithId"
 } external;
 
-isolated function registerLoggerInternalNative(string logLevel) returns string = @java:Method {
+isolated function registerLoggerAutoNative(string loggerId, string logLevel) = @java:Method {
     'class: "io.ballerina.stdlib.log.LogConfigManager",
-    name: "registerLoggerInternal"
+    name: "registerLoggerAuto"
+} external;
+
+isolated function generateLoggerIdNative(int stackOffset) returns string = @java:Method {
+    'class: "io.ballerina.stdlib.log.LogConfigManager",
+    name: "generateLoggerId"
+} external;
+
+isolated function setLoggerLevelNative(string loggerId, string logLevel) = @java:Method {
+    'class: "io.ballerina.stdlib.log.LogConfigManager",
+    name: "setLoggerLevel"
 } external;
 
 isolated function checkLogLevelEnabled(string loggerLogLevel, string logLevel, string moduleName) returns boolean = @java:Method {
@@ -509,7 +519,7 @@ isolated function checkLogLevelEnabled(string loggerLogLevel, string logLevel, s
     name: "checkLogLevelEnabled"
 } external;
 
-isolated function checkCustomLoggerLogLevelEnabled(string loggerId, string logLevel, string moduleName) returns boolean = @java:Method {
+isolated function checkCustomLoggerLogLevelEnabled(string effectiveLogLevel, string logLevel, string moduleName) returns boolean = @java:Method {
     'class: "io.ballerina.stdlib.log.LogConfigManager",
     name: "checkCustomLoggerLogLevelEnabled"
 } external;

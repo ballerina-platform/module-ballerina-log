@@ -22,6 +22,24 @@ function init() returns error? {
     check validateDestinations(destinations);
     setModule();
     initializeLogConfig(level, modules);
+
+    // Register the global root logger in the registry
+    lock {
+        loggerRegistry["root"] = rootLogger;
+    }
+
+    // Register each configured module as a Logger in the Ballerina-side registry
+    // Module loggers use the module name as their ID
+    foreach Module mod in modules {
+        ConfigInternal moduleConfig = {
+            level: mod.level,
+            loggerId: mod.name
+        };
+        RootLogger moduleLogger = new RootLogger(moduleConfig);
+        lock {
+            loggerRegistry[mod.name] = moduleLogger;
+        }
+    }
 }
 
 isolated function validateDestinations(OutputDestination[] destinations) returns Error? {

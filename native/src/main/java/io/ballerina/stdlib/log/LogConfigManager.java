@@ -32,11 +32,15 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Manages runtime log configuration for dynamic log level changes.
  * This class provides APIs to get and modify log levels at runtime without application restart.
+ * <p>
+ * All loggers — including module loggers, loggers created via fromConfig, and child loggers
+ * created via withContext — are stored in a single unified registry.
  *
  * @since 2.17.0
  */
@@ -58,19 +62,12 @@ public class LogConfigManager {
     // Runtime root log level (atomic for thread-safety)
     private final AtomicReference<String> rootLogLevel = new AtomicReference<>("INFO");
 
-    // Runtime module log levels (thread-safe map)
-    private final ConcurrentHashMap<String, String> moduleLogLevels = new ConcurrentHashMap<>();
+    // Unified single-tier registry: all loggers are visible (loggerId -> logLevel)
+    // This includes module loggers (ID = module name), fromConfig loggers, and withContext children.
+    private final ConcurrentHashMap<String, String> loggerLevels = new ConcurrentHashMap<>();
 
-    // Track custom loggers created via fromConfig with user-provided IDs (loggerId -> logLevel)
-    // Only these loggers are visible to ICP and can have their levels modified
-    private final ConcurrentHashMap<String, String> visibleCustomLoggerLevels = new ConcurrentHashMap<>();
-
-    // Track all custom loggers including those without user-provided IDs (loggerId -> logLevel)
-    // These are used internally for log level checking but not exposed to ICP
-    private final ConcurrentHashMap<String, String> allCustomLoggerLevels = new ConcurrentHashMap<>();
-
-    // Counter for generating unique internal logger IDs (for loggers without user-provided IDs)
-    private final AtomicReference<Long> loggerIdCounter = new AtomicReference<>(0L);
+    // Per-function counters for auto-generated IDs: "module:function" -> counter
+    private final ConcurrentHashMap<String, AtomicLong> functionCounters = new ConcurrentHashMap<>();
 
     private LogConfigManager() {
     }
@@ -87,6 +84,7 @@ public class LogConfigManager {
     /**
      * Initialize the runtime configuration from configurable values.
      * This should be called during module initialization.
+     * Module log levels are registered into the unified logger registry using the module name as the logger ID.
      *
      * @param rootLevel the root log level from configurable
      * @param modules   the modules table from configurable
@@ -95,15 +93,14 @@ public class LogConfigManager {
         // Set root log level
         rootLogLevel.set(rootLevel.getValue());
 
-        // Initialize module log levels from configurable table
-        moduleLogLevels.clear();
+        // Register each configured module as a logger in the unified registry
         if (modules != null) {
             Object[] keys = modules.getKeys();
             for (Object key : keys) {
                 BString moduleName = (BString) key;
                 BMap<BString, Object> moduleConfig = modules.get(moduleName);
                 BString level = (BString) moduleConfig.get(StringUtils.fromString("level"));
-                moduleLogLevels.put(moduleName.getValue(), level.getValue());
+                loggerLevels.put(moduleName.getValue(), level.getValue());
             }
         }
     }
@@ -134,139 +131,122 @@ public class LogConfigManager {
     }
 
     /**
-     * Get the log level for a specific module.
-     *
-     * @param moduleName the module name
-     * @return the module's log level, or null if not configured
-     */
-    public String getModuleLogLevel(String moduleName) {
-        return moduleLogLevels.get(moduleName);
-    }
-
-    /**
-     * Get all configured module log levels.
-     *
-     * @return a map of module names to log levels
-     */
-    public Map<String, String> getAllModuleLogLevels() {
-        return new ConcurrentHashMap<>(moduleLogLevels);
-    }
-
-    /**
-     * Set the log level for a specific module.
-     *
-     * @param moduleName the module name
-     * @param level      the new log level
-     * @return null on success, error on invalid level
-     */
-    public Object setModuleLogLevel(String moduleName, String level) {
-        String upperLevel = level.toUpperCase(Locale.ROOT);
-        if (!VALID_LOG_LEVELS.contains(upperLevel)) {
-            return ErrorCreator.createError(StringUtils.fromString(
-                    "Invalid log level: '" + level + "'. Valid levels are: DEBUG, INFO, WARN, ERROR"));
-        }
-        moduleLogLevels.put(moduleName, upperLevel);
-        return null;
-    }
-
-    /**
-     * Remove the log level configuration for a specific module.
-     *
-     * @param moduleName the module name
-     * @return true if the module was removed, false if it didn't exist
-     */
-    public boolean removeModuleLogLevel(String moduleName) {
-        return moduleLogLevels.remove(moduleName) != null;
-    }
-
-    /**
-     * Register a custom logger with a user-provided ID.
-     * This is used internally by the app's fromConfig function.
+     * Register a logger with a user-provided ID.
+     * All registered loggers are visible in the registry.
      *
      * @param loggerId the user-provided logger ID
      * @param level    the initial log level of the logger
      * @return null on success, error if ID already exists
      */
-    Object registerCustomLoggerWithId(String loggerId, String level) {
+    Object registerLoggerWithId(String loggerId, String level) {
         String upperLevel = level.toUpperCase(Locale.ROOT);
-        String existing = visibleCustomLoggerLevels.putIfAbsent(loggerId, upperLevel);
+        String existing = loggerLevels.putIfAbsent(loggerId, upperLevel);
         if (existing != null) {
             return ErrorCreator.createError(StringUtils.fromString(
                     "Logger with ID '" + loggerId + "' already exists"));
         }
-        allCustomLoggerLevels.put(loggerId, upperLevel);
         return null;
     }
 
     /**
-     * Register a custom logger without a user-provided ID.
-     * Generates an internal ID for log level checking purposes.
-     * This is used internally by the app's fromConfig function.
+     * Register a logger with an auto-generated ID.
+     * The logger is visible in the registry under its auto-generated ID.
      *
-     * @param level the initial log level of the logger
-     * @return the generated internal logger ID
+     * @param loggerId the auto-generated logger ID
+     * @param level    the initial log level of the logger
      */
-    String registerCustomLoggerInternal(String level) {
-        String loggerId = "_internal_logger_" + loggerIdCounter.updateAndGet(n -> n + 1);
+    void registerLoggerAuto(String loggerId, String level) {
         String upperLevel = level.toUpperCase(Locale.ROOT);
-        allCustomLoggerLevels.put(loggerId, upperLevel);
-        return loggerId;
+        loggerLevels.put(loggerId, upperLevel);
     }
 
     /**
-     * Get the log level for a custom logger (checks all loggers).
+     * Generate a readable logger ID based on the calling context.
+     * Format: "module:function-counter" (e.g., "myorg/payment:processOrder-1")
+     *
+     * @param stackOffset the number of stack frames to skip to reach the caller
+     * @return the generated logger ID
+     */
+    String generateLoggerId(int stackOffset) {
+        StackWalker walker = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
+        StackWalker.StackFrame callerFrame = walker.walk(frames ->
+                frames.skip(stackOffset).findFirst().orElse(null));
+
+        String modulePart = "unknown";
+        String functionPart = "unknown";
+        if (callerFrame != null) {
+            String className = callerFrame.getClassName();
+            String methodName = callerFrame.getMethodName();
+            // Extract module name from Ballerina class name convention.
+            // Typical format: "org.module_name.version.file" (e.g., "demo.log_level.0.main")
+            // We want: "org/module_name" (e.g., "demo/log_level")
+            // The version segment (e.g., "0") and file name should be stripped.
+            String[] parts = className.split("\\.");
+            if (parts.length >= 3) {
+                // parts[0] = org, parts[1] = module, parts[2] = version, parts[3..] = file/class
+                modulePart = parts[0] + "/" + parts[1];
+            } else if (parts.length == 2) {
+                modulePart = parts[0] + "/" + parts[1];
+            } else {
+                modulePart = className;
+            }
+            functionPart = methodName;
+        }
+
+        String key = modulePart + ":" + functionPart;
+        AtomicLong counter = functionCounters.computeIfAbsent(key, k -> new AtomicLong(0));
+        long count = counter.incrementAndGet();
+        if (count == 1) {
+            return key;
+        }
+        return key + "-" + count;
+    }
+
+    /**
+     * Get the log level for a registered logger.
      *
      * @param loggerId the logger ID
      * @return the logger's log level, or null if not found
      */
-    public String getCustomLoggerLevel(String loggerId) {
-        return allCustomLoggerLevels.get(loggerId);
+    public String getLoggerLevel(String loggerId) {
+        return loggerLevels.get(loggerId);
     }
 
     /**
-     * Set the log level for a custom logger (only visible loggers can be modified).
+     * Set the log level for a registered logger.
      *
      * @param loggerId the logger ID
      * @param level    the new log level
-     * @return null on success, error on invalid level or logger not found/not visible
      */
-    public Object setCustomLoggerLevel(String loggerId, String level) {
-        if (!visibleCustomLoggerLevels.containsKey(loggerId)) {
-            return ErrorCreator.createError(StringUtils.fromString(
-                    "Custom logger not found or not configurable: '" + loggerId + "'"));
-        }
+    public void setLoggerLevel(String loggerId, String level) {
         String upperLevel = level.toUpperCase(Locale.ROOT);
-        if (!VALID_LOG_LEVELS.contains(upperLevel)) {
-            return ErrorCreator.createError(StringUtils.fromString(
-                    "Invalid log level: '" + level + "'. Valid levels are: DEBUG, INFO, WARN, ERROR"));
-        }
-        visibleCustomLoggerLevels.put(loggerId, upperLevel);
-        allCustomLoggerLevels.put(loggerId, upperLevel);
-        return null;
+        loggerLevels.put(loggerId, upperLevel);
     }
 
     /**
-     * Get all visible custom loggers and their levels (only user-named loggers).
+     * Get all registered loggers and their levels.
      *
      * @return a map of logger IDs to log levels
      */
-    public Map<String, String> getAllCustomLoggerLevels() {
-        return new ConcurrentHashMap<>(visibleCustomLoggerLevels);
+    public Map<String, String> getAllLoggerLevels() {
+        return new ConcurrentHashMap<>(loggerLevels);
     }
 
     /**
-     * Check if a log level is enabled for a module.
+     * Check if a log level is enabled.
+     * Checks the unified logger registry for the given module name.
+     * If found, uses the registered level; otherwise falls back to the provided logger level.
      *
-     * @param loggerLogLevel the logger's configured log level
+     * @param loggerLogLevel the logger's configured log level (fallback)
      * @param logLevel       the log level to check
-     * @param moduleName     the module name
+     * @param moduleName     the module name to look up in the registry
      * @return true if the log level is enabled
      */
     public boolean isLogLevelEnabled(String loggerLogLevel, String logLevel, String moduleName) {
         String effectiveLevel = loggerLogLevel;
 
-        // Check module-specific level first
-        String moduleLevel = moduleLogLevels.get(moduleName);
+        // Check if the module is registered as a logger in the unified registry
+        String moduleLevel = loggerLevels.get(moduleName);
         if (moduleLevel != null) {
             effectiveLevel = moduleLevel;
         }
@@ -279,20 +259,19 @@ public class LogConfigManager {
     }
 
     /**
-     * Check if a log level is enabled for a custom logger.
+     * Check if a log level is enabled for a registered logger.
+     * The effective level is passed from the Ballerina side (which handles inheritance).
      *
-     * @param loggerId   the custom logger ID
-     * @param logLevel   the log level to check
-     * @param moduleName the module name
+     * @param effectiveLogLevel the logger's effective log level (from Ballerina-side getLevel())
+     * @param logLevel          the log level to check
+     * @param moduleName        the module name (unused, kept for API compatibility)
      * @return true if the log level is enabled
      */
-    public boolean isCustomLoggerLogLevelEnabled(String loggerId, String logLevel, String moduleName) {
-        String loggerLevel = allCustomLoggerLevels.get(loggerId);
-        if (loggerLevel == null) {
-            // Logger not registered, use default
-            loggerLevel = rootLogLevel.get();
-        }
-        return isLogLevelEnabled(loggerLevel, logLevel, moduleName);
+    public boolean isCustomLoggerLogLevelEnabled(String effectiveLogLevel, String logLevel, String moduleName) {
+        // Use the effective level directly — Ballerina side handles inheritance via getLevel()
+        int requestedWeight = LOG_LEVEL_WEIGHT.getOrDefault(logLevel.toUpperCase(Locale.ROOT), 0);
+        int effectiveWeight = LOG_LEVEL_WEIGHT.getOrDefault(effectiveLogLevel.toUpperCase(Locale.ROOT), 800);
+        return requestedWeight >= effectiveWeight;
     }
 
     // ========== Static methods for Ballerina interop ==========
@@ -309,14 +288,13 @@ public class LogConfigManager {
 
     /**
      * Get the current log configuration as a Ballerina map.
-     * Returns a nested structure to support future extensibility:
+     * Returns a nested structure with all loggers in a unified registry:
      * {
      *   "rootLogger": {"level": "INFO"},
-     *   "modules": {"myorg/payment": {"level": "INFO"}},
-     *   "customLoggers": {"payment-service": {"level": "INFO"}}
+     *   "loggers": {"myorg/payment": {"level": "DEBUG"}, "payment-service": {"level": "INFO"}}
      * }
      *
-     * @return a map containing rootLogger, modules, and customLoggers
+     * @return a map containing rootLogger and loggers
      */
     public static BMap<BString, Object> getLogConfig() {
         LogConfigManager manager = getInstance();
@@ -333,25 +311,15 @@ public class LogConfigManager {
         rootLoggerMap.put(levelKey, StringUtils.fromString(manager.getRootLogLevel()));
         result.put(StringUtils.fromString("rootLogger"), rootLoggerMap);
 
-        // Add modules as a map (module name -> {"level": level})
-        Map<String, String> moduleLevels = manager.getAllModuleLogLevels();
-        BMap<BString, Object> modulesMap = ValueCreator.createMapValue(mapType);
-        for (Map.Entry<String, String> entry : moduleLevels.entrySet()) {
-            BMap<BString, Object> moduleConfig = ValueCreator.createMapValue(mapType);
-            moduleConfig.put(levelKey, StringUtils.fromString(entry.getValue()));
-            modulesMap.put(StringUtils.fromString(entry.getKey()), moduleConfig);
-        }
-        result.put(StringUtils.fromString("modules"), modulesMap);
-
-        // Add custom loggers as a map (logger id -> {"level": level})
-        Map<String, String> customLoggers = manager.getAllCustomLoggerLevels();
-        BMap<BString, Object> customLoggersMap = ValueCreator.createMapValue(mapType);
-        for (Map.Entry<String, String> entry : customLoggers.entrySet()) {
+        // Add all loggers (modules + fromConfig + withContext) as a unified map
+        Map<String, String> loggers = manager.getAllLoggerLevels();
+        BMap<BString, Object> loggersMap = ValueCreator.createMapValue(mapType);
+        for (Map.Entry<String, String> entry : loggers.entrySet()) {
             BMap<BString, Object> loggerConfig = ValueCreator.createMapValue(mapType);
             loggerConfig.put(levelKey, StringUtils.fromString(entry.getValue()));
-            customLoggersMap.put(StringUtils.fromString(entry.getKey()), loggerConfig);
+            loggersMap.put(StringUtils.fromString(entry.getKey()), loggerConfig);
         }
-        result.put(StringUtils.fromString("customLoggers"), customLoggersMap);
+        result.put(StringUtils.fromString("loggers"), loggersMap);
 
         return result;
     }
@@ -377,57 +345,75 @@ public class LogConfigManager {
 
     /**
      * Set a module's log level from Ballerina.
+     * This is now equivalent to setting a logger level with the module name as the logger ID.
      *
-     * @param moduleName the module name
+     * @param moduleName the module name (used as logger ID)
      * @param level      the new log level
      * @return null on success, error on invalid level
      */
     public static Object setModuleLevel(BString moduleName, BString level) {
-        return getInstance().setModuleLogLevel(moduleName.getValue(), level.getValue());
+        LogConfigManager manager = getInstance();
+        String name = moduleName.getValue();
+        String upperLevel = level.getValue().toUpperCase(Locale.ROOT);
+        if (!VALID_LOG_LEVELS.contains(upperLevel)) {
+            return ErrorCreator.createError(StringUtils.fromString(
+                    "Invalid log level: '" + level.getValue() + "'. Valid levels are: DEBUG, INFO, WARN, ERROR"));
+        }
+        // Register or update the module as a logger in the unified registry
+        manager.loggerLevels.put(name, upperLevel);
+        return null;
     }
 
     /**
      * Remove a module's log level configuration from Ballerina.
+     * This removes the module logger from the unified registry.
      *
      * @param moduleName the module name
      * @return true if removed, false if not found
      */
     public static boolean removeModuleLevel(BString moduleName) {
-        return getInstance().removeModuleLogLevel(moduleName.getValue());
+        return getInstance().loggerLevels.remove(moduleName.getValue()) != null;
     }
 
     /**
-     * Register a custom logger with a user-provided ID from Ballerina.
-     * This is called internally by the app's fromConfig function.
+     * Register a logger with a user-provided ID from Ballerina.
      *
      * @param loggerId the user-provided logger ID
      * @param level    the initial log level
      * @return null on success, error if ID already exists
      */
     public static Object registerLoggerWithId(BString loggerId, BString level) {
-        return getInstance().registerCustomLoggerWithId(loggerId.getValue(), level.getValue());
+        return getInstance().registerLoggerWithId(loggerId.getValue(), level.getValue());
     }
 
     /**
-     * Register a custom logger without ID from Ballerina.
-     * This is called internally by the app's fromConfig function.
+     * Register a logger with an auto-generated ID from Ballerina.
      *
-     * @param level the initial log level
-     * @return the generated internal logger ID
+     * @param loggerId the auto-generated logger ID
+     * @param level    the initial log level
      */
-    public static BString registerLoggerInternal(BString level) {
-        return StringUtils.fromString(getInstance().registerCustomLoggerInternal(level.getValue()));
+    public static void registerLoggerAuto(BString loggerId, BString level) {
+        getInstance().registerLoggerAuto(loggerId.getValue(), level.getValue());
     }
 
     /**
-     * Set a custom logger's log level from Ballerina.
+     * Generate a readable logger ID from Ballerina.
+     *
+     * @param stackOffset the number of stack frames to skip
+     * @return the generated logger ID
+     */
+    public static BString generateLoggerId(long stackOffset) {
+        return StringUtils.fromString(getInstance().generateLoggerId((int) stackOffset));
+    }
+
+    /**
+     * Set a logger's log level from Ballerina.
      *
      * @param loggerId the logger ID
      * @param level    the new log level
-     * @return null on success, error on invalid level or logger not found
      */
-    public static Object setLoggerLevel(BString loggerId, BString level) {
-        return getInstance().setCustomLoggerLevel(loggerId.getValue(), level.getValue());
+    public static void setLoggerLevel(BString loggerId, BString level) {
+        getInstance().setLoggerLevel(loggerId.getValue(), level.getValue());
     }
 
     /**
@@ -444,9 +430,9 @@ public class LogConfigManager {
     }
 
     /**
-     * Check if a log level is enabled for a custom logger from Ballerina.
+     * Check if a log level is enabled for a registered logger from Ballerina.
      *
-     * @param loggerId   the custom logger ID
+     * @param loggerId   the logger ID
      * @param logLevel   the log level to check
      * @param moduleName the module name
      * @return true if enabled

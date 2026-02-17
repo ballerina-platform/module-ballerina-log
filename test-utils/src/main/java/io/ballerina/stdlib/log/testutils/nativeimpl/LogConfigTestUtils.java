@@ -37,7 +37,7 @@ public class LogConfigTestUtils {
     /**
      * Get the current log configuration for testing.
      *
-     * @return BMap containing rootLevel, modules, and customLoggers
+     * @return BMap containing rootLevel, modules, and loggers
      */
     public static BMap<BString, Object> getLogConfig() {
         return LogConfigManager.getLogConfig();
@@ -84,38 +84,38 @@ public class LogConfigTestUtils {
     }
 
     /**
-     * Set a custom logger's log level for testing.
+     * Set a logger's log level for testing.
      *
      * @param loggerId the logger ID
      * @param level the log level
-     * @return null on success, error on failure
      */
-    public static Object setCustomLoggerLevel(BString loggerId, BString level) {
-        return LogConfigManager.setLoggerLevel(loggerId, level);
+    public static void setCustomLoggerLevel(BString loggerId, BString level) {
+        LogConfigManager.setLoggerLevel(loggerId, level);
     }
 
     /**
-     * Get the number of visible custom loggers for testing.
+     * Get the number of registered loggers for testing.
+     * All loggers are now visible in the single-tier registry.
      *
-     * @return count of visible custom loggers
+     * @return count of registered loggers
      */
     public static long getVisibleCustomLoggerCount() {
         BMap<BString, Object> config = LogConfigManager.getLogConfig();
-        BMap<BString, Object> customLoggers = (BMap<BString, Object>) config.get(
-                StringUtils.fromString("customLoggers"));
-        return customLoggers.size();
+        BMap<BString, Object> loggers = (BMap<BString, Object>) config.get(
+                StringUtils.fromString("loggers"));
+        return loggers.size();
     }
 
     /**
-     * Check if a custom logger is visible (has user-provided ID).
+     * Check if a logger is registered (all loggers are now visible).
      *
      * @param loggerId the logger ID to check
-     * @return true if visible, false otherwise
+     * @return true if registered, false otherwise
      */
     public static boolean isCustomLoggerVisible(BString loggerId) {
         BMap<BString, Object> config = LogConfigManager.getLogConfig();
-        BMap<BString, Object> customLoggers = (BMap<BString, Object>) config.get(
-                StringUtils.fromString("customLoggers"));
-        return customLoggers.containsKey(loggerId);
+        BMap<BString, Object> loggers = (BMap<BString, Object>) config.get(
+                StringUtils.fromString("loggers"));
+        return loggers.containsKey(loggerId);
     }
 }

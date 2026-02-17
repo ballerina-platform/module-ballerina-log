@@ -19,7 +19,7 @@ import ballerina/observe;
 
 # Configuration for the Ballerina logger
 public type Config record {|
-    # Optional unique identifier for this logger. 
+    # Optional unique identifier for this logger.
     # If provided, the logger will be visible in the ICP dashboard, and its log level can be modified at runtime.
     string id?;
     # Log format to use. Default is the logger format configured in the module level
@@ -40,14 +40,46 @@ type ConfigInternal record {|
     readonly & OutputDestination[] destinations = destinations;
     readonly & KeyValues keyValues = {...keyValues};
     boolean enableSensitiveDataMasking = enableSensitiveDataMasking;
-    // Logger ID for custom loggers registered with LogConfigManager
-    // If set, used for runtime log level checking
+    // Logger ID for loggers registered with LogConfigManager
     string loggerId?;
 |};
 
 final string ICP_RUNTIME_ID_KEY = "icp.runtimeId";
 
 final RootLogger rootLogger;
+
+// Ballerina-side logger registry: loggerId -> Logger
+isolated map<Logger> loggerRegistry = {};
+
+# Provides access to the logger registry for discovering and managing registered loggers.
+public isolated class LoggerRegistry {
+
+    # Returns the IDs of all registered loggers.
+    #
+    # + return - An array of logger IDs
+    public isolated function getIds() returns string[] {
+        lock {
+            return loggerRegistry.keys().clone();
+        }
+    }
+
+    # Returns a logger by its registered ID.
+    #
+    # + id - The logger ID to look up
+    # + return - The Logger instance if found, nil otherwise
+    public isolated function getById(string id) returns Logger? {
+        lock {
+            return loggerRegistry[id];
+        }
+    }
+}
+
+final LoggerRegistry loggerRegistryInstance = new;
+
+# Returns the logger registry for discovering and managing registered loggers.
+#
+# + return - The LoggerRegistry instance
+public isolated function getLoggerRegistry() returns LoggerRegistry => loggerRegistryInstance;
 
 # Returns the root logger instance.
 #
@@ -67,18 +99,21 @@ public isolated function fromConfig(*Config config) returns Logger|Error {
         newKeyValues[k] = v;
     }
 
-    // Register with LogConfigManager based on whether user provided an ID
-    string? loggerId;
+    // Register with LogConfigManager - all loggers are now visible
+    string loggerId;
     if config.id is string {
-        // User provided ID - register as visible logger (ICP can configure)
-        error? regResult = registerLoggerWithIdNative(<string>config.id, config.level);
+        // User provided ID - module-prefix it: <module>:<user_id>
+        string moduleName = getInvokedModuleName(3);
+        string fullId = moduleName.length() > 0 ? moduleName + ":" + <string>config.id : <string>config.id;
+        error? regResult = registerLoggerWithIdNative(fullId, config.level);
         if regResult is error {
             return error Error(regResult.message());
         }
-        loggerId = config.id;
+        loggerId = fullId;
     } else {
-        // No user ID - register as internal logger (not visible to ICP)
-        loggerId = registerLoggerInternalNative(config.level);
+        // No user ID - auto-generate a readable ID
+        loggerId = generateLoggerIdNative(4);
+        registerLoggerAutoNative(loggerId, config.level);
     }
 
     ConfigInternal newConfig = {
@@ -89,27 +124,33 @@ public isolated function fromConfig(*Config config) returns Logger|Error {
         enableSensitiveDataMasking: config.enableSensitiveDataMasking,
         loggerId
     };
-    return new RootLogger(newConfig);
+    RootLogger logger = new RootLogger(newConfig);
+
+    // Register in the Ballerina-side registry
+    lock {
+        loggerRegistry[loggerId] = logger;
+    }
+
+    return logger;
 }
 
 isolated class RootLogger {
     *Logger;
 
     private final LogFormat format;
-    private final Level level;
+    private Level currentLevel;
     private final readonly & OutputDestination[] destinations;
     private final readonly & KeyValues keyValues;
     private final boolean enableSensitiveDataMasking;
-    // Unique ID for custom loggers registered with LogConfigManager
+    // Unique ID for loggers registered with LogConfigManager
     private final string? loggerId;
 
     public isolated function init(Config|ConfigInternal config = <Config>{}) {
         self.format = config.format;
-        self.level = config.level;
+        self.currentLevel = config.level;
         self.destinations = config.destinations;
         self.keyValues = config.keyValues;
         self.enableSensitiveDataMasking = config.enableSensitiveDataMasking;
-        // Use loggerId from ConfigInternal if present (for custom loggers and derived loggers)
         if config is ConfigInternal {
             self.loggerId = config.loggerId;
         } else {
@@ -142,23 +183,34 @@ isolated class RootLogger {
         foreach [string, Value] [k, v] in keyValues.entries() {
             newKeyValues[k] = v;
         }
-        ConfigInternal config = {
-            format: self.format,
-            level: self.level,
-            destinations: self.destinations,
-            keyValues: newKeyValues.cloneReadOnly(),
-            enableSensitiveDataMasking: self.enableSensitiveDataMasking,
-            // Preserve the logger ID so derived loggers use the same runtime-configurable level
-            loggerId: self.loggerId
-        };
-        return new RootLogger(config);
+        return new ChildLogger(self, self.format, self.destinations, newKeyValues.cloneReadOnly(),
+                self.enableSensitiveDataMasking);
+    }
+
+    public isolated function getLevel() returns Level {
+        lock {
+            return self.currentLevel;
+        }
+    }
+
+    public isolated function setLevel(Level level) returns error? {
+        lock {
+            self.currentLevel = level;
+        }
+        // Update Java-side registry
+        string? id = self.loggerId;
+        if id is string {
+            setLoggerLevelNative(id, level);
+        }
     }
 
     isolated function print(string logLevel, string moduleName, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-        // Check log level - use custom logger check if registered, otherwise use standard check
+        // Check log level using the Ballerina-side effective level (handles inheritance correctly)
+        // For registered loggers (loggerId != nil), use the effective level from getLevel() which
+        // walks the parent chain. For unregistered loggers, fall back to the standard module-aware check.
         boolean isEnabled = self.loggerId is string ?
-            checkCustomLoggerLogLevelEnabled(<string>self.loggerId, logLevel, moduleName) :
-            isLogLevelEnabled(self.level, logLevel, moduleName);
+            checkCustomLoggerLogLevelEnabled(self.getLevel(), logLevel, moduleName) :
+            isLogLevelEnabled(self.getLevel(), logLevel, moduleName);
         if !isEnabled {
             return;
         }
@@ -176,7 +228,7 @@ isolated class RootLogger {
                 select element.toString();
         }
         foreach [string, Value] [k, v] in keyValues.entries() {
-            logRecord[k] = v is Valuer ? v() : 
+            logRecord[k] = v is Valuer ? v() :
                 (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
         }
         if observe:isTracingEnabled() {
@@ -193,7 +245,7 @@ isolated class RootLogger {
         }
 
         foreach [string, Value] [k, v] in self.keyValues.entries() {
-            logRecord[k] = v is Valuer ? v() : 
+            logRecord[k] = v is Valuer ? v() :
                 (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
         }
 
@@ -223,6 +275,137 @@ isolated class RootLogger {
                 } else {
                     // Rotation configured, use lock to ensure thread-safe rotation and writing
                     // This prevents writes from happening during rotation
+                    lock {
+                        error? rotationResult = checkAndPerformRotation(destination.path, rotationConfig);
+                        if rotationResult is error {
+                            io:fprintln(io:stderr, string `warning: log rotation failed: ${rotationResult.message()}`);
+                        }
+                        writeLogToFile(destination.path, logOutput);
+                    }
+                }
+            }
+        }
+    }
+}
+
+isolated class ChildLogger {
+    *Logger;
+
+    private final Logger parent;
+    private final LogFormat format;
+    private final readonly & OutputDestination[] destinations;
+    private final readonly & KeyValues keyValues;
+    private final boolean enableSensitiveDataMasking;
+
+    public isolated function init(Logger parent, LogFormat format, readonly & OutputDestination[] destinations,
+            readonly & KeyValues keyValues, boolean enableSensitiveDataMasking) {
+        self.parent = parent;
+        self.format = format;
+        self.destinations = destinations;
+        self.keyValues = keyValues;
+        self.enableSensitiveDataMasking = enableSensitiveDataMasking;
+    }
+
+    public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+        string moduleName = getModuleName(keyValues, 3);
+        self.print(DEBUG, moduleName, msg, 'error, stackTrace, keyValues);
+    }
+
+    public isolated function printError(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+        string moduleName = getModuleName(keyValues, 3);
+        self.print(ERROR, moduleName, msg, 'error, stackTrace, keyValues);
+    }
+
+    public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+        string moduleName = getModuleName(keyValues, 3);
+        self.print(INFO, moduleName, msg, 'error, stackTrace, keyValues);
+    }
+
+    public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+        string moduleName = getModuleName(keyValues, 3);
+        self.print(WARN, moduleName, msg, 'error, stackTrace, keyValues);
+    }
+
+    public isolated function withContext(*KeyValues keyValues) returns Logger {
+        KeyValues newKeyValues = {...self.keyValues};
+        foreach [string, Value] [k, v] in keyValues.entries() {
+            newKeyValues[k] = v;
+        }
+        return new ChildLogger(self, self.format, self.destinations, newKeyValues.cloneReadOnly(),
+                self.enableSensitiveDataMasking);
+    }
+
+    public isolated function getLevel() returns Level {
+        return self.parent.getLevel();
+    }
+
+    public isolated function setLevel(Level level) returns error? {
+        return error("Unsupported operation: cannot set log level on a child logger. " +
+                "Child loggers inherit their level from the parent logger.");
+    }
+
+    isolated function print(string logLevel, string moduleName, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+        boolean isEnabled = checkCustomLoggerLogLevelEnabled(self.getLevel(), logLevel, moduleName);
+        if !isEnabled {
+            return;
+        }
+        LogRecord logRecord = {
+            time: getCurrentTime(),
+            level: logLevel,
+            module: moduleName,
+            message: processMessage(msg, self.enableSensitiveDataMasking)
+        };
+        if err is error {
+            logRecord.'error = getFullErrorDetails(err);
+        }
+        if stackTrace is error:StackFrame[] {
+            logRecord["stackTrace"] = from var element in stackTrace
+                select element.toString();
+        }
+        foreach [string, Value] [k, v] in keyValues.entries() {
+            logRecord[k] = v is Valuer ? v() :
+                (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
+        }
+        if observe:isTracingEnabled() {
+            map<string> spanContext = observe:getSpanContext();
+            foreach [string, string] [k, v] in spanContext.entries() {
+                logRecord[k] = v;
+            }
+        }
+        if observe:isObservabilityEnabled() {
+            string? runtimeId = observe:getTagValue(ICP_RUNTIME_ID_KEY);
+            if runtimeId is string {
+                logRecord[ICP_RUNTIME_ID_KEY] = runtimeId;
+            }
+        }
+
+        foreach [string, Value] [k, v] in self.keyValues.entries() {
+            logRecord[k] = v is Valuer ? v() :
+                (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
+        }
+
+        string logOutput = self.format == JSON_FORMAT ?
+            (self.enableSensitiveDataMasking ? toMaskedString(logRecord) : logRecord.toJsonString()) :
+            printLogFmt(logRecord, self.enableSensitiveDataMasking);
+
+        lock {
+            if outputFilePath is string {
+                fileWrite(logOutput);
+            }
+        }
+
+        foreach OutputDestination destination in self.destinations {
+            if destination is StandardDestination {
+                if destination.'type == STDERR {
+                    io:fprintln(io:stderr, logOutput);
+                } else {
+                    io:fprintln(io:stdout, logOutput);
+                }
+            } else {
+                RotationConfig? rotationConfig = destination.rotation;
+                if rotationConfig is () {
+                    writeLogToFile(destination.path, logOutput);
+                } else {
                     lock {
                         error? rotationResult = checkAndPerformRotation(destination.path, rotationConfig);
                         if rotationResult is error {
