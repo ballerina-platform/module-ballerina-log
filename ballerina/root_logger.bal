@@ -213,19 +213,35 @@ isolated class ChildLogger {
     }
 
     public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
-        self.parent.printDebug(msg, 'error, stackTrace, self.mergeKeyValues(keyValues));
+        KeyValues merged = self.mergeKeyValues(keyValues);
+        if !merged.hasKey("module") {
+             merged["module"] = getInvokedModuleName(2);
+        }
+        self.parent.printDebug(msg, 'error, stackTrace, merged);
     }
 
     public isolated function printError(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
-        self.parent.printError(msg, 'error, stackTrace, self.mergeKeyValues(keyValues));
+        KeyValues merged = self.mergeKeyValues(keyValues);
+        if !merged.hasKey("module") {
+             merged["module"] = getInvokedModuleName(2);
+        }
+        self.parent.printError(msg, 'error, stackTrace, merged);
     }
 
     public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
-        self.parent.printInfo(msg, 'error, stackTrace, self.mergeKeyValues(keyValues));
+        KeyValues merged = self.mergeKeyValues(keyValues);
+        if !merged.hasKey("module") {
+             merged["module"] = getInvokedModuleName(2);
+        }
+        self.parent.printInfo(msg, 'error, stackTrace, merged);
     }
 
     public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
-        self.parent.printWarn(msg, 'error, stackTrace, self.mergeKeyValues(keyValues));
+        KeyValues merged = self.mergeKeyValues(keyValues);
+        if !merged.hasKey("module") {
+             merged["module"] = getInvokedModuleName(2);
+        }
+        self.parent.printWarn(msg, 'error, stackTrace, merged);
     }
 
     public isolated function withContext(*KeyValues keyValues) returns Logger {
@@ -249,6 +265,11 @@ isolated class ChildLogger {
         KeyValues merged = {};
         foreach [string, Value] [k, v] in callSiteKeyValues.entries() {
             merged[k] = v;
+        }
+        foreach [string, Value] [k, v] in self.keyValues.entries() {
+            if !merged.hasKey(k) {
+                merged[k] = v;
+            }
         }
         string? runtimeId = observe:getTagValue(ICP_RUNTIME_ID_KEY);
         if runtimeId is string {
