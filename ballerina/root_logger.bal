@@ -247,11 +247,12 @@ isolated class ChildLogger {
 
     private isolated function mergeKeyValues(KeyValues callSiteKeyValues) returns KeyValues {
         KeyValues merged = {};
-        foreach [string, Value] [k, v] in self.keyValues.entries() {
-            merged[k] = v;
-        }
         foreach [string, Value] [k, v] in callSiteKeyValues.entries() {
             merged[k] = v;
+        }
+        string? runtimeId = observe:getTagValue(ICP_RUNTIME_ID_KEY);
+        if runtimeId is string {
+            merged[ICP_RUNTIME_ID_KEY] = runtimeId;
         }
         return merged;
     }
