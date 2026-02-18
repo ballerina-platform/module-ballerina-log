@@ -40,8 +40,6 @@ type ConfigInternal record {|
     readonly & OutputDestination[] destinations = destinations;
     readonly & KeyValues keyValues = {...keyValues};
     boolean enableSensitiveDataMasking = enableSensitiveDataMasking;
-    // Logger ID for loggers registered with LogConfigManager
-    string loggerId?;
 |};
 
 final string ICP_RUNTIME_ID_KEY = "icp.runtimeId";
@@ -121,10 +119,9 @@ public isolated function fromConfig(*Config config) returns Logger|Error {
         level: config.level,
         destinations: config.destinations,
         keyValues: newKeyValues.cloneReadOnly(),
-        enableSensitiveDataMasking: config.enableSensitiveDataMasking,
-        loggerId
+        enableSensitiveDataMasking: config.enableSensitiveDataMasking
     };
-    RootLogger logger = new RootLogger(newConfig);
+    RootLogger logger = new RootLogger(newConfig, loggerId);
 
     // Register in the Ballerina-side registry
     lock {
@@ -145,17 +142,13 @@ isolated class RootLogger {
     // Unique ID for loggers registered with LogConfigManager
     private final string? loggerId;
 
-    public isolated function init(Config|ConfigInternal config = <Config>{}) {
+    public isolated function init(Config|ConfigInternal config = <Config>{}, string? loggerId = ()) {
         self.format = config.format;
         self.currentLevel = config.level;
         self.destinations = config.destinations;
         self.keyValues = config.keyValues;
         self.enableSensitiveDataMasking = config.enableSensitiveDataMasking;
-        if config is ConfigInternal {
-            self.loggerId = config.loggerId;
-        } else {
-            self.loggerId = ();
-        }
+        self.loggerId = loggerId;
     }
 
     public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
@@ -183,8 +176,7 @@ isolated class RootLogger {
         foreach [string, Value] [k, v] in keyValues.entries() {
             newKeyValues[k] = v;
         }
-        return new ChildLogger(self, self.format, self.destinations, newKeyValues.cloneReadOnly(),
-                self.enableSensitiveDataMasking);
+        return new ChildLogger(self, newKeyValues.cloneReadOnly());
     }
 
     public isolated function getLevel() returns Level {
@@ -205,86 +197,14 @@ isolated class RootLogger {
     }
 
     isolated function print(string logLevel, string moduleName, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-        // Check log level using the Ballerina-side effective level (handles inheritance correctly)
-        // For registered loggers (loggerId != nil), use the effective level from getLevel() which
-        // walks the parent chain. For unregistered loggers, fall back to the standard module-aware check.
         boolean isEnabled = self.loggerId is string ?
             checkCustomLoggerLogLevelEnabled(self.getLevel(), logLevel, moduleName) :
             isLogLevelEnabled(self.getLevel(), logLevel, moduleName);
         if !isEnabled {
             return;
         }
-        LogRecord logRecord = {
-            time: getCurrentTime(),
-            level: logLevel,
-            module: moduleName,
-            message: processMessage(msg, self.enableSensitiveDataMasking)
-        };
-        if err is error {
-            logRecord.'error = getFullErrorDetails(err);
-        }
-        if stackTrace is error:StackFrame[] {
-            logRecord["stackTrace"] = from var element in stackTrace
-                select element.toString();
-        }
-        foreach [string, Value] [k, v] in keyValues.entries() {
-            logRecord[k] = v is Valuer ? v() :
-                (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
-        }
-        if observe:isTracingEnabled() {
-            map<string> spanContext = observe:getSpanContext();
-            foreach [string, string] [k, v] in spanContext.entries() {
-                logRecord[k] = v;
-            }
-        }
-        if observe:isObservabilityEnabled() {
-            string? runtimeId = observe:getTagValue(ICP_RUNTIME_ID_KEY);
-            if runtimeId is string {
-                logRecord[ICP_RUNTIME_ID_KEY] = runtimeId;
-            }
-        }
-
-        foreach [string, Value] [k, v] in self.keyValues.entries() {
-            logRecord[k] = v is Valuer ? v() :
-                (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
-        }
-
-        string logOutput = self.format == JSON_FORMAT ?
-            (self.enableSensitiveDataMasking ? toMaskedString(logRecord) : logRecord.toJsonString()) :
-            printLogFmt(logRecord, self.enableSensitiveDataMasking);
-
-        lock {
-            if outputFilePath is string {
-                fileWrite(logOutput);
-            }
-        }
-
-        foreach OutputDestination destination in self.destinations {
-            if destination is StandardDestination {
-                if destination.'type == STDERR {
-                    io:fprintln(io:stderr, logOutput);
-                } else {
-                    io:fprintln(io:stdout, logOutput);
-                }
-            } else {
-                // File destination
-                RotationConfig? rotationConfig = destination.rotation;
-                if rotationConfig is () {
-                    // No rotation configured, write directly without lock
-                    writeLogToFile(destination.path, logOutput);
-                } else {
-                    // Rotation configured, use lock to ensure thread-safe rotation and writing
-                    // This prevents writes from happening during rotation
-                    lock {
-                        error? rotationResult = checkAndPerformRotation(destination.path, rotationConfig);
-                        if rotationResult is error {
-                            io:fprintln(io:stderr, string `warning: log rotation failed: ${rotationResult.message()}`);
-                        }
-                        writeLogToFile(destination.path, logOutput);
-                    }
-                }
-            }
-        }
+        printLog(logLevel, moduleName, msg, self.format, self.destinations, self.keyValues,
+                self.enableSensitiveDataMasking, err, stackTrace, keyValues);
     }
 }
 
@@ -292,38 +212,27 @@ isolated class ChildLogger {
     *Logger;
 
     private final Logger parent;
-    private final LogFormat format;
-    private final readonly & OutputDestination[] destinations;
     private final readonly & KeyValues keyValues;
-    private final boolean enableSensitiveDataMasking;
 
-    public isolated function init(Logger parent, LogFormat format, readonly & OutputDestination[] destinations,
-            readonly & KeyValues keyValues, boolean enableSensitiveDataMasking) {
+    public isolated function init(Logger parent, readonly & KeyValues keyValues) {
         self.parent = parent;
-        self.format = format;
-        self.destinations = destinations;
         self.keyValues = keyValues;
-        self.enableSensitiveDataMasking = enableSensitiveDataMasking;
     }
 
     public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
-        string moduleName = getModuleName(keyValues, 3);
-        self.print(DEBUG, moduleName, msg, 'error, stackTrace, keyValues);
+        self.parent.printDebug(msg, 'error, stackTrace, self.mergeKeyValues(keyValues));
     }
 
     public isolated function printError(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
-        string moduleName = getModuleName(keyValues, 3);
-        self.print(ERROR, moduleName, msg, 'error, stackTrace, keyValues);
+        self.parent.printError(msg, 'error, stackTrace, self.mergeKeyValues(keyValues));
     }
 
     public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
-        string moduleName = getModuleName(keyValues, 3);
-        self.print(INFO, moduleName, msg, 'error, stackTrace, keyValues);
+        self.parent.printInfo(msg, 'error, stackTrace, self.mergeKeyValues(keyValues));
     }
 
     public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
-        string moduleName = getModuleName(keyValues, 3);
-        self.print(WARN, moduleName, msg, 'error, stackTrace, keyValues);
+        self.parent.printWarn(msg, 'error, stackTrace, self.mergeKeyValues(keyValues));
     }
 
     public isolated function withContext(*KeyValues keyValues) returns Logger {
@@ -331,8 +240,7 @@ isolated class ChildLogger {
         foreach [string, Value] [k, v] in keyValues.entries() {
             newKeyValues[k] = v;
         }
-        return new ChildLogger(self, self.format, self.destinations, newKeyValues.cloneReadOnly(),
-                self.enableSensitiveDataMasking);
+        return new ChildLogger(self, newKeyValues.cloneReadOnly());
     }
 
     public isolated function getLevel() returns Level {
@@ -344,75 +252,85 @@ isolated class ChildLogger {
                 "Child loggers inherit their level from the parent logger.");
     }
 
-    isolated function print(string logLevel, string moduleName, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-        boolean isEnabled = checkCustomLoggerLogLevelEnabled(self.getLevel(), logLevel, moduleName);
-        if !isEnabled {
-            return;
-        }
-        LogRecord logRecord = {
-            time: getCurrentTime(),
-            level: logLevel,
-            module: moduleName,
-            message: processMessage(msg, self.enableSensitiveDataMasking)
-        };
-        if err is error {
-            logRecord.'error = getFullErrorDetails(err);
-        }
-        if stackTrace is error:StackFrame[] {
-            logRecord["stackTrace"] = from var element in stackTrace
-                select element.toString();
-        }
-        foreach [string, Value] [k, v] in keyValues.entries() {
-            logRecord[k] = v is Valuer ? v() :
-                (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
-        }
-        if observe:isTracingEnabled() {
-            map<string> spanContext = observe:getSpanContext();
-            foreach [string, string] [k, v] in spanContext.entries() {
-                logRecord[k] = v;
-            }
-        }
-        if observe:isObservabilityEnabled() {
-            string? runtimeId = observe:getTagValue(ICP_RUNTIME_ID_KEY);
-            if runtimeId is string {
-                logRecord[ICP_RUNTIME_ID_KEY] = runtimeId;
-            }
-        }
-
+    private isolated function mergeKeyValues(KeyValues callSiteKeyValues) returns KeyValues {
+        KeyValues merged = {};
         foreach [string, Value] [k, v] in self.keyValues.entries() {
-            logRecord[k] = v is Valuer ? v() :
-                (v is PrintableRawTemplate ? evaluateTemplate(v, self.enableSensitiveDataMasking) : v);
+            merged[k] = v;
         }
-
-        string logOutput = self.format == JSON_FORMAT ?
-            (self.enableSensitiveDataMasking ? toMaskedString(logRecord) : logRecord.toJsonString()) :
-            printLogFmt(logRecord, self.enableSensitiveDataMasking);
-
-        lock {
-            if outputFilePath is string {
-                fileWrite(logOutput);
-            }
+        foreach [string, Value] [k, v] in callSiteKeyValues.entries() {
+            merged[k] = v;
         }
+        return merged;
+    }
+}
 
-        foreach OutputDestination destination in self.destinations {
-            if destination is StandardDestination {
-                if destination.'type == STDERR {
-                    io:fprintln(io:stderr, logOutput);
-                } else {
-                    io:fprintln(io:stdout, logOutput);
-                }
+isolated function printLog(string logLevel, string moduleName, string|PrintableRawTemplate msg,
+        LogFormat format, readonly & OutputDestination[] destinations, readonly & KeyValues contextKeyValues,
+        boolean enableSensitiveDataMasking, error? err = (), error:StackFrame[]? stackTrace = (),
+        KeyValues callSiteKeyValues = {}) {
+    LogRecord logRecord = {
+        time: getCurrentTime(),
+        level: logLevel,
+        module: moduleName,
+        message: processMessage(msg, enableSensitiveDataMasking)
+    };
+    if err is error {
+        logRecord.'error = getFullErrorDetails(err);
+    }
+    if stackTrace is error:StackFrame[] {
+        logRecord["stackTrace"] = from var element in stackTrace
+            select element.toString();
+    }
+    foreach [string, Value] [k, v] in callSiteKeyValues.entries() {
+        logRecord[k] = v is Valuer ? v() :
+            (v is PrintableRawTemplate ? evaluateTemplate(v, enableSensitiveDataMasking) : v);
+    }
+    if observe:isTracingEnabled() {
+        map<string> spanContext = observe:getSpanContext();
+        foreach [string, string] [k, v] in spanContext.entries() {
+            logRecord[k] = v;
+        }
+    }
+    if observe:isObservabilityEnabled() {
+        string? runtimeId = observe:getTagValue(ICP_RUNTIME_ID_KEY);
+        if runtimeId is string {
+            logRecord[ICP_RUNTIME_ID_KEY] = runtimeId;
+        }
+    }
+
+    foreach [string, Value] [k, v] in contextKeyValues.entries() {
+        logRecord[k] = v is Valuer ? v() :
+            (v is PrintableRawTemplate ? evaluateTemplate(v, enableSensitiveDataMasking) : v);
+    }
+
+    string logOutput = format == JSON_FORMAT ?
+        (enableSensitiveDataMasking ? toMaskedString(logRecord) : logRecord.toJsonString()) :
+        printLogFmt(logRecord, enableSensitiveDataMasking);
+
+    lock {
+        if outputFilePath is string {
+            fileWrite(logOutput);
+        }
+    }
+
+    foreach OutputDestination destination in destinations {
+        if destination is StandardDestination {
+            if destination.'type == STDERR {
+                io:fprintln(io:stderr, logOutput);
             } else {
-                RotationConfig? rotationConfig = destination.rotation;
-                if rotationConfig is () {
-                    writeLogToFile(destination.path, logOutput);
-                } else {
-                    lock {
-                        error? rotationResult = checkAndPerformRotation(destination.path, rotationConfig);
-                        if rotationResult is error {
-                            io:fprintln(io:stderr, string `warning: log rotation failed: ${rotationResult.message()}`);
-                        }
-                        writeLogToFile(destination.path, logOutput);
+                io:fprintln(io:stdout, logOutput);
+            }
+        } else {
+            RotationConfig? rotationConfig = destination.rotation;
+            if rotationConfig is () {
+                writeLogToFile(destination.path, logOutput);
+            } else {
+                lock {
+                    error? rotationResult = checkAndPerformRotation(destination.path, rotationConfig);
+                    if rotationResult is error {
+                        io:fprintln(io:stderr, string `warning: log rotation failed: ${rotationResult.message()}`);
                     }
+                    writeLogToFile(destination.path, logOutput);
                 }
             }
         }

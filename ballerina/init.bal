@@ -32,10 +32,9 @@ function init() returns error? {
     // Module loggers use the module name as their ID
     foreach Module mod in modules {
         ConfigInternal moduleConfig = {
-            level: mod.level,
-            loggerId: mod.name
+            level: mod.level
         };
-        RootLogger moduleLogger = new RootLogger(moduleConfig);
+        RootLogger moduleLogger = new RootLogger(moduleConfig, mod.name);
         lock {
             loggerRegistry[mod.name] = moduleLogger;
         }
