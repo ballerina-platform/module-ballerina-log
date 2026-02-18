@@ -14,50 +14,7 @@
 // specific language governing permissions and limitations
 // under the License.
 
-import ballerina/jballerina.java;
 import ballerina/test;
-
-// ========== Test utility native function declarations ==========
-
-isolated function getLogConfigNative() returns map<anydata> = @java:Method {
-    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.LogConfigTestUtils",
-    name: "getLogConfig"
-} external;
-
-isolated function getGlobalLogLevelNative() returns string = @java:Method {
-    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.LogConfigTestUtils",
-    name: "getGlobalLogLevel"
-} external;
-
-isolated function setGlobalLogLevelNative(string level) returns error? = @java:Method {
-    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.LogConfigTestUtils",
-    name: "setGlobalLogLevel"
-} external;
-
-isolated function setModuleLogLevelNative(string moduleName, string level) returns error? = @java:Method {
-    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.LogConfigTestUtils",
-    name: "setModuleLogLevel"
-} external;
-
-isolated function removeModuleLogLevelNative(string moduleName) returns boolean = @java:Method {
-    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.LogConfigTestUtils",
-    name: "removeModuleLogLevel"
-} external;
-
-isolated function setCustomLoggerLevelNative(string loggerId, string level) returns error? = @java:Method {
-    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.LogConfigTestUtils",
-    name: "setCustomLoggerLevel"
-} external;
-
-isolated function getVisibleCustomLoggerCount() returns int = @java:Method {
-    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.LogConfigTestUtils",
-    name: "getVisibleCustomLoggerCount"
-} external;
-
-isolated function isCustomLoggerVisible(string loggerId) returns boolean = @java:Method {
-    'class: "io.ballerina.stdlib.log.testutils.nativeimpl.LogConfigTestUtils",
-    name: "isCustomLoggerVisible"
-} external;
 
 // ========== Tests for runtime log configuration ==========
 
@@ -65,10 +22,10 @@ isolated function isCustomLoggerVisible(string loggerId) returns boolean = @java
     groups: ["logConfig"]
 }
 function testGetGlobalLogLevel() {
-    string currentLevel = getGlobalLogLevelNative();
+    Level currentLevel = root().getLevel();
     // The default level should be one of the valid levels
-    test:assertTrue(currentLevel == "DEBUG" || currentLevel == "INFO" ||
-                    currentLevel == "WARN" || currentLevel == "ERROR",
+    test:assertTrue(currentLevel == DEBUG || currentLevel == INFO ||
+                    currentLevel == WARN || currentLevel == ERROR,
                     "Global log level should be a valid level");
 }
 
@@ -77,107 +34,39 @@ function testGetGlobalLogLevel() {
     dependsOn: [testGetGlobalLogLevel]
 }
 function testSetGlobalLogLevel() returns error? {
+    Logger rootLog = root();
     // Get current level to restore later
-    string originalLevel = getGlobalLogLevelNative();
+    Level originalLevel = rootLog.getLevel();
 
     // Set to DEBUG
-    check setGlobalLogLevelNative("DEBUG");
-    test:assertEquals(getGlobalLogLevelNative(), "DEBUG", "Global log level should be DEBUG");
+    check rootLog.setLevel(DEBUG);
+    test:assertEquals(rootLog.getLevel(), DEBUG, "Global log level should be DEBUG");
 
     // Set to ERROR
-    check setGlobalLogLevelNative("ERROR");
-    test:assertEquals(getGlobalLogLevelNative(), "ERROR", "Global log level should be ERROR");
+    check rootLog.setLevel(ERROR);
+    test:assertEquals(rootLog.getLevel(), ERROR, "Global log level should be ERROR");
 
     // Set to WARN
-    check setGlobalLogLevelNative("WARN");
-    test:assertEquals(getGlobalLogLevelNative(), "WARN", "Global log level should be WARN");
+    check rootLog.setLevel(WARN);
+    test:assertEquals(rootLog.getLevel(), WARN, "Global log level should be WARN");
 
     // Set to INFO
-    check setGlobalLogLevelNative("INFO");
-    test:assertEquals(getGlobalLogLevelNative(), "INFO", "Global log level should be INFO");
-
-    // Test case-insensitivity
-    check setGlobalLogLevelNative("debug");
-    test:assertEquals(getGlobalLogLevelNative(), "DEBUG", "Log level should be case-insensitive");
+    check rootLog.setLevel(INFO);
+    test:assertEquals(rootLog.getLevel(), INFO, "Global log level should be INFO");
 
     // Restore original level
-    check setGlobalLogLevelNative(originalLevel);
+    check rootLog.setLevel(originalLevel);
 }
 
 @test:Config {
     groups: ["logConfig"],
     dependsOn: [testSetGlobalLogLevel]
 }
-function testSetInvalidGlobalLogLevel() {
-    error? result = setGlobalLogLevelNative("INVALID");
-    test:assertTrue(result is error, "Setting invalid log level should return error");
-    if result is error {
-        test:assertTrue(result.message().includes("Invalid log level"),
-                        "Error message should mention invalid log level");
-    }
-}
-
-@test:Config {
-    groups: ["logConfig"],
-    dependsOn: [testSetInvalidGlobalLogLevel]
-}
-function testSetModuleLogLevel() returns error? {
-    string testModule = "testorg/testmodule";
-
-    // Set module log level - modules are now in the unified loggers registry
-    check setModuleLogLevelNative(testModule, "DEBUG");
-
-    // Verify via getLogConfig - modules appear in the "loggers" map
-    map<anydata> config = getLogConfigNative();
-    map<anydata> loggers = <map<anydata>>config["loggers"];
-    test:assertTrue(loggers.hasKey(testModule), "Module should be in loggers");
-    map<anydata> moduleConfig = <map<anydata>>loggers[testModule];
-    test:assertEquals(<string>moduleConfig["level"], "DEBUG", "Module level should be DEBUG");
-
-    // Update module log level
-    check setModuleLogLevelNative(testModule, "ERROR");
-    config = getLogConfigNative();
-    loggers = <map<anydata>>config["loggers"];
-    moduleConfig = <map<anydata>>loggers[testModule];
-    test:assertEquals(<string>moduleConfig["level"], "ERROR", "Module level should be updated to ERROR");
-
-    // Clean up
-    _ = removeModuleLogLevelNative(testModule);
-}
-
-@test:Config {
-    groups: ["logConfig"],
-    dependsOn: [testSetModuleLogLevel]
-}
-function testRemoveModuleLogLevel() returns error? {
-    string testModule = "testorg/removemodule";
-
-    // Add module log level
-    check setModuleLogLevelNative(testModule, "WARN");
-
-    // Remove it
-    boolean removed = removeModuleLogLevelNative(testModule);
-    test:assertTrue(removed, "Module should be removed");
-
-    // Verify it's gone from the unified loggers registry
-    map<anydata> config = getLogConfigNative();
-    map<anydata> loggers = <map<anydata>>config["loggers"];
-    test:assertFalse(loggers.hasKey(testModule), "Module should not be in loggers after removal");
-
-    // Try to remove non-existent module
-    boolean removedAgain = removeModuleLogLevelNative(testModule);
-    test:assertFalse(removedAgain, "Removing non-existent module should return false");
-}
-
-@test:Config {
-    groups: ["logConfig"],
-    dependsOn: [testRemoveModuleLogLevel]
-}
 function testCustomLoggerWithId() returns error? {
-    // Get initial count of visible custom loggers
-    int initialCount = getVisibleCustomLoggerCount();
+    // Get initial count of loggers in registry
+    int initialCount = getLoggerRegistry().getIds().length();
 
-    // Create a logger with explicit ID — ID will be module-prefixed
+    // Create a logger with explicit ID - ID will be module-prefixed
     _ = check fromConfig(id = "test-named-logger", level = DEBUG);
 
     // Verify it's visible (with module prefix)
@@ -192,8 +81,8 @@ function testCustomLoggerWithId() returns error? {
     test:assertTrue(found, "Logger with ID should be in registry");
 
     // Verify count increased
-    int newCount = getVisibleCustomLoggerCount();
-    test:assertEquals(newCount, initialCount + 1, "Visible logger count should increase by 1");
+    int newCount = getLoggerRegistry().getIds().length();
+    test:assertEquals(newCount, initialCount + 1, "Logger count should increase by 1");
 }
 
 @test:Config {
@@ -202,13 +91,13 @@ function testCustomLoggerWithId() returns error? {
 }
 function testCustomLoggerWithoutId() returns error? {
     // Get initial count of loggers
-    int initialCount = getVisibleCustomLoggerCount();
+    int initialCount = getLoggerRegistry().getIds().length();
 
-    // Create a logger without ID - should now be visible with auto-generated ID
+    // Create a logger without ID - should be visible with auto-generated ID
     _ = check fromConfig(level = DEBUG);
 
     // Verify count increased (all loggers are now visible)
-    int newCount = getVisibleCustomLoggerCount();
+    int newCount = getLoggerRegistry().getIds().length();
     test:assertEquals(newCount, initialCount + 1, "Logger count should increase for auto-ID logger");
 }
 
@@ -218,7 +107,7 @@ function testCustomLoggerWithoutId() returns error? {
 }
 function testSetCustomLoggerLevel() returns error? {
     // Create a logger with explicit ID
-    _ = check fromConfig(id = "test-level-change-logger", level = INFO);
+    Logger logger = check fromConfig(id = "test-level-change-logger", level = INFO);
 
     // Find the actual module-prefixed ID
     string[] ids = getLoggerRegistry().getIds();
@@ -231,30 +120,17 @@ function testSetCustomLoggerLevel() returns error? {
     }
 
     // Verify initial level
-    test:assertTrue(isCustomLoggerVisible(loggerId), "Logger should be visible");
+    Logger? retrieved = getLoggerRegistry().getById(loggerId);
+    test:assertTrue(retrieved is Logger, "Logger should be in registry");
 
-    // Change level to DEBUG
-    check setCustomLoggerLevelNative(loggerId, "DEBUG");
-
+    // Change level to DEBUG via Ballerina API
+    check logger.setLevel(DEBUG);
+    test:assertEquals(logger.getLevel(), DEBUG, "Logger level should be DEBUG after setLevel");
 }
 
 @test:Config {
     groups: ["logConfig"],
     dependsOn: [testSetCustomLoggerLevel]
-}
-function testSetInvalidCustomLoggerLevel() returns error? {
-    // Try to set level for non-existent logger
-    check setCustomLoggerLevelNative("non-existent-logger", "DEBUG");
-    // Note: setCustomLoggerLevel just calls setLoggerLevel which doesn't validate existence
-    // The Java side just puts to the map, so this won't error
-
-    // Try to set invalid level for existing logger — no validation on Java side either
-    // These are implementation details of the Java side
-}
-
-@test:Config {
-    groups: ["logConfig"],
-    dependsOn: [testSetInvalidCustomLoggerLevel]
 }
 function testDuplicateLoggerId() returns error? {
     // Create a logger with a known ID
@@ -273,30 +149,6 @@ function testDuplicateLoggerId() returns error? {
     groups: ["logConfig"],
     dependsOn: [testDuplicateLoggerId]
 }
-function testGetLogConfiguration() {
-    map<anydata> config = getLogConfigNative();
-
-    // Verify structure - unified registry with "rootLogger" and "loggers"
-    test:assertTrue(config.hasKey("rootLogger"), "Config should have rootLogger");
-    test:assertTrue(config.hasKey("loggers"), "Config should have loggers");
-
-    // Verify rootLogger has level and is a valid level
-    map<anydata> rootLoggerConfig = <map<anydata>>config["rootLogger"];
-    test:assertTrue(rootLoggerConfig.hasKey("level"), "rootLogger should have level");
-    string rootLevel = <string>rootLoggerConfig["level"];
-    test:assertTrue(rootLevel == "DEBUG" || rootLevel == "INFO" ||
-                    rootLevel == "WARN" || rootLevel == "ERROR",
-                    "Root level should be a valid level");
-
-    // Verify loggers is a map containing all loggers (modules + fromConfig)
-    map<anydata> loggers = <map<anydata>>config["loggers"];
-    test:assertTrue(loggers.length() > 0, "Loggers should not be empty");
-}
-
-@test:Config {
-    groups: ["logConfig"],
-    dependsOn: [testGetLogConfiguration]
-}
 function testChildLoggerInheritsLevel() returns error? {
     // Create a parent logger with ID
     Logger parentLogger = check fromConfig(id = "parent-logger-for-child-test", level = INFO);
@@ -312,7 +164,6 @@ function testChildLoggerInheritsLevel() returns error? {
 
     // Child should follow parent (delegates to parent.getLevel())
     test:assertEquals(childLogger.getLevel(), DEBUG, "Child should follow parent level change to DEBUG");
-
 }
 
 // ========== Tests for getLevel, setLevel ==========
@@ -551,58 +402,53 @@ function testMultipleChildrenInherit() returns error? {
     test:assertEquals(child3.getLevel(), WARN, "Child3 should follow parent to WARN");
 }
 
-// ========== Tests for actual log output filtering (verifies Java-side level check) ==========
+// ========== Tests for level-checking logic ==========
 
 @test:Config {
     groups: ["logConfig"],
     dependsOn: [testMultipleChildrenInherit]
 }
-function testCustomLoggerDoesNotInheritModuleLevel() returns error? {
-    // A custom logger with INFO level should NOT print DEBUG messages
-    Logger infoLogger = check fromConfig(id = "test-no-module-inherit", level = INFO);
+function testIsLevelEnabled() {
+    // INFO-level logger: DEBUG should be disabled, INFO/WARN/ERROR enabled
+    test:assertFalse(isLevelEnabled(INFO, DEBUG), "DEBUG should not be enabled for INFO-level logger");
+    test:assertTrue(isLevelEnabled(INFO, INFO), "INFO should be enabled for INFO-level logger");
+    test:assertTrue(isLevelEnabled(INFO, WARN), "WARN should be enabled for INFO-level logger");
+    test:assertTrue(isLevelEnabled(INFO, ERROR), "ERROR should be enabled for INFO-level logger");
 
-    // getLevel() should return INFO (the logger's own level)
-    test:assertEquals(infoLogger.getLevel(), INFO, "Custom logger level should be INFO");
+    // DEBUG-level logger: all should be enabled
+    test:assertTrue(isLevelEnabled(DEBUG, DEBUG), "DEBUG should be enabled for DEBUG-level logger");
+    test:assertTrue(isLevelEnabled(DEBUG, INFO), "INFO should be enabled for DEBUG-level logger");
 
-    // Verify the Java-side level check respects the custom logger's level
-    boolean debugEnabled = checkCustomLoggerLogLevelEnabled(INFO, DEBUG, "ballerina/log");
-    test:assertFalse(debugEnabled, "DEBUG should not be enabled for INFO-level custom logger");
-
-    // INFO should be enabled
-    boolean infoEnabled = checkCustomLoggerLogLevelEnabled(INFO, INFO, "ballerina/log");
-    test:assertTrue(infoEnabled, "INFO should be enabled for INFO-level custom logger");
-
-    // WARN and ERROR should be enabled
-    boolean warnEnabled = checkCustomLoggerLogLevelEnabled(INFO, WARN, "ballerina/log");
-    test:assertTrue(warnEnabled, "WARN should be enabled for INFO-level custom logger");
-
-    boolean errorEnabled = checkCustomLoggerLogLevelEnabled(INFO, ERROR, "ballerina/log");
-    test:assertTrue(errorEnabled, "ERROR should be enabled for INFO-level custom logger");
+    // ERROR-level logger: only ERROR enabled
+    test:assertFalse(isLevelEnabled(ERROR, DEBUG), "DEBUG should not be enabled for ERROR-level logger");
+    test:assertFalse(isLevelEnabled(ERROR, INFO), "INFO should not be enabled for ERROR-level logger");
+    test:assertFalse(isLevelEnabled(ERROR, WARN), "WARN should not be enabled for ERROR-level logger");
+    test:assertTrue(isLevelEnabled(ERROR, ERROR), "ERROR should be enabled for ERROR-level logger");
 }
 
 @test:Config {
     groups: ["logConfig"],
-    dependsOn: [testCustomLoggerDoesNotInheritModuleLevel]
+    dependsOn: [testIsLevelEnabled]
 }
 function testInheritedLevelFiltersCorrectly() returns error? {
     // When a child inherits DEBUG from parent via setLevel(),
-    // the Java-side level check must also use the inherited level.
+    // the level check must also use the inherited level.
     Logger parent = check fromConfig(id = "test-inherited-filter-parent", level = INFO);
     Logger child = check parent.withContext(childKey = "val");
 
-    // Initially both at INFO — DEBUG should be disabled
+    // Initially both at INFO - DEBUG should be disabled
     test:assertEquals(child.getLevel(), INFO, "Child should inherit INFO");
-    boolean debugBefore = checkCustomLoggerLogLevelEnabled(child.getLevel(), DEBUG, "ballerina/log");
-    test:assertFalse(debugBefore, "DEBUG should not be enabled when child inherits INFO");
+    test:assertFalse(isLevelEnabled(child.getLevel(), DEBUG),
+            "DEBUG should not be enabled when child inherits INFO");
 
-    // Change parent to DEBUG — child should inherit and DEBUG should now be enabled
+    // Change parent to DEBUG - child should inherit and DEBUG should now be enabled
     check parent.setLevel(DEBUG);
     test:assertEquals(child.getLevel(), DEBUG, "Child should inherit DEBUG from parent");
-    boolean debugAfter = checkCustomLoggerLogLevelEnabled(child.getLevel(), DEBUG, "ballerina/log");
-    test:assertTrue(debugAfter, "DEBUG should be enabled when child inherits DEBUG from parent");
+    test:assertTrue(isLevelEnabled(child.getLevel(), DEBUG),
+            "DEBUG should be enabled when child inherits DEBUG from parent");
 }
 
-// ========== New tests for review feedback changes ==========
+// ========== Tests for registry and ID generation ==========
 
 @test:Config {
     groups: ["logConfig"],
@@ -683,7 +529,7 @@ function testAutoIdFirstNoSuffix() returns error? {
         }
     }
     // Note: this test may not always pass if all auto-IDs already have counters > 1
-    // from previous test runs. The logic is correct — first call produces no suffix.
+    // from previous test runs. The logic is correct - first call produces no suffix.
 }
 
 @test:Config {

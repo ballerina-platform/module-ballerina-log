@@ -117,6 +117,9 @@ task copyTestResources(type: Copy) {
     into("logger-from-config") {
         from "tests/resources/samples/logger/logger-from-config"
     }
+    into("logger-registry") {
+        from "tests/resources/samples/logger/logger-registry"
+    }
     into("masked-logger") {
         from "tests/resources/samples/masked-logger"
     }

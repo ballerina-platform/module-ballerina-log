@@ -97,21 +97,22 @@ public isolated function fromConfig(*Config config) returns Logger|Error {
         newKeyValues[k] = v;
     }
 
-    // Register with LogConfigManager - all loggers are now visible
+    // Determine logger ID
     string loggerId;
     if config.id is string {
         // User provided ID - module-prefix it: <module>:<user_id>
         string moduleName = getInvokedModuleName(3);
         string fullId = moduleName.length() > 0 ? moduleName + ":" + <string>config.id : <string>config.id;
-        error? regResult = registerLoggerWithIdNative(fullId, config.level);
-        if regResult is error {
-            return error Error(regResult.message());
+        // Check for duplicate ID in Ballerina-side registry
+        lock {
+            if loggerRegistry.hasKey(fullId) {
+                return error Error("Logger with ID '" + fullId + "' already exists");
+            }
         }
         loggerId = fullId;
     } else {
         // No user ID - auto-generate a readable ID
         loggerId = generateLoggerIdNative(4);
-        registerLoggerAutoNative(loggerId, config.level);
     }
 
     ConfigInternal newConfig = {
@@ -189,18 +190,10 @@ isolated class RootLogger {
         lock {
             self.currentLevel = level;
         }
-        // Update Java-side registry
-        string? id = self.loggerId;
-        if id is string {
-            setLoggerLevelNative(id, level);
-        }
     }
 
     isolated function print(string logLevel, string moduleName, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-        boolean isEnabled = self.loggerId is string ?
-            checkCustomLoggerLogLevelEnabled(self.getLevel(), logLevel, moduleName) :
-            isLogLevelEnabled(self.getLevel(), logLevel, moduleName);
-        if !isEnabled {
+        if !isLevelEnabled(self.getLevel(), logLevel) {
             return;
         }
         printLog(logLevel, moduleName, msg, self.format, self.destinations, self.keyValues,

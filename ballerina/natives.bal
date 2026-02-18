@@ -468,8 +468,17 @@ isolated function replaceString(handle receiver, handle target, handle replaceme
     paramTypes: ["java.lang.CharSequence", "java.lang.CharSequence"]
 } external;
 
-isolated function isLogLevelEnabled(string loggerLogLevel, string logLevel, string moduleName) returns boolean {
-    return checkLogLevelEnabled(loggerLogLevel, logLevel, moduleName);
+final readonly & map<int> LOG_LEVEL_WEIGHT = {
+    "ERROR": 1000,
+    "WARN": 900,
+    "INFO": 800,
+    "DEBUG": 700
+};
+
+isolated function isLevelEnabled(string effectiveLevel, string logLevel) returns boolean {
+    int requestedWeight = LOG_LEVEL_WEIGHT[logLevel] ?: 0;
+    int effectiveWeight = LOG_LEVEL_WEIGHT[effectiveLevel] ?: 800;
+    return requestedWeight >= effectiveWeight;
 }
 
 isolated function getModuleName(KeyValues keyValues, int offset = 2) returns string {
@@ -489,37 +498,7 @@ isolated function rotateLog(string filePath, string policy, int maxFileSize, int
 
 // ========== Internal native function declarations for runtime log configuration ==========
 
-isolated function initializeLogConfig(Level rootLevel, table<Module> key(name) & readonly modules) = @java:Method {
-    'class: "io.ballerina.stdlib.log.LogConfigManager",
-    name: "initializeConfig"
-} external;
-
-isolated function registerLoggerWithIdNative(string loggerId, string logLevel) returns error? = @java:Method {
-    'class: "io.ballerina.stdlib.log.LogConfigManager",
-    name: "registerLoggerWithId"
-} external;
-
-isolated function registerLoggerAutoNative(string loggerId, string logLevel) = @java:Method {
-    'class: "io.ballerina.stdlib.log.LogConfigManager",
-    name: "registerLoggerAuto"
-} external;
-
 isolated function generateLoggerIdNative(int stackOffset) returns string = @java:Method {
     'class: "io.ballerina.stdlib.log.LogConfigManager",
     name: "generateLoggerId"
-} external;
-
-isolated function setLoggerLevelNative(string loggerId, string logLevel) = @java:Method {
-    'class: "io.ballerina.stdlib.log.LogConfigManager",
-    name: "setLoggerLevel"
-} external;
-
-isolated function checkLogLevelEnabled(string loggerLogLevel, string logLevel, string moduleName) returns boolean = @java:Method {
-    'class: "io.ballerina.stdlib.log.LogConfigManager",
-    name: "checkLogLevelEnabled"
-} external;
-
-isolated function checkCustomLoggerLogLevelEnabled(string effectiveLogLevel, string logLevel, string moduleName) returns boolean = @java:Method {
-    'class: "io.ballerina.stdlib.log.LogConfigManager",
-    name: "checkCustomLoggerLogLevelEnabled"
 } external;

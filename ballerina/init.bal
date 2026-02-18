@@ -21,7 +21,6 @@ function init() returns error? {
     rootLogger = new RootLogger();
     check validateDestinations(destinations);
     setModule();
-    initializeLogConfig(level, modules);
 
     // Register the global root logger in the registry
     lock {
