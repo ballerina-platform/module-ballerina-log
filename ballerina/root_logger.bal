@@ -193,7 +193,16 @@ isolated class RootLogger {
     }
 
     isolated function print(string logLevel, string moduleName, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
-        if !isLevelEnabled(self.getLevel(), logLevel) {
+        Level effectiveLevel = self.getLevel();
+        if moduleName.length() > 0 {
+            lock {
+                Logger? moduleLogger = loggerRegistry[moduleName];
+                if moduleLogger is Logger {
+                    effectiveLevel = moduleLogger.getLevel();
+                }
+            }
+        }
+        if !isLevelEnabled(effectiveLevel, logLevel) {
             return;
         }
         printLog(logLevel, moduleName, msg, self.format, self.destinations, self.keyValues,
