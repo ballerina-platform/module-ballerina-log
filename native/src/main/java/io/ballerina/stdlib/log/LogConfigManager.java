@@ -18,9 +18,11 @@
 
 package io.ballerina.stdlib.log;
 
+import io.ballerina.runtime.api.utils.IdentifierUtils;
 import io.ballerina.runtime.api.utils.StringUtils;
 import io.ballerina.runtime.api.values.BString;
 
+import java.util.Arrays;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -75,12 +77,23 @@ public class LogConfigManager {
             // Typical format: "org.module_name.version.file" (e.g., "demo.log_level.0.main")
             // We want: "org/module_name" (e.g., "demo/log_level")
             // The version segment (e.g., "0") and file name should be stripped.
+            // Class naming convention: org.module(.submodule)*.version.file
+            // e.g. "myorg.myproject.0.main"         -> myorg/myproject
+            //      "myorg.myproject.foo.0.main"      -> myorg/myproject.foo
+            // The version segment is the first all-numeric part after the org segment.
             String[] parts = className.split("\\.");
-            if (parts.length >= 3) {
-                // parts[0] = org, parts[1] = module, parts[2] = version, parts[3..] = file/class
-                modulePart = parts[0] + "/" + parts[1];
-            } else if (parts.length == 2) {
-                modulePart = parts[0] + "/" + parts[1];
+            if (parts.length >= 2) {
+                // Find the version segment (first all-numeric segment starting from index 2)
+                int versionIdx = parts.length - 1;
+                for (int i = 2; i < parts.length; i++) {
+                    if (parts[i].matches("\\d+")) {
+                        versionIdx = i;
+                        break;
+                    }
+                }
+                // Module name is everything from parts[1] up to (not including) the version segment
+                String rawModule = String.join(".", Arrays.copyOfRange(parts, 1, versionIdx));
+                modulePart = parts[0] + "/" + IdentifierUtils.decodeIdentifier(rawModule);
             } else {
                 modulePart = className;
             }
