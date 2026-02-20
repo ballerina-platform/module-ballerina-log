@@ -325,6 +325,13 @@ isolated function printLog(string logLevel, string moduleName, string|PrintableR
         logRecord["stackTrace"] = from var element in stackTrace
             select element.toString();
     }
+    // Apply in ascending priority order: context < call-site < tracing/observe.
+    // For child loggers, contextKeyValues is the parent's own context; callSiteKeyValues
+    // carries the already-merged {child context + call-site} result, so child wins over parent.
+    foreach [string, Value] [k, v] in contextKeyValues.entries() {
+        logRecord[k] = v is Valuer ? v() :
+            (v is PrintableRawTemplate ? evaluateTemplate(v, enableSensitiveDataMasking) : v);
+    }
     foreach [string, Value] [k, v] in callSiteKeyValues.entries() {
         logRecord[k] = v is Valuer ? v() :
             (v is PrintableRawTemplate ? evaluateTemplate(v, enableSensitiveDataMasking) : v);
@@ -340,11 +347,6 @@ isolated function printLog(string logLevel, string moduleName, string|PrintableR
         if runtimeId is string {
             logRecord[ICP_RUNTIME_ID_KEY] = runtimeId;
         }
-    }
-
-    foreach [string, Value] [k, v] in contextKeyValues.entries() {
-        logRecord[k] = v is Valuer ? v() :
-            (v is PrintableRawTemplate ? evaluateTemplate(v, enableSensitiveDataMasking) : v);
     }
 
     string logOutput = format == JSON_FORMAT ?
