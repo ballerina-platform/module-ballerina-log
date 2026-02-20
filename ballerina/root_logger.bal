@@ -107,37 +107,43 @@ public isolated function fromConfig(*Config config) returns Logger|Error {
         newKeyValues[k] = v;
     }
 
-    // Determine logger ID
-    string loggerId;
-    if config.id is string {
-        // User provided ID - module-prefix it: <module>:<user_id>
-        // getInvokedModuleName(3): skip generateLoggerIdNative -> fromConfig -> caller
-        string moduleName = getInvokedModuleName(3);
-        loggerId = moduleName.length() > 0 ? moduleName + ":" + <string>config.id : <string>config.id;
-    } else {
-        // No user ID - auto-generate a readable ID.
-        // Stack offset 4: skip generateLoggerId (Java) -> generateLoggerIdNative -> fromConfig -> caller
-        loggerId = generateLoggerIdNative(4);
-    }
-
-    ConfigInternal newConfig = {
+    readonly & ConfigInternal newConfig = {
         format: config.format,
         level: config.level,
         destinations: config.destinations,
         keyValues: newKeyValues.cloneReadOnly(),
         enableSensitiveDataMasking: config.enableSensitiveDataMasking
     };
-    RootLogger logger = new RootLogger(newConfig, loggerId);
 
-    // Atomically check for duplicate ID and register in the registry
-    lock {
-        if loggerRegistry.hasKey(loggerId) {
-            return error Error("Logger with ID '" + loggerId + "' already exists");
+    if config.id is string {
+        // Explicit user ID — module-prefix it: <module>:<user_id>.
+        // getInvokedModuleName(3): skip getInvokedModuleName -> fromConfig -> caller
+        string moduleName = getInvokedModuleName(3);
+        string loggerId = moduleName.length() > 0 ? moduleName + ":" + <string>config.id : <string>config.id;
+        RootLogger logger = new RootLogger(newConfig, loggerId);
+        lock {
+            if loggerRegistry.hasKey(loggerId) {
+                return error Error("Logger with ID '" + loggerId + "' already exists");
+            }
+            loggerRegistry[loggerId] = logger;
         }
-        loggerRegistry[loggerId] = logger;
+        return logger;
     }
 
-    return logger;
+    // No user ID — auto-generate a readable ID and guarantee uniqueness inside the lock.
+    // Stack offset 4: skip generateLoggerId (Java) -> generateLoggerIdNative -> fromConfig -> caller
+    string baseId = generateLoggerIdNative(4);
+    lock {
+        string loggerId = baseId;
+        int suffix = 2;
+        while loggerRegistry.hasKey(loggerId) {
+            loggerId = baseId + "-" + suffix.toString();
+            suffix += 1;
+        }
+        RootLogger logger = new RootLogger(newConfig, loggerId);
+        loggerRegistry[loggerId] = logger;
+        return logger;
+    }
 }
 
 isolated class RootLogger {
