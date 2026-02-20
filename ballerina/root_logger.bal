@@ -286,7 +286,7 @@ isolated class ChildLogger {
     }
 
     public isolated function setLevel(Level level) returns error? {
-        return error("Unsupported operation: cannot set log level on a child logger. " +
+        return error Error("Unsupported operation: cannot set log level on a child logger. " +
                 "Child loggers inherit their level from the parent logger.");
     }
 
