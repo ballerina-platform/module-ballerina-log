@@ -151,6 +151,41 @@ The log module supports contextual logging, allowing you to create loggers with 
 
 For more details and advanced usage, see the module specification and API documentation.
 
+### Runtime Log Level Modification
+
+The log module supports modifying log levels at runtime without restarting the application. All loggers created via `fromConfig` are registered in a logger registry with a unique ID and can be discovered and updated at runtime.
+
+```ballerina
+// Create a logger with an explicit ID
+log:Logger paymentLogger = check log:fromConfig(id = "payment-service", level = log:INFO);
+
+// Change the level at runtime
+check paymentLogger.setLevel(log:DEBUG);
+log:Level current = paymentLogger.getLevel(); // DEBUG
+```
+
+The logger registry provides a way to discover and manage all registered loggers:
+
+```ballerina
+log:LoggerRegistry registry = log:getLoggerRegistry();
+
+// List all registered logger IDs
+string[] ids = registry.getIds();
+// e.g., ["root", "myorg/payment:payment-service", "myorg/payment:init"]
+
+// Look up a logger by ID and update its level
+log:Logger? logger = registry.getById("myorg/payment:payment-service");
+if logger is log:Logger {
+    check logger.setLevel(log:DEBUG);
+}
+```
+
+The registry contains:
+- `"root"` — the global root logger
+- All loggers created via `fromConfig` (module-prefixed user IDs or auto-generated IDs)
+
+> **Note:** Per-module log levels configured via `[[ballerina.log.modules]]` in `Config.toml` are static — they apply at startup and cannot be changed at runtime through the registry. Child loggers (created via `withContext`) are also not registered and always inherit their level from the parent.
+
 ### Sensitive Data Masking
 
 The log module provides capabilities to mask sensitive data in log messages to maintain data privacy and security when dealing with personally identifiable information (PII) or other sensitive data.

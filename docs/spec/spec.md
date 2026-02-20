@@ -36,7 +36,7 @@ The conforming implementation of the specification is released and included in t
    * 5.1. [Logger level APIs](#51-logger-level-apis)
    * 5.2. [Logger identification](#52-logger-identification)
    * 5.3. [Logger registry](#53-logger-registry)
-   * 5.4. [Module loggers in the registry](#54-module-loggers-in-the-registry)
+   * 5.4. [Module log levels](#54-module-log-levels)
    * 5.5. [Child logger level inheritance](#55-child-logger-level-inheritance)
 6. [Sensitive data masking](#6-sensitive-data-masking)
    * 6.1. [Sensitive data annotation](#61-sensitive-data-annotation)
@@ -480,7 +480,6 @@ The log module maintains an internal logger registry that tracks all registered 
 
 The registry tracks:
 - The root logger (registered with the well-known ID `"root"`)
-- Module loggers (each configured module is registered using the module name as its logger ID)
 - All loggers created via `fromConfig` (with module-prefixed or auto-generated IDs)
 
 Child loggers (created via `withContext`) are **not** registered in the registry.
@@ -511,7 +510,7 @@ log:LoggerRegistry registry = log:getLoggerRegistry();
 
 // List all registered logger IDs
 string[] ids = registry.getIds();
-// e.g., ["root", "myorg/payment", "myorg/payment:payment-service", "myorg/payment:init"]
+// e.g., ["root", "myorg/payment:payment-service", "myorg/payment:init"]
 
 // Look up a logger by ID and change its level
 log:Logger? logger = registry.getById("myorg/payment:payment-service");
@@ -520,9 +519,9 @@ if logger is log:Logger {
 }
 ```
 
-### 5.4. Module loggers in the registry
+### 5.4. Module log levels
 
-Each module configured in `Config.toml` is automatically registered as a separate logger in the registry. The module name is used as the logger ID.
+Per-module log levels configured in `Config.toml` are applied at the start of the program and filter log statements from each module statically. Module log levels are **not** registered in the logger registry and cannot be modified at runtime.
 
 ```toml
 [ballerina.log]
@@ -533,18 +532,9 @@ name = "myorg/payment"
 level = "DEBUG"
 ```
 
-Module loggers can be looked up and modified at runtime:
+When code in `myorg/payment` logs a message, the root logger checks the configured module level (DEBUG) before deciding whether to emit the log, regardless of the root logger's own level (INFO). This check happens on the hot logging path using a lock-free lookup.
 
-```ballerina
-log:LoggerRegistry registry = log:getLoggerRegistry();
-
-log:Logger? paymentLogger = registry.getById("myorg/payment");
-if paymentLogger is log:Logger {
-    check paymentLogger.setLevel(log:ERROR); // Change at runtime
-}
-```
-
-> **Note:** If a user calls `fromConfig(id = "myorg/payment")` using a name that matches a configured module, the duplicate-ID check returns an error, preventing collisions.
+> **Note:** Module log levels are a static, configuration-time feature. To change a module's effective log level at runtime, use a logger created via `fromConfig` and control it through the `LoggerRegistry`.
 
 ### 5.5. Child logger level inheritance
 
