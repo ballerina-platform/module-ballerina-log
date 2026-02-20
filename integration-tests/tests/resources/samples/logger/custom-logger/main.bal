@@ -75,6 +75,14 @@ isolated class CustomLogger {
         return new CustomLogger(filePath = self.filePath, level = self.level, keyValues = newKeyValues.cloneReadOnly());
     }
 
+    public isolated function getLevel() returns log:Level {
+        return self.level;
+    }
+
+    public isolated function setLevel(log:Level level) returns error? {
+        return error("Unsupported operation: CustomLogger does not support runtime level changes.");
+    }
+
     isolated function print(log:Level level, string|log:PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *log:KeyValues keyValues) {
         if !self.isLogLevelEnabled(level) {
             return;

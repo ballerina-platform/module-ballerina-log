@@ -933,7 +933,7 @@ function testRotationWithKeyValues() returns error? {
 function testEmptyFileNoRotation() returns error? {
     string logFilePath = ROTATION_TEST_DIR + "empty_file_test.log";
 
-    Logger logger = check fromConfig(
+    _ = check fromConfig(
         destinations = [
             {
                 'type: FILE,

@@ -21,6 +21,7 @@ const CONFIG_ROOT_LOGGER = "tests/resources/config/json/root-logger/Config.toml"
 const CHILD_LOGGERS_SRC_FILE = "tests/resources/samples/logger/child-loggers/main.bal";
 const CUSTOM_LOGGER_SRC_FILE = "tests/resources/samples/logger/custom-logger/main.bal";
 const LOGGER_FROM_CONFIG_CONFIG_FILE = "tests/resources/samples/logger/logger-from-config/Config.toml";
+const LOGGER_REGISTRY_SRC_DIR = "logger-registry";
 
 @test:Config {
     groups: ["logger"]
@@ -124,4 +125,39 @@ function testCustomLogger() returns error? {
     test:assertTrue(fileDebugLogs[1].endsWith(string `] {ERROR} "This is an error message" error="An error occurred" mode="debug"`));
     test:assertTrue(fileDebugLogs[2].endsWith(string `] {WARN} "This is a warning message"  mode="debug"`));
     test:assertTrue(fileDebugLogs[3].endsWith(string `] {DEBUG} "This is a debug message"  mode="debug"`));
+}
+
+@test:Config {
+    groups: ["logger"]
+}
+function testLoggerRegistry() returns error? {
+    Process|error execResult = exec(bal_exec_path, {}, (), "run", string `${temp_dir_path}/${LOGGER_REGISTRY_SRC_DIR}`);
+    Process result = check execResult;
+    int _ = check result.waitForExit();
+    int _ = check result.exitCode();
+    io:ReadableByteChannel outStreamResult = result.stdout();
+    io:ReadableCharacterChannel outCharStreamResult = new (outStreamResult, UTF_8);
+    string outText = check outCharStreamResult.read(100000);
+    check outCharStreamResult.close();
+
+    string[] outLines = re `\n`.split(outText.trim());
+    map<string> results = {};
+    foreach string line in outLines {
+        int? colonIdx = line.indexOf(":");
+        if colonIdx is int {
+            string key = line.substring(0, colonIdx).trim();
+            string value = line.substring(colonIdx + 1).trim();
+            results[key] = value;
+        }
+    }
+
+    test:assertEquals(results["MODULE_LEVEL_ID"], "myorg/registrytest:audit-service");
+    test:assertEquals(results["MODULE_LEVEL_LEVEL"], "WARN");
+    test:assertEquals(results["EXPLICIT_ID"], "myorg/registrytest:payment-service");
+    test:assertEquals(results["AUTO_ID_FOUND"], "true");
+    test:assertEquals(results["REGISTRY_HAS_ROOT"], "true");
+    test:assertEquals(results["LOOKUP_LEVEL"], "INFO");
+    test:assertEquals(results["CHILD_INHERITS"], "DEBUG");
+    test:assertTrue((results["CHILD_SET_ERROR"] ?: "").includes("Unsupported operation"));
+    test:assertEquals(results["CHILD_NOT_IN_REGISTRY"], "true");
 }

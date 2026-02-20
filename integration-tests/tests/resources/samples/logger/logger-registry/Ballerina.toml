@@ -1,0 +1,4 @@
+[package]
+org = "myorg"
+name = "registrytest"
+version = "1.0.0"

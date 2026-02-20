@@ -53,4 +53,20 @@ public type Logger isolated object {
    # + keyValues - The key-value pairs to be added to the logger context
    # + return - A new Logger instance with the given key-values added to its context
    public isolated function withContext(*KeyValues keyValues) returns Logger|error;
+
+   # Returns the effective log level of this logger.
+   # For root and custom loggers, returns the explicitly set level.
+   # For child loggers (created via `withContext`), returns the inherited level from the parent logger.
+   #
+   # + return - The effective log level
+   public isolated function getLevel() returns Level;
+
+   # Sets the log level of this logger at runtime.
+   # This is supported on root loggers, module loggers, and loggers created via `fromConfig`.
+   # Child loggers (created via `withContext`) do not support this operation and will return an error.
+   # To change a child logger's effective level, set the level on its parent logger instead.
+   #
+   # + level - The new log level to set
+   # + return - An error if the operation is not supported, nil on success
+   public isolated function setLevel(Level level) returns error?;
 };

@@ -21,6 +21,18 @@ function init() returns error? {
     rootLogger = new RootLogger();
     check validateDestinations(destinations);
     setModule();
+
+    // Register the global root logger in the registry
+    lock {
+        loggerRegistry["root"] = rootLogger;
+    }
+
+    // Populate the Java-side ConcurrentHashMap with per-module level overrides so that
+    // RootLogger.print() can do a lock-free level lookup on the hot logging path.
+    // Module loggers are intentionally NOT registered in the Ballerina-side LoggerRegistry.
+    foreach Module mod in modules {
+        setModuleLevelNative(mod.name, mod.level);
+    }
 }
 
 isolated function validateDestinations(OutputDestination[] destinations) returns Error? {
