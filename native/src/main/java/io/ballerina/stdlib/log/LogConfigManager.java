@@ -116,7 +116,8 @@ public class LogConfigManager {
      * @return the generated logger ID
      */
     public static BString generateLoggerId(long stackOffset) {
-        return StringUtils.fromString(getInstance().generateLoggerId((int) stackOffset));
+        int safeOffset = stackOffset < 0 ? 0 : (stackOffset > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) stackOffset);
+        return StringUtils.fromString(getInstance().generateLoggerId(safeOffset));
     }
 
     /**
