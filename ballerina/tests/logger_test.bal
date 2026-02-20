@@ -62,9 +62,9 @@ function testBasicLoggingFunctions() returns error? {
     PrintableRawTemplate value2Temp = `val:${value2}`;
     logger1.printError("This is an error message", error("An error ocurred"), key2 = `${value2Temp}`);
     logger1.printWarn("This is a warning message");
-    string expectedMsg1 = string `, "level":"INFO", "module":"ballerina/log$test", "message":"This is an info message", "key1":"value1", "key2":"val:value2", "ctx":{"id":"ctx-1234", "msg":"Sample Context Message"}, "env":"prod", "name":"logger1"}`;
+    string expectedMsg1 = string `, "level":"INFO", "module":"ballerina/log$test", "message":"This is an info message", "env":"prod", "name":"logger1", "key1":"value1", "key2":"val:value2", "ctx":{"id":"ctx-1234", "msg":"Sample Context Message"}}`;
     string expectedMsg21 = string `, "level":"ERROR", "module":"ballerina/log$test", "message":"This is an error message", "error":{"causes":[], "message":"An error ocurred", "detail":{}, "stackTrace":`;
-    string expectedMsg22 = string `, "key2":"val:value2", "env":"prod", "name":"logger1"}`;
+    string expectedMsg22 = string `, "env":"prod", "name":"logger1", "key2":"val:value2"}`;
     string expectedMsg3 = string `, "level":"WARN", "module":"ballerina/log$test", "message":"This is a warning message", "env":"prod", "name":"logger1"}`;
 
     test:assertEquals(stdErrLogs.length(), 3);
@@ -94,7 +94,7 @@ function testBasicLoggingFunctions() returns error? {
     string expectedMsg4 = string ` level=INFO module=ballerina/log$test message="This is an info message" env="dev" name="logger2"`;
     string expectedMsg51 = string ` level=ERROR module=ballerina/log$test message="This is an error message" error={"causes":[],"message":"An error occurred","detail":{},"stackTrace":`;
     string expectedMsg52 = string ` env="dev" name="logger2"`;
-    string expectedMsg6 = string ` level=DEBUG module=ballerina/log$test message="This is a debug message" key1="value1" key2="val:value2" ctx={"id":"ctx-1234","msg":"Sample Context Message"} env="dev" name="logger2"`;
+    string expectedMsg6 = string ` level=DEBUG module=ballerina/log$test message="This is a debug message" env="dev" name="logger2" key1="value1" key2="val:value2" ctx={"id":"ctx-1234","msg":"Sample Context Message"}`;
     string expectedMsg7 = string ` level=WARN module=ballerina/log$test message="This is a warning message" env="dev" name="logger2"`;
 
     test:assertTrue(stdErrLogs.length() == 0);
