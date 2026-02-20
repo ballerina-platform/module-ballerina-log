@@ -82,7 +82,9 @@ public class LogConfigManager {
             //      "myorg.myproject.foo.0.main"      -> myorg/myproject.foo
             // The version segment is the first all-numeric part after the org segment.
             String[] parts = className.split("\\.");
-            if (parts.length >= 2) {
+            if (parts.length == 2) {
+                modulePart = parts[0] + "/" + IdentifierUtils.decodeIdentifier(parts[1]);
+            } else if (parts.length > 2) {
                 // Find the version segment (first all-numeric segment starting from index 2)
                 int versionIdx = parts.length - 1;
                 for (int i = 2; i < parts.length; i++) {
