@@ -502,3 +502,13 @@ isolated function generateLoggerIdNative(int stackOffset) returns string = @java
     'class: "io.ballerina.stdlib.log.LogConfigManager",
     name: "generateLoggerId"
 } external;
+
+isolated function getModuleLevelNative(string moduleName) returns Level? = @java:Method {
+    'class: "io.ballerina.stdlib.log.LogConfigManager",
+    name: "getModuleLevel"
+} external;
+
+isolated function setModuleLevelNative(string moduleName, Level level) = @java:Method {
+    'class: "io.ballerina.stdlib.log.LogConfigManager",
+    name: "setModuleLevel"
+} external;

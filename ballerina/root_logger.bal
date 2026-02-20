@@ -20,7 +20,9 @@ import ballerina/observe;
 # Configuration for the Ballerina logger
 public type Config record {|
     # Optional unique identifier for this logger.
-    # If provided, the logger will be visible in the ICP dashboard, and its log level can be modified at runtime.
+    # All loggers are registered and can be discovered via `getLoggerRegistry()`.
+    # If provided, this value is used as the logger's runtime ID (prefixed with the module name);
+    # otherwise, an ID is auto-generated from the calling context.
     string id?;
     # Log format to use. Default is the logger format configured in the module level
     LogFormat format = format;
@@ -49,22 +51,30 @@ final RootLogger rootLogger;
 // Ballerina-side logger registry: loggerId -> Logger
 isolated map<Logger> loggerRegistry = {};
 
-# Provides access to the logger registry for discovering and managing registered loggers.
-public isolated class LoggerRegistry {
 
+# Provides access to the logger registry for discovering and managing registered loggers.
+public type LoggerRegistry isolated object {
     # Returns the IDs of all registered loggers.
     #
     # + return - An array of logger IDs
+    public isolated function getIds() returns string[];
+
+    # Returns a logger by its registered ID.
+    #
+    # + id - The logger ID to look up
+    # + return - The Logger instance if found, nil otherwise
+    public isolated function getById(string id) returns Logger?;
+};
+
+isolated class LoggerRegistryImpl {
+    *LoggerRegistry;
+
     public isolated function getIds() returns string[] {
         lock {
             return loggerRegistry.keys().clone();
         }
     }
 
-    # Returns a logger by its registered ID.
-    #
-    # + id - The logger ID to look up
-    # + return - The Logger instance if found, nil otherwise
     public isolated function getById(string id) returns Logger? {
         lock {
             return loggerRegistry[id];
@@ -72,7 +82,7 @@ public isolated class LoggerRegistry {
     }
 }
 
-final LoggerRegistry loggerRegistryInstance = new;
+final LoggerRegistry loggerRegistryInstance = new LoggerRegistryImpl();
 
 # Returns the logger registry for discovering and managing registered loggers.
 #
@@ -101,17 +111,12 @@ public isolated function fromConfig(*Config config) returns Logger|Error {
     string loggerId;
     if config.id is string {
         // User provided ID - module-prefix it: <module>:<user_id>
+        // getInvokedModuleName(3): skip generateLoggerIdNative -> fromConfig -> caller
         string moduleName = getInvokedModuleName(3);
-        string fullId = moduleName.length() > 0 ? moduleName + ":" + <string>config.id : <string>config.id;
-        // Check for duplicate ID in Ballerina-side registry
-        lock {
-            if loggerRegistry.hasKey(fullId) {
-                return error Error("Logger with ID '" + fullId + "' already exists");
-            }
-        }
-        loggerId = fullId;
+        loggerId = moduleName.length() > 0 ? moduleName + ":" + <string>config.id : <string>config.id;
     } else {
-        // No user ID - auto-generate a readable ID
+        // No user ID - auto-generate a readable ID.
+        // Stack offset 4: skip generateLoggerId (Java) -> generateLoggerIdNative -> fromConfig -> caller
         loggerId = generateLoggerIdNative(4);
     }
 
@@ -124,8 +129,11 @@ public isolated function fromConfig(*Config config) returns Logger|Error {
     };
     RootLogger logger = new RootLogger(newConfig, loggerId);
 
-    // Register in the Ballerina-side registry
+    // Atomically check for duplicate ID and register in the registry
     lock {
+        if loggerRegistry.hasKey(loggerId) {
+            return error Error("Logger with ID '" + loggerId + "' already exists");
+        }
         loggerRegistry[loggerId] = logger;
     }
 
@@ -142,14 +150,18 @@ isolated class RootLogger {
     private final boolean enableSensitiveDataMasking;
     // Unique ID for loggers registered with LogConfigManager
     private final string? loggerId;
+    // True only for module-level loggers created from the `modules` configurable in init.bal.
+    // Used by setLevel() to keep moduleLogLevels in sync.
+    private final boolean isModuleLogger;
 
-    public isolated function init(Config|ConfigInternal config = <Config>{}, string? loggerId = ()) {
+    public isolated function init(Config|ConfigInternal config = <Config>{}, string? loggerId = (), boolean isModuleLogger = false) {
         self.format = config.format;
         self.currentLevel = config.level;
         self.destinations = config.destinations;
         self.keyValues = config.keyValues;
         self.enableSensitiveDataMasking = config.enableSensitiveDataMasking;
         self.loggerId = loggerId;
+        self.isModuleLogger = isModuleLogger;
     }
 
     public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
@@ -190,16 +202,18 @@ isolated class RootLogger {
         lock {
             self.currentLevel = level;
         }
+        // Keep the Java-side module level map in sync for fast lock-free reads in print().
+        if self.isModuleLogger {
+            setModuleLevelNative(self.loggerId ?: "", level);
+        }
     }
 
     isolated function print(string logLevel, string moduleName, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
         Level effectiveLevel = self.getLevel();
         if moduleName.length() > 0 {
-            lock {
-                Logger? moduleLogger = loggerRegistry[moduleName];
-                if moduleLogger is Logger {
-                    effectiveLevel = moduleLogger.getLevel();
-                }
+            Level? moduleLevel = getModuleLevelNative(moduleName);
+            if moduleLevel is Level {
+                effectiveLevel = moduleLevel;
             }
         }
         if !isLevelEnabled(effectiveLevel, logLevel) {

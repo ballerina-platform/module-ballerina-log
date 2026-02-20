@@ -80,7 +80,7 @@ isolated class CustomLogger {
     }
 
     public isolated function setLevel(log:Level level) returns error? {
-        // No-op for custom logger
+        return error("Unsupported operation: CustomLogger does not support runtime level changes.");
     }
 
     isolated function print(log:Level level, string|log:PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *log:KeyValues keyValues) {

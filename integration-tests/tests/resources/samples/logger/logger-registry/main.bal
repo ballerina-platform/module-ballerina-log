@@ -46,7 +46,9 @@ public function main() returns error? {
     string[] allIds = log:getLoggerRegistry().getIds();
     boolean autoIdFound = false;
     foreach string id in allIds {
-        if id.startsWith("myorg/registrytest:") && !id.includes("payment-service") {
+        if id.startsWith("myorg/registrytest:")
+                && id != "myorg/registrytest:audit-service"
+                && id != "myorg/registrytest:payment-service" {
             autoIdFound = true;
             break;
         }

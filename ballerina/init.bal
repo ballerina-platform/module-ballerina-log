@@ -27,16 +27,18 @@ function init() returns error? {
         loggerRegistry["root"] = rootLogger;
     }
 
-    // Register each configured module as a Logger in the Ballerina-side registry
-    // Module loggers use the module name as their ID
+    // Register each configured module as a Logger in the Ballerina-side registry.
+    // Module loggers use the module name as their ID. The initial level is also pushed
+    // to the Java-side ConcurrentHashMap so that RootLogger.print() can do a lock-free lookup.
     foreach Module mod in modules {
         ConfigInternal moduleConfig = {
             level: mod.level
         };
-        RootLogger moduleLogger = new RootLogger(moduleConfig, mod.name);
+        RootLogger moduleLogger = new RootLogger(moduleConfig, mod.name, true);
         lock {
             loggerRegistry[mod.name] = moduleLogger;
         }
+        setModuleLevelNative(mod.name, mod.level);
     }
 }
 

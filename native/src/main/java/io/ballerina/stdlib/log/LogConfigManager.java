@@ -25,8 +25,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- * Provides logger ID generation using JVM StackWalker.
- * All log configuration state is managed on the Ballerina side.
+ * Provides logger ID generation and module-level log level storage.
+ * Module log levels are stored in a ConcurrentHashMap so reads on the hot logging
+ * path are lock-free (no Ballerina isolation lock required).
  *
  * @since 2.17.0
  */
@@ -36,6 +37,10 @@ public class LogConfigManager {
 
     // Per-function counters for auto-generated IDs: "module:function" -> counter
     private final ConcurrentHashMap<String, AtomicLong> functionCounters = new ConcurrentHashMap<>();
+
+    // Module-level log level overrides: moduleName -> level string.
+    // ConcurrentHashMap gives lock-free reads on the hot logging path.
+    private final ConcurrentHashMap<String, String> moduleLogLevels = new ConcurrentHashMap<>();
 
     private LogConfigManager() {
     }
@@ -99,5 +104,27 @@ public class LogConfigManager {
      */
     public static BString generateLoggerId(long stackOffset) {
         return StringUtils.fromString(getInstance().generateLoggerId((int) stackOffset));
+    }
+
+    /**
+     * Return the configured log level for a module, or null if no override is set.
+     * Called on every log statement — no Ballerina isolation lock is acquired.
+     *
+     * @param moduleName the Ballerina module name (e.g. "myorg/payment")
+     * @return a BString level value, or null if no override is registered
+     */
+    public static Object getModuleLevel(BString moduleName) {
+        String level = getInstance().moduleLogLevels.get(moduleName.getValue());
+        return level != null ? StringUtils.fromString(level) : null;
+    }
+
+    /**
+     * Register or update the log level override for a module.
+     *
+     * @param moduleName the Ballerina module name
+     * @param level      the log level string (DEBUG, INFO, WARN, ERROR)
+     */
+    public static void setModuleLevel(BString moduleName, BString level) {
+        getInstance().moduleLogLevels.put(moduleName.getValue(), level.getValue());
     }
 }

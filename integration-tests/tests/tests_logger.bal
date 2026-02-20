@@ -145,8 +145,8 @@ function testLoggerRegistry() returns error? {
     foreach string line in outLines {
         int? colonIdx = line.indexOf(":");
         if colonIdx is int {
-            string key = line.substring(0, colonIdx);
-            string value = line.substring(colonIdx + 1);
+            string key = line.substring(0, colonIdx).trim();
+            string value = line.substring(colonIdx + 1).trim();
             results[key] = value;
         }
     }
