@@ -126,6 +126,12 @@ task copyTestResources(type: Copy) {
 }
 
 task copyTestOutputResources(type: Copy) {
+    // Always re-copy so that APPEND-mode output files start from a known initial state
+    // on every test run, even without a clean build.
+    outputs.upToDateWhen { false }
+    doFirst {
+        delete "${project.projectDir}/build/tmp/output"
+    }
     into tmpDir
     into("output") {
         from "tests/resources/samples/file-write-output/output"

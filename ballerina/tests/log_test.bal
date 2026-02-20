@@ -135,3 +135,75 @@ function testInvalidDestination() returns error? {
     }
     test:assertEquals(result.message(), "The given file destination path: 'foo' is not valid. File destination path should be a valid file with .log extension.");
 }
+
+@test:Config {}
+function testEmptyDestinationValidation() returns error? {
+    Error? result = validateDestinations([]);
+    test:assertTrue(result is Error, "Should return an error for empty destinations");
+    if result is Error {
+        test:assertEquals(result.message(), "At least one log destination must be specified.");
+    }
+}
+
+@test:Config {}
+function testValidateRotationConfigErrors() returns error? {
+    // maxFileSize <= 0 with SIZE_BASED policy
+    Error? result = validateRotationConfig({policy: SIZE_BASED, maxFileSize: 0, maxAge: 3600, maxBackupFiles: 5});
+    test:assertTrue(result is Error, "Should error when maxFileSize <= 0 with SIZE_BASED");
+    if result is Error {
+        test:assertTrue(result.message().includes("maxFileSize must be positive"));
+    }
+
+    // maxAge <= 0 with TIME_BASED policy
+    result = validateRotationConfig({policy: TIME_BASED, maxFileSize: 1000, maxAge: 0, maxBackupFiles: 5});
+    test:assertTrue(result is Error, "Should error when maxAge <= 0 with TIME_BASED");
+    if result is Error {
+        test:assertTrue(result.message().includes("maxAge must be positive"));
+    }
+
+    // maxBackupFiles < 0
+    result = validateRotationConfig({policy: SIZE_BASED, maxFileSize: 1000, maxAge: 3600, maxBackupFiles: -1});
+    test:assertTrue(result is Error, "Should error when maxBackupFiles < 0");
+    if result is Error {
+        test:assertTrue(result.message().includes("maxBackupFiles cannot be negative"));
+    }
+}
+
+@test:Config {}
+function testProcessTemplateDeprecated() {
+    // Test with a plain string insertion
+    string name = "world";
+    string result = processTemplate(`Hello ${name}!`);
+    test:assertEquals(result, "Hello world!");
+
+    // Test with a Valuer (function) insertion
+    string result2 = processTemplate(`count: ${isolated function() returns int => 42}`);
+    test:assertEquals(result2, "count: 42");
+
+    // Test with a nested PrintableRawTemplate insertion
+    string inner = "inner";
+    string result3 = processTemplate(`outer: ${`nested-${inner}`}`);
+    test:assertEquals(result3, "outer: nested-inner");
+}
+
+@test:Config {
+    dependsOn: [testPrintLog]
+}
+function testPrintErrorWithCause() {
+    test:when(mock_fprintln).call("mockFprintln");
+    error cause = error("root cause");
+    error chained = error("top level", cause);
+    printError("chained error test", 'error = chained);
+    test:assertEquals(logMessage, "something went wrong");
+}
+
+@test:Config {
+    dependsOn: [testPrintErrorWithCause]
+}
+function testPrintErrorWithJsonMessage() {
+    test:when(mock_fprintln).call("mockFprintln");
+    // An error whose message is a valid JSON string — parseErrorMessage returns json
+    error jsonMsgError = error("{\"type\":\"NotFound\",\"code\":404}");
+    printError("json message error", 'error = jsonMsgError);
+    test:assertEquals(logMessage, "something went wrong");
+}

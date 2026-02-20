@@ -160,4 +160,40 @@ function testChildLogger() {
     test:assertEquals(stdErrLogs.length(), 1);
     test:assertTrue(stdErrLogs[0].endsWith(string `, "level":"INFO", "module":"ballerina/log$test", "message":"This is an info message", "env":"test", "child":true, "name":"child-logger", "key":"value"}`));
     stdErrLogs.removeAll();
+
+    childLogger.printDebug("This is a debug message", requestId = "req-123");
+    test:assertEquals(stdErrLogs.length(), 1);
+    test:assertTrue(stdErrLogs[0].endsWith(string `, "level":"DEBUG", "module":"ballerina/log$test", "message":"This is a debug message", "env":"test", "requestId":"req-123", "child":true, "name":"child-logger", "key":"value"}`));
+    stdErrLogs.removeAll();
+
+    childLogger.printError("This is an error message", error("test error"));
+    test:assertEquals(stdErrLogs.length(), 1);
+    test:assertTrue(stdErrLogs[0].includes(string `"level":"ERROR", "module":"ballerina/log$test", "message":"This is an error message"`));
+    test:assertTrue(stdErrLogs[0].endsWith(string `, "env":"test", "child":true, "name":"child-logger", "key":"value"}`));
+    stdErrLogs.removeAll();
+
+    childLogger.printWarn("This is a warn message");
+    test:assertEquals(stdErrLogs.length(), 1);
+    test:assertTrue(stdErrLogs[0].endsWith(string `, "level":"WARN", "module":"ballerina/log$test", "message":"This is a warn message", "env":"test", "child":true, "name":"child-logger", "key":"value"}`));
+    stdErrLogs.removeAll();
+}
+
+@test:Config {
+    groups: ["logger"],
+    dependsOn: [testChildLogger]
+}
+function testModuleLevelOverride() {
+    test:when(mock_fprintln).call("addLogs");
+    // "myorg/myproject" has level ERROR in Config.toml — DEBUG/INFO/WARN should be suppressed.
+    // Use root() (Logger interface) so optional error/stackTrace params get default values.
+    Logger rootLog = root();
+    rootLog.printDebug("should be suppressed", module = "myorg/myproject");
+    rootLog.printInfo("should be suppressed", module = "myorg/myproject");
+    rootLog.printWarn("should be suppressed", module = "myorg/myproject");
+    test:assertEquals(stdErrLogs.length(), 0, "DEBUG/INFO/WARN should be suppressed by module level ERROR");
+
+    rootLog.printError("should pass through", module = "myorg/myproject");
+    test:assertEquals(stdErrLogs.length(), 1, "ERROR should pass through module level ERROR");
+    test:assertTrue(stdErrLogs[0].includes("\"message\":\"should pass through\""));
+    stdErrLogs.removeAll();
 }
