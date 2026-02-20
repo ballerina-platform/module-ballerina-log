@@ -512,24 +512,52 @@ function testModulePrefixedId() returns error? {
     dependsOn: [testModulePrefixedId]
 }
 function testAutoIdFirstNoSuffix() returns error? {
-    // The first auto-generated ID for a function should not have a counter suffix
-    // We can't easily test the exact ID, but we can verify the format
-    _ = check fromConfig(level = DEBUG);
+    // The first auto-generated ID for a function should not have a counter suffix.
+    // Capture the registry state before creating a new logger with an auto-generated ID.
+    string[] idsBefore = getLoggerRegistry().getIds();
+    int sizeBefore = idsBefore.length();
 
-    string[] ids = getLoggerRegistry().getIds();
-    // Auto-generated IDs have format "module:function" (no suffix for first)
-    // Look for IDs that contain ":" but don't end with a number pattern like "-N"
-    foreach string id in ids {
-        if id.includes(":") && !id.includes(":test-") && !id.includes(":parent-") &&
-                !id.includes(":my-") && !id.includes(":test_") && id != "root" {
-            // Check if this ID doesn't end with -N (where N is a digit)
-            if !id.matches(re `.*-\d+$`) {
+    // Create a logger with an auto-generated ID (no explicit id provided).
+    Logger _ = check fromConfig(level = DEBUG);
+
+    // Capture the registry state after creating the logger.
+    string[] idsAfter = getLoggerRegistry().getIds();
+    int sizeAfter = idsAfter.length();
+
+    // Exactly one new entry should be added to the registry.
+    test:assertEquals(sizeAfter, sizeBefore + 1,
+            "Creating a logger with auto-ID should add exactly one registry entry");
+
+    // Compute the set of new IDs added to the registry.
+    string[] newIds = [];
+    foreach string id in idsAfter {
+        boolean found = false;
+        foreach string beforeId in idsBefore {
+            if id == beforeId {
+                found = true;
                 break;
             }
         }
+        if !found {
+            newIds.push(id);
+        }
     }
-    // Note: this test may not always pass if all auto-IDs already have counters > 1
-    // from previous test runs. The logic is correct - first call produces no suffix.
+
+    // At least one new auto-generated ID should be present.
+    test:assertTrue(newIds.length() >= 1, "At least one new auto-generated ID should be present");
+
+    // Auto-generated IDs have format "module:function" (no suffix for first).
+    // Verify that at least one new ID contains ":" and does not end with "-N" (where N is a digit).
+    boolean foundMatch = false;
+    foreach string id in newIds {
+        if id.includes(":") && !id.matches(re `.*-\d+$`) {
+            foundMatch = true;
+            break;
+        }
+    }
+
+    test:assertTrue(foundMatch,
+            "First auto-generated ID for a logger should not have a numeric suffix (e.g., -1)");
 }
 
 @test:Config {
