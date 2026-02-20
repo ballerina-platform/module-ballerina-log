@@ -601,24 +601,3 @@ function testChildNotInRegistry() returns error? {
     test:assertEquals(sizeAfter, sizeBefore + 1, "Registry should have only 1 more entry (parent only)");
 }
 
-@test:Config {
-    groups: ["logConfig"],
-    dependsOn: [testChildNotInRegistry]
-}
-function testModuleLoggerSetLevel() returns error? {
-    // Module loggers are registered by their module name from the `modules` configurable
-    Logger? moduleLogger = getLoggerRegistry().getById("myorg/myproject");
-    test:assertTrue(moduleLogger is Logger, "Module logger should be in the registry");
-    if moduleLogger is Logger {
-        Level originalLevel = moduleLogger.getLevel();
-        test:assertEquals(originalLevel, ERROR, "Initial module level should be ERROR from Config.toml");
-
-        // setLevel on a module logger updates the Java-side level map (exercises isModuleLogger path)
-        check moduleLogger.setLevel(WARN);
-        test:assertEquals(moduleLogger.getLevel(), WARN, "Module logger level should be updated to WARN");
-
-        // Restore original level
-        check moduleLogger.setLevel(originalLevel);
-        test:assertEquals(moduleLogger.getLevel(), ERROR, "Module logger level should be restored to ERROR");
-    }
-}

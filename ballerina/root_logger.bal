@@ -156,18 +156,14 @@ isolated class RootLogger {
     private final boolean enableSensitiveDataMasking;
     // Unique ID for loggers registered with LogConfigManager
     private final string? loggerId;
-    // True only for module-level loggers created from the `modules` configurable in init.bal.
-    // Used by setLevel() to keep moduleLogLevels in sync.
-    private final boolean isModuleLogger;
 
-    public isolated function init(Config|ConfigInternal config = <Config>{}, string? loggerId = (), boolean isModuleLogger = false) {
+    public isolated function init(Config|ConfigInternal config = <Config>{}, string? loggerId = ()) {
         self.format = config.format;
         self.currentLevel = config.level;
         self.destinations = config.destinations;
         self.keyValues = config.keyValues;
         self.enableSensitiveDataMasking = config.enableSensitiveDataMasking;
         self.loggerId = loggerId;
-        self.isModuleLogger = isModuleLogger;
     }
 
     public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
@@ -207,10 +203,6 @@ isolated class RootLogger {
     public isolated function setLevel(Level level) returns error? {
         lock {
             self.currentLevel = level;
-        }
-        // Keep the Java-side module level map in sync for fast lock-free reads in print().
-        if self.isModuleLogger {
-            setModuleLevelNative(self.loggerId ?: "", level);
         }
     }
 
