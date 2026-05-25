@@ -7,24 +7,24 @@ keywords = ["level", "format"]
 repository = "https://github.com/ballerina-platform/module-ballerina-log"
 icon = "icon.png"
 license = ["Apache-2.0"]
-distribution = "2201.13.0"
+distribution = "2201.14.0-SNAPSHOT"
 
-[platform.java21]
+[platform.java25]
 graalvmCompatible = true
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "log-native"
 version = "@toml.version@"
 path = "../native/build/libs/log-native-@project.version@.jar"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "log-compiler-plugin"
 version = "@toml.version@"
 path = "../compiler-plugin/build/libs/log-compiler-plugin-@project.version@.jar"
 
-[[platform.java21.dependency]]
+[[platform.java25.dependency]]
 groupId = "io.ballerina.stdlib"
 artifactId = "log-test-utils"
 version = "@toml.version@"
