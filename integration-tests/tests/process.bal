@@ -91,13 +91,19 @@ isolated function nativeStdout(Process process) returns io:ReadableByteChannel =
 # access) to stderr that were previously suppressed by the --sun-misc-unsafe-memory-access=allow
 # JVM flag removed in Java 25. These warnings start with "WARNING: " (uppercase, colon-space)
 # and are distinct from Ballerina compiler warnings which use "WARNING [file:(line,col)]".
-# Also filters "Picked up JAVA_TOOL_OPTIONS" header lines emitted by the JVM on Windows.
+# Java 25 also emits multi-line warnings where continuation/hint lines start with whitespace
+# (e.g. "  (use --enable-native-access=<module> to suppress this message)") or a tab.
+# Also filters "Picked up JAVA_TOOL_OPTIONS" / "Picked up _JAVA_OPTIONS" header lines
+# emitted by the JVM when those environment variables are set.
 #
 # + lines - Raw lines from subprocess stderr
 # + return - Lines with JVM-level noise stripped out
 public isolated function filterJvmWarnings(string[] lines) returns string[] {
     return lines.filter(line =>
         !line.startsWith("WARNING: ") &&
-        !line.startsWith("Picked up JAVA_TOOL_OPTIONS")
+        !line.startsWith("Picked up JAVA_TOOL_OPTIONS") &&
+        !line.startsWith("Picked up _JAVA_OPTIONS") &&
+        !line.startsWith("\t(use ") &&
+        !line.startsWith("  (use ")
     );
 }
