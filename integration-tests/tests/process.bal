@@ -85,3 +85,19 @@ isolated function nativeStdout(Process process) returns io:ReadableByteChannel =
     name: "stdout",
     'class: "io.ballerina.stdlib.log.testutils.nativeimpl.Stdout"
 } external;
+
+# Filters out JVM-level warning lines from subprocess stderr output.
+# In Java 25, the JVM emits deprecation warnings (e.g. sun.misc.Unsafe, restricted method
+# access) to stderr that were previously suppressed by the --sun-misc-unsafe-memory-access=allow
+# JVM flag removed in Java 25. These warnings start with "WARNING: " (uppercase, colon-space)
+# and are distinct from Ballerina compiler warnings which use "WARNING [file:(line,col)]".
+# Also filters "Picked up JAVA_TOOL_OPTIONS" header lines emitted by the JVM on Windows.
+#
+# + lines - Raw lines from subprocess stderr
+# + return - Lines with JVM-level noise stripped out
+public isolated function filterJvmWarnings(string[] lines) returns string[] {
+    return lines.filter(line =>
+        !line.startsWith("WARNING: ") &&
+        !line.startsWith("Picked up JAVA_TOOL_OPTIONS")
+    );
+}

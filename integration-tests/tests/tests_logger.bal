@@ -34,7 +34,7 @@ function testRootLoggerWithConfig() returns error? {
     io:ReadableByteChannel errStreamResult = result.stderr();
     io:ReadableCharacterChannel errCharStreamResult = new (errStreamResult, UTF_8);
     string outErrText = check errCharStreamResult.read(100000);
-    string[] errorLogLines = re `\n`.split(outErrText.trim());
+    string[] errorLogLines = filterJvmWarnings(re `\n`.split(outErrText.trim()));
     test:assertEquals(errorLogLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(errorLogLines[5].includes(string `"level":"ERROR", "module":"", "message":"error log", "env":"prod", "nodeId":"test-svc-001"`));
     check errCharStreamResult.close();
@@ -66,7 +66,7 @@ function testChildLoggers() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re `\n`.split(outText.trim());
+    string[] logLines = filterJvmWarnings(re `\n`.split(outText.trim()));
     test:assertEquals(logLines.length(), 8, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[5].includes(string `level=INFO module="" message="This is a root logger message" logger="root"`));
     test:assertTrue(logLines[6].includes(string `level=ERROR module="" message="This is a logger 1 message" logger="logger1" id="abcde" correlationId="12345"`));
@@ -85,7 +85,7 @@ function testLoggerFromConfig() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re `\n`.split(outText.trim());
+    string[] logLines = filterJvmWarnings(re `\n`.split(outText.trim()));
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[5].includes(string `level=INFO module=myorg/myproject message="Hello World from the root logger!" env="prod" nodeId="test-svc-001"`));
     check sc.close();
@@ -106,7 +106,7 @@ function testCustomLogger() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re `\n`.split(outText.trim());
+    string[] logLines = filterJvmWarnings(re `\n`.split(outText.trim()));
     test:assertEquals(logLines.length(), 4, INCORRECT_NUMBER_OF_LINES);
     check sc.close();
 

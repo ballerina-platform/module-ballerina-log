@@ -33,7 +33,7 @@ public function testGlobalLogLevelNegative() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = filterJvmWarnings(re`\n`.split(outText.trim()));
     test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[5].includes("configurable variable 'level' is expected to be of type 'ballerina/log:2:(ballerina/log:2:Level & readonly)', but found 'string'"));
 }
@@ -47,7 +47,7 @@ public function testModuleLogLevelNegative() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = filterJvmWarnings(re`\n`.split(outText.trim()));
     test:assertEquals(logLines.length(), 9, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[5].includes("configurable variable 'modules.level' is expected to be of type 'ballerina/log:2:Level', but found 'string'"));
 }
@@ -61,7 +61,7 @@ public function testSetOutputFileNegative() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = filterJvmWarnings(re`\n`.split(outText.trim()));
     test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[6].includes("error: The given path is not valid. Should be a file with .log extension."), "module log level is not validated");
 }
@@ -77,7 +77,7 @@ public function testInvalidGlobalDestination() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = filterJvmWarnings(re`\n`.split(outText.trim()));
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[5].includes("error: The given file destination path: 'invalid_file' is not valid. File destination path should be a valid file with .log extension."));
 }
@@ -93,7 +93,7 @@ public function testEmptyGlobalDestinations() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = filterJvmWarnings(re`\n`.split(outText.trim()));
     test:assertEquals(logLines.length(), 6, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[5].includes("error: At least one log destination must be specified."));
 }
@@ -109,7 +109,7 @@ public function testInvalidDestinationType() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re`\n`.split(outText.trim());
+    string[] logLines = filterJvmWarnings(re`\n`.split(outText.trim()));
     test:assertEquals(logLines.length(), 7, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[5].includes("configurable variable 'destinations' is expected to be of type 'ballerina/log:2:(ballerina/log:2:OutputDestination & readonly)', but found 'record'"));
 }

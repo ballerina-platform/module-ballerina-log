@@ -30,7 +30,7 @@ function testMaskedLogger() returns error? {
     io:ReadableByteChannel readableResult = result.stderr();
     io:ReadableCharacterChannel sc = new (readableResult, UTF_8);
     string outText = check sc.read(100000);
-    string[] logLines = re `\n`.split(outText.trim());
+    string[] logLines = filterJvmWarnings(re `\n`.split(outText.trim()));
     test:assertEquals(logLines.length(), 8, INCORRECT_NUMBER_OF_LINES);
     test:assertTrue(logLines[5].includes(string `level=INFO module=wso2/masked_logger message="user logged in" userDetails={"name":"John Doe","password":"*****","mail":"joh**************com"}`));
     test:assertTrue(logLines[6].includes(string `level=DEBUG module=wso2/masked_logger message="user details: {\"name\":\"John Doe\",\"password\":\"*****\",\"mail\":\"joh**************com\"}"`));
