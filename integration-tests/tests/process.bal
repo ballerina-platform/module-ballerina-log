@@ -95,15 +95,28 @@ isolated function nativeStdout(Process process) returns io:ReadableByteChannel =
 # (e.g. "  (use --enable-native-access=<module> to suppress this message)") or a tab.
 # Also filters "Picked up JAVA_TOOL_OPTIONS" / "Picked up _JAVA_OPTIONS" header lines
 # emitted by the JVM when those environment variables are set.
+# Consecutive blank lines left behind after filtering WARNING blocks are collapsed to one,
+# because maven-resolver (used when downloading non-bundled packages like ballerina/time in
+# CI) triggers a System::loadLibrary restricted-method warning that inserts an extra blank line.
 #
 # + lines - Raw lines from subprocess stderr
 # + return - Lines with JVM-level noise stripped out
 public isolated function filterJvmWarnings(string[] lines) returns string[] {
-    return lines.filter(line =>
+    string[] filtered = lines.filter(line =>
         !line.startsWith("WARNING: ") &&
         !line.startsWith("Picked up JAVA_TOOL_OPTIONS") &&
         !line.startsWith("Picked up _JAVA_OPTIONS") &&
         !line.startsWith("\t(use ") &&
         !line.startsWith("  (use ")
     );
+    string[] result = [];
+    boolean prevWasBlank = false;
+    foreach string line in filtered {
+        boolean isBlank = line.trim() == "";
+        if !(isBlank && prevWasBlank) {
+            result.push(line);
+        }
+        prevWasBlank = isBlank;
+    }
+    return result;
 }
