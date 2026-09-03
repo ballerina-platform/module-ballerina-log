@@ -66,3 +66,13 @@ public function logToOwnedDirectoryViaLoggerConfig() returns error? {
         destinations: [{'type: log:FILE, path: "./logs/service.log"}]
     });
 }
+
+// Negative case - a case-sensitive filesystem treats this as a different directory
+public function logToUppercaseTemp() returns error? {
+    check log:setOutputFile("/TMP/application.log");
+}
+
+// Negative case - a different environment variable from TMPDIR on POSIX
+public function logToLowercaseEnvironmentVariable() returns error? {
+    check log:setOutputFile(os:getEnv("tmpdir") + "/application.log");
+}

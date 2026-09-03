@@ -57,13 +57,23 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
     private static final int PATH_POSITION = 0;
     private static final int CONFIG_POSITION = 0;
 
-    private static final List<String> WORLD_WRITABLE_DIRECTORIES = List.of(
-            "/tmp", "/var/tmp", "/dev/shm", "/private/tmp", "/private/var/tmp",
+    /**
+     * POSIX paths are compared exactly, because a case-sensitive filesystem treats {@code /TMP} and {@code /tmp}
+     * as different directories.
+     */
+    private static final List<String> POSIX_WORLD_WRITABLE_DIRECTORIES = List.of(
+            "/tmp", "/var/tmp", "/dev/shm", "/private/tmp", "/private/var/tmp");
+
+    /**
+     * Windows paths are compared case-insensitively, since the filesystem is.
+     */
+    private static final List<String> WINDOWS_WORLD_WRITABLE_DIRECTORIES = List.of(
             "c:\\windows\\temp", "c:\\temp", "c:/windows/temp", "c:/temp");
 
     /**
      * Environment variables that name the shared temporary directory. A path built from one of these lands in the
-     * same place as a literal {@code /tmp}.
+     * same place as a literal {@code /tmp}. The names are matched exactly: on POSIX the environment is
+     * case-sensitive, so {@code tmpdir} is a different variable from {@code TMPDIR}.
      */
     private static final Set<String> TEMP_DIRECTORY_VARIABLES = Set.of("TMP", "TEMP", "TMPDIR");
 
@@ -133,9 +143,14 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
      * with one, such as {@code /tmpfiles}, is a different directory.
      */
     private boolean isUnderWorldWritableDirectory(String path) {
-        String normalized = path.trim().toLowerCase(Locale.ROOT);
-        return WORLD_WRITABLE_DIRECTORIES.stream().anyMatch(directory -> normalized.equals(directory)
-                || normalized.startsWith(directory + "/") || normalized.startsWith(directory + "\\"));
+        String trimmed = path.trim();
+        return POSIX_WORLD_WRITABLE_DIRECTORIES.stream().anyMatch(directory -> isUnder(trimmed, directory))
+                || WINDOWS_WORLD_WRITABLE_DIRECTORIES.stream()
+                        .anyMatch(directory -> isUnder(trimmed.toLowerCase(Locale.ROOT), directory));
+    }
+
+    private boolean isUnder(String path, String directory) {
+        return path.equals(directory) || path.startsWith(directory + "/") || path.startsWith(directory + "\\");
     }
 
     /**
@@ -149,7 +164,7 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
             return false;
         }
         return getStringLiteralValue(functionCall.arguments().get(0))
-                .map(name -> TEMP_DIRECTORY_VARIABLES.contains(name.trim().toUpperCase(Locale.ROOT)))
+                .map(name -> TEMP_DIRECTORY_VARIABLES.contains(name.trim()))
                 .orElse(false);
     }
 

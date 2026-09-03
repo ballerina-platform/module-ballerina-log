@@ -162,6 +162,46 @@
   {
     "location": {
       "filePath": "main.bal",
+      "startLine": 70,
+      "endLine": 70,
+      "startColumn": 0,
+      "endColumn": 6,
+      "startOffset": 2605,
+      "length": 6
+    },
+    "rule": {
+      "id": "ballerina:3",
+      "numericId": 3,
+      "description": "Non isolated public function",
+      "ruleKind": "CODE_SMELL"
+    },
+    "source": "BUILT_IN",
+    "fileName": "rule2/main.bal",
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule2/main.bal"
+  },
+  {
+    "location": {
+      "filePath": "main.bal",
+      "startLine": 75,
+      "endLine": 75,
+      "startColumn": 0,
+      "endColumn": 6,
+      "startOffset": 2788,
+      "length": 6
+    },
+    "rule": {
+      "id": "ballerina:3",
+      "numericId": 3,
+      "description": "Non isolated public function",
+      "ruleKind": "CODE_SMELL"
+    },
+    "source": "BUILT_IN",
+    "fileName": "rule2/main.bal",
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule2/main.bal"
+  },
+  {
+    "location": {
+      "filePath": "main.bal",
       "startLine": 22,
       "endLine": 22,
       "startColumn": 28,

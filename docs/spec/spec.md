@@ -39,10 +39,12 @@ The conforming implementation of the specification is released and included in t
    * 5.4. [Module log levels](#54-module-log-levels)
    * 5.5. [Child logger level inheritance](#55-child-logger-level-inheritance)
 6. [Sensitive data masking](#6-sensitive-data-masking)
-7. [Static Code Rules](#7-static-code-rules)
    * 6.1. [Sensitive data annotation](#61-sensitive-data-annotation)
    * 6.2. [Masked string function](#62-masked-string-function)
    * 6.3. [Type-based masking](#63-type-based-masking)
+7. [Static Code Rules](#7-static-code-rules)
+   * 7.1. [Potentially-sensitive configurable variables are logged](#71-potentially-sensitive-configurable-variables-are-logged)
+   * 7.2. [Avoid writing log files to world-writable directories](#72-avoid-writing-log-files-to-world-writable-directories)
 
 ## 1. Overview
 
@@ -799,15 +801,17 @@ A log file placed in a shared temporary directory can be read, and pre-created, 
 
 #### 7.2.1. Why this is an issue?
 
-Logs routinely capture request details, identifiers and error context, so the log file itself is a sensitive artefact. A world-writable directory such as `/tmp` is readable by every account on the host, and it also allows another user to create the file before the service does. The service then appends to a file it does not own, which lets that user read the log as it is written, or replace it with a file of their choosing.
+Logs routinely capture request details, identifiers and error context, so the log file itself is a sensitive artefact. A world-writable directory such as `/tmp` lets any local account create the file before the service does. The service then appends to a file it does not own, and the permissions on that file were chosen by whoever created it, so the log can be readable to others or replaced with a file of their choosing.
 
-The rule reads both ways of naming a log file: the deprecated `setOutputFile`, and the `path` of a file destination on a logger configuration. A path is reported only when it is anchored at a world-writable directory, including one reached through `os:getEnv("TMPDIR")` and its variants; a directory whose name merely begins like one, such as `/tmpfiles`, is a different directory and is not reported.
+What follows from that depends on the rest of the environment. A sticky bit prevents one account deleting another's file but not pre-creating its own, and the permissions the logger opens an existing file with decide the rest. The directory choice is the part the code controls, which is what this rule reports.
+
+The rule reads both ways of naming a log file: the deprecated `setOutputFile`, and the `path` of a file destination on a logger configuration. A path is reported only when it is anchored at a world-writable directory, including one reached through `os:getEnv("TMPDIR")` and its variants; a directory whose name merely begins like one, such as `/tmpfiles`, is a different directory and is not reported. POSIX paths and environment variable names are matched exactly, since both are case-sensitive there; only the Windows directories are matched case-insensitively.
 
 The module-level `destinations` configurable is normally set outside the source, which no source analyzer can see. A deployment that configures its log destination there should confirm the same property separately.
 
 #### 7.2.2. What is the potential impact?
 
-Everything the service logs becomes readable by any local account, and the log can be silently replaced or truncated by one, which also removes the record an investigation would depend on.
+Where the file is pre-created by another account, everything the service logs can be readable to it, and the file can be replaced or truncated, which also removes the record an investigation would depend on.
 
 #### 7.2.3. How can I fix this?
 
