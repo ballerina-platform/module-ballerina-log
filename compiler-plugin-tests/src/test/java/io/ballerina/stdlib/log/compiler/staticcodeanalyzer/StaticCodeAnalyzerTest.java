@@ -47,7 +47,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static io.ballerina.scan.RuleKind.VULNERABILITY;
-import static io.ballerina.stdlib.log.compiler.staticcodeanalyzer.LogRule.AVOID_LOGGING_CONFIGURABLE_VARIABLES;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class StaticCodeAnalyzerTest {
@@ -100,14 +99,13 @@ public class StaticCodeAnalyzerTest {
     }
 
     private void validateRules(List<Rule> rules) {
-        Assertions.assertRule(
-                rules,
-                "ballerina/log:1",
-                AVOID_LOGGING_CONFIGURABLE_VARIABLES.getDescription(),
-                VULNERABILITY);
+        for (LogRule rule : LogRule.values()) {
+            Assertions.assertRule(rules, "ballerina/log:" + rule.getId(), rule.getDescription(), VULNERABILITY);
+        }
     }
 
     private void validateIssues(LogRule rule, List<Issue> issues) {
+        int index;
         switch (rule) {
             case AVOID_LOGGING_CONFIGURABLE_VARIABLES:
                 Assert.assertEquals(issues.size(), 9);
@@ -129,6 +127,20 @@ public class StaticCodeAnalyzerTest {
                         26, 26, Source.BUILT_IN);
                 Assertions.assertIssue(issues, 8, "ballerina/log:1", "main.bal",
                         26, 26, Source.BUILT_IN);
+                break;
+            case AVOID_WORLD_WRITABLE_LOG_DESTINATION:
+                index = 0;
+                Assert.assertEquals(issues.size(), 5);
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        22, 22, Source.BUILT_IN);
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        27, 27, Source.BUILT_IN);
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        32, 32, Source.BUILT_IN);
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        41, 41, Source.BUILT_IN);
+                Assertions.assertIssue(issues, index, "ballerina/log:2", "main.bal",
+                        48, 48, Source.BUILT_IN);
                 break;
             default:
                 Assert.fail("Unhandled rule in validateIssues: " + rule);

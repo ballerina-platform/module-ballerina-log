@@ -17,7 +17,7 @@
     },
     "source": "BUILT_IN",
     "fileName": "rule1/main.bal",
-    "filePath": "/home/nureka/Documents/GitHub/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
   },
   {
     "location": {
@@ -37,7 +37,7 @@
     },
     "source": "BUILT_IN",
     "fileName": "rule1/main.bal",
-    "filePath": "/home/nureka/Documents/GitHub/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
   },
   {
     "location": {
@@ -57,7 +57,7 @@
     },
     "source": "BUILT_IN",
     "fileName": "rule1/main.bal",
-    "filePath": "/home/nureka/Documents/GitHub/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
   },
   {
     "location": {
@@ -77,7 +77,7 @@
     },
     "source": "BUILT_IN",
     "fileName": "rule1/main.bal",
-    "filePath": "/home/nureka/Documents/GitHub/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
   },
   {
     "location": {
@@ -97,7 +97,7 @@
     },
     "source": "BUILT_IN",
     "fileName": "rule1/main.bal",
-    "filePath": "/home/nureka/Documents/GitHub/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
   },
   {
     "location": {
@@ -117,7 +117,7 @@
     },
     "source": "BUILT_IN",
     "fileName": "rule1/main.bal",
-    "filePath": "/home/nureka/Documents/GitHub/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
   },
   {
     "location": {
@@ -137,7 +137,7 @@
     },
     "source": "BUILT_IN",
     "fileName": "rule1/main.bal",
-    "filePath": "/home/nureka/Documents/GitHub/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
   },
   {
     "location": {
@@ -157,7 +157,7 @@
     },
     "source": "BUILT_IN",
     "fileName": "rule1/main.bal",
-    "filePath": "/home/nureka/Documents/GitHub/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
   },
   {
     "location": {
@@ -177,6 +177,6 @@
     },
     "source": "BUILT_IN",
     "fileName": "rule1/main.bal",
-    "filePath": "/home/nureka/Documents/GitHub/module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
   }
 ]

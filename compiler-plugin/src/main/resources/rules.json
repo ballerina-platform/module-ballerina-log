@@ -3,5 +3,10 @@
     "id": 1,
     "kind": "VULNERABILITY",
     "description": "Potentially-sensitive configurable variables are logged"
+  },
+  {
+    "id": 2,
+    "kind": "VULNERABILITY",
+    "description": "Avoid writing log files to world-writable directories"
   }
 ]
