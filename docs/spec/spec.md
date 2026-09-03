@@ -737,6 +737,13 @@ The following static code rules are applied to the Log module.
 
 A configurable variable passed to a log statement is written into the log store.
 
+| Property              | Description |
+|-----------------------|-------------|
+| **Rule ID**           | ballerina/log:1 |
+| **Rule Kind**         | Vulnerability |
+| **CWE**               | [CWE-532](https://cwe.mitre.org/data/definitions/532.html) |
+| **OWASP Top 10:2025** | [A09 Security Logging and Alerting Failures](https://owasp.org/Top10/2025/A09_2025-Security_Logging_and_Alerting_Failures/) |
+
 #### 7.1.1. Why this is an issue?
 
 Configurable variables carry the values supplied at deployment, which is where credentials, tokens and connection secrets live. A log statement moves the value out of the deployment configuration and into the log store, where it is retained and readable by a far wider set of people than can read the configuration itself.
@@ -782,6 +789,13 @@ public function main() {
 ### 7.2. Avoid writing log files to world-writable directories
 
 A log file placed in a shared temporary directory can be read, and pre-created, by any local account.
+
+| Property              | Description |
+|-----------------------|-------------|
+| **Rule ID**           | ballerina/log:2 |
+| **Rule Kind**         | Vulnerability |
+| **CWE**               | [CWE-379](https://cwe.mitre.org/data/definitions/379.html), [CWE-532](https://cwe.mitre.org/data/definitions/532.html) |
+| **OWASP Top 10:2025** | [A01 Broken Access Control](https://owasp.org/Top10/2025/A01_2025-Broken_Access_Control/) |
 
 #### 7.2.1. Why this is an issue?
 
