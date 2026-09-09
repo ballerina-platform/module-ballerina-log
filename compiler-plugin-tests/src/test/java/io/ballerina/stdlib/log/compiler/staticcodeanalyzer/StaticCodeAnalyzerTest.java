@@ -47,7 +47,6 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 import static io.ballerina.scan.RuleKind.VULNERABILITY;
-import static io.ballerina.stdlib.log.compiler.staticcodeanalyzer.LogRule.AVOID_LOGGING_CONFIGURABLE_VARIABLES;
 import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class StaticCodeAnalyzerTest {
@@ -100,35 +99,68 @@ public class StaticCodeAnalyzerTest {
     }
 
     private void validateRules(List<Rule> rules) {
-        Assertions.assertRule(
-                rules,
-                "ballerina/log:1",
-                AVOID_LOGGING_CONFIGURABLE_VARIABLES.getDescription(),
-                VULNERABILITY);
+        for (LogRule rule : LogRule.values()) {
+            Assertions.assertRule(rules, "ballerina/log:" + rule.getId(), rule.getDescription(), VULNERABILITY);
+        }
     }
 
     private void validateIssues(LogRule rule, List<Issue> issues) {
+        int index;
         switch (rule) {
             case AVOID_LOGGING_CONFIGURABLE_VARIABLES:
-                Assert.assertEquals(issues.size(), 9);
-                Assertions.assertIssue(issues, 0, "ballerina/log:1", "main.bal",
+                index = 0;
+                Assert.assertEquals(issues.size(), 13);
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         20, 20, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 1, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         21, 21, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 2, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         22, 22, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 3, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         23, 23, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 4, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         24, 24, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 5, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         25, 25, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 6, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         25, 25, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 7, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         26, 26, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 8, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         26, 26, Source.BUILT_IN);
+                // printDebug was not analyzed by the pre-migration call-statement hook
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
+                        35, 35, Source.BUILT_IN);
+                // A chained concatenation ("a" + b + c): both operands of the outer "+" are now unwound,
+                // where the pre-migration rule only ever inspected one level of a BinaryExpressionNode
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
+                        41, 41, Source.BUILT_IN);
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
+                        41, 41, Source.BUILT_IN);
+                // A named argument holding a template expression: the pre-migration rule only unwound
+                // templates and concatenations in positional arguments, not named ones
+                Assertions.assertIssue(issues, index, "ballerina/log:1", "main.bal",
+                        46, 46, Source.BUILT_IN);
+                break;
+            case AVOID_WORLD_WRITABLE_LOG_DESTINATION:
+                index = 0;
+                Assert.assertEquals(issues.size(), 7);
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        22, 22, Source.BUILT_IN);
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        27, 27, Source.BUILT_IN);
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        32, 32, Source.BUILT_IN);
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        41, 41, Source.BUILT_IN);
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        48, 48, Source.BUILT_IN);
+                // A Windows path written with the escaping Ballerina requires for a backslash
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        87, 87, Source.BUILT_IN);
+                // A concatenation with an explicit separator still lands inside the directory
+                Assertions.assertIssue(issues, index, "ballerina/log:2", "main.bal",
+                        97, 97, Source.BUILT_IN);
                 break;
             default:
                 Assert.fail("Unhandled rule in validateIssues: " + rule);
@@ -166,7 +198,7 @@ public class StaticCodeAnalyzerTest {
             ObjectMapper mapper = new ObjectMapper().configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS, true);
             JsonNode node = mapper.readTree(json);
             String normalizedJson = mapper.writeValueAsString(node)
-                    .replaceAll(":\".*" + MODULE_BALLERINA_LOG, ":\"" + MODULE_BALLERINA_LOG);
+                    .replaceAll(":\"[^\"]*" + MODULE_BALLERINA_LOG, ":\"" + MODULE_BALLERINA_LOG);
             return isWindows() ? normalizedJson.replace("/", "\\\\") : normalizedJson;
         } catch (Exception ignore) {
             return json;

@@ -24,7 +24,7 @@ import io.ballerina.scan.Reporter;
 
 import java.util.List;
 
-import static io.ballerina.compiler.syntax.tree.SyntaxKind.CALL_STATEMENT;
+import static io.ballerina.compiler.syntax.tree.SyntaxKind.FUNCTION_CALL;
 
 /**
  * Static code analyzer for log module.
@@ -40,7 +40,7 @@ public class StaticCodeAnalyzer extends CodeAnalyzer {
 
     @Override
     public void init(CodeAnalysisContext analysisContext) {
-        analysisContext.addSyntaxNodeAnalysisTask(new LogStatementAnalyzer(reporter),
-                List.of(CALL_STATEMENT));
+        analysisContext.addSyntaxNodeAnalysisTask(new LogFunctionCallAnalyzer(reporter),
+                List.of(FUNCTION_CALL));
     }
 }
