@@ -77,6 +77,7 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
      */
     private static final Set<String> TEMP_DIRECTORY_VARIABLES = Set.of("TMP", "TEMP", "TMPDIR");
 
+    private static final String OS_MODULE_PREFIX = "os";
     private static final String OS_GET_ENV = "getEnv";
 
     @Override
@@ -117,8 +118,9 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
         }
     }
 
-    private Optional<ExpressionNode> findFieldValue(MappingConstructorExpressionNode record, String fieldName) {
-        return record.fields().stream()
+    private Optional<ExpressionNode> findFieldValue(MappingConstructorExpressionNode mappingConstructor,
+                                                     String fieldName) {
+        return mappingConstructor.fields().stream()
                 .filter(field -> field.kind() == SyntaxKind.SPECIFIC_FIELD)
                 .map(field -> (SpecificFieldNode) field)
                 .filter(field -> fieldName.equals(field.fieldName().toSourceCode().trim()))
@@ -132,10 +134,23 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
         }
         if (path instanceof BinaryExpressionNode binaryExpression
                 && binaryExpression.operator().kind() == SyntaxKind.PLUS_TOKEN
-                && binaryExpression.lhsExpr() instanceof ExpressionNode leftOperand) {
+                && binaryExpression.lhsExpr() instanceof ExpressionNode leftOperand
+                && continuesWithSeparator(binaryExpression.rhsExpr())) {
             return isWorldWritablePath(leftOperand);
         }
         return getStringLiteralValue(path).map(this::isUnderWorldWritableDirectory).orElse(false);
+    }
+
+    /**
+     * A literal suffix that does not open with a path separator lands beside the directory rather than inside it,
+     * as in {@code "/tmp" + "file.log"} producing {@code /tmpfile.log}. A suffix that cannot be resolved to a
+     * literal is assumed to carry its own separator, since every dynamic suffix in this rule's tests is written
+     * that way, such as {@code os:getEnv("TMPDIR") + "/application.log"}.
+     */
+    private boolean continuesWithSeparator(Node rhs) {
+        return getStringLiteralValue(rhs)
+                .map(value -> value.startsWith("/") || value.startsWith("\\"))
+                .orElse(true);
     }
 
     /**
@@ -144,12 +159,23 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
      */
     private boolean isUnderWorldWritableDirectory(String path) {
         String trimmed = path.trim();
-        return POSIX_WORLD_WRITABLE_DIRECTORIES.stream().anyMatch(directory -> isUnder(trimmed, directory))
+        return POSIX_WORLD_WRITABLE_DIRECTORIES.stream().anyMatch(directory -> isUnderPosix(trimmed, directory))
                 || WINDOWS_WORLD_WRITABLE_DIRECTORIES.stream()
-                        .anyMatch(directory -> isUnder(trimmed.toLowerCase(Locale.ROOT), directory));
+                        .anyMatch(directory -> isUnderWindows(trimmed.toLowerCase(Locale.ROOT), directory));
     }
 
-    private boolean isUnder(String path, String directory) {
+    /**
+     * POSIX treats a backslash as an ordinary filename character, not a separator, so only a forward slash
+     * closes the directory name here.
+     */
+    private boolean isUnderPosix(String path, String directory) {
+        return path.equals(directory) || path.startsWith(directory + "/");
+    }
+
+    /**
+     * Windows accepts both a backslash and a forward slash as a path separator.
+     */
+    private boolean isUnderWindows(String path, String directory) {
         return path.equals(directory) || path.startsWith(directory + "/") || path.startsWith(directory + "\\");
     }
 
@@ -159,6 +185,7 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
     private boolean namesTemporaryDirectory(ExpressionNode expression) {
         if (!(expression instanceof FunctionCallExpressionNode functionCall)
                 || !(functionCall.functionName() instanceof QualifiedNameReferenceNode qualifiedName)
+                || !OS_MODULE_PREFIX.equals(qualifiedName.modulePrefix().text())
                 || !OS_GET_ENV.equals(qualifiedName.identifier().text())
                 || functionCall.arguments().isEmpty()) {
             return false;
@@ -168,10 +195,16 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
                 .orElse(false);
     }
 
+    /**
+     * Extract a string literal's value, decoding an escaped backslash so a Windows path written the way Ballerina
+     * requires, such as {@code "C:\\Temp\\file.log"}, is compared against {@link #WINDOWS_WORLD_WRITABLE_DIRECTORIES}
+     * in its actual single-backslash form.
+     */
     private Optional<String> getStringLiteralValue(Node node) {
         String source = node.toSourceCode().trim();
         if (source.length() >= 2 && source.startsWith("\"") && source.endsWith("\"")) {
-            return Optional.of(source.substring(1, source.length() - 1));
+            String content = source.substring(1, source.length() - 1);
+            return Optional.of(content.replace("\\\\", "\\"));
         }
         return Optional.empty();
     }

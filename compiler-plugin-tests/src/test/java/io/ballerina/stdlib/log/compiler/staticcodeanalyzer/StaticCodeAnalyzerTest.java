@@ -144,7 +144,7 @@ public class StaticCodeAnalyzerTest {
                 break;
             case AVOID_WORLD_WRITABLE_LOG_DESTINATION:
                 index = 0;
-                Assert.assertEquals(issues.size(), 5);
+                Assert.assertEquals(issues.size(), 7);
                 Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
                         22, 22, Source.BUILT_IN);
                 Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
@@ -153,8 +153,14 @@ public class StaticCodeAnalyzerTest {
                         32, 32, Source.BUILT_IN);
                 Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
                         41, 41, Source.BUILT_IN);
-                Assertions.assertIssue(issues, index, "ballerina/log:2", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
                         48, 48, Source.BUILT_IN);
+                // A Windows path written with the escaping Ballerina requires for a backslash
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
+                        87, 87, Source.BUILT_IN);
+                // A concatenation with an explicit separator still lands inside the directory
+                Assertions.assertIssue(issues, index, "ballerina/log:2", "main.bal",
+                        97, 97, Source.BUILT_IN);
                 break;
             default:
                 Assert.fail("Unhandled rule in validateIssues: " + rule);

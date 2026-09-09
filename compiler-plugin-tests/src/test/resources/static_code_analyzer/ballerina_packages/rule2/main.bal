@@ -76,3 +76,24 @@ public function logToUppercaseTemp() returns error? {
 public function logToLowercaseEnvironmentVariable() returns error? {
     check log:setOutputFile(os:getEnv("tmpdir") + "/application.log");
 }
+
+// Negative case - on POSIX a backslash is an ordinary filename character, not a separator, so this
+// names a single file at the root rather than a file under /tmp
+public function logToPosixPathWithBackslash() returns error? {
+    check log:setOutputFile("/tmp\\application.log");
+}
+
+// A Windows temporary directory, written with the escaping Ballerina requires for a backslash
+public function logToWindowsTemp() returns error? {
+    check log:setOutputFile("C:\\Temp\\application.log");
+}
+
+// Negative case - concatenation without a separator lands beside the directory, not inside it
+public function logToConcatenatedSiblingPath() returns error? {
+    check log:setOutputFile("/tmp" + "file.log");
+}
+
+// A concatenation with an explicit separator still lands inside the directory
+public function logToConcatenatedPath() returns error? {
+    check log:setOutputFile("/tmp" + "/file.log");
+}
