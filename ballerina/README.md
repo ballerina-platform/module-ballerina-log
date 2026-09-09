@@ -2,6 +2,15 @@
 
 This module provides APIs to log information when running applications, with support for contextual logging, configurable log levels, formats, destinations, and key-value context.
 
+## Key Features
+
+- Configurable log levels (ERROR, WARN, INFO, DEBUG), globally or per module
+- LogFmt and JSON output formats, with configurable destinations
+- Log rotation by file size, time, or both
+- Contextual logging with root and child loggers
+- Runtime log level modification via a logger registry
+- Sensitive data masking for fields marked with `@log:Sensitive`
+
 ### Log Levels
 
 The log module supports four log levels, in order of priority:
