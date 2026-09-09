@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.log.compiler.staticcodeanalyzer;
 
+import io.ballerina.stdlib.log.compiler.staticcodeanalyzer.logrules.AvoidLoggingConfigurableVariablesRule;
 import io.ballerina.stdlib.log.compiler.staticcodeanalyzer.logrules.AvoidWorldWritableLogDestinationRule;
 import io.ballerina.stdlib.log.compiler.staticcodeanalyzer.logrules.LogFunctionRule;
 
@@ -51,6 +52,7 @@ public class LogFunctionRulesEngine {
     }
 
     private void initializeDefaultRules() {
+        addRule(new AvoidLoggingConfigurableVariablesRule());
         addRule(new AvoidWorldWritableLogDestinationRule());
         // Add more default rules here as needed
     }

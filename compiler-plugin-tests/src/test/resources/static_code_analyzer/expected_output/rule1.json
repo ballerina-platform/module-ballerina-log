@@ -178,5 +178,85 @@
     "source": "BUILT_IN",
     "fileName": "rule1/main.bal",
     "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+  },
+  {
+    "location": {
+      "filePath": "main.bal",
+      "startLine": 35,
+      "endLine": 35,
+      "startColumn": 19,
+      "endColumn": 27,
+      "startOffset": 1207,
+      "length": 8
+    },
+    "rule": {
+      "id": "ballerina/log:1",
+      "numericId": 1,
+      "description": "Potentially-sensitive configurable variables are logged",
+      "ruleKind": "VULNERABILITY"
+    },
+    "source": "BUILT_IN",
+    "fileName": "rule1/main.bal",
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+  },
+  {
+    "location": {
+      "filePath": "main.bal",
+      "startLine": 41,
+      "endLine": 41,
+      "startColumn": 29,
+      "endColumn": 33,
+      "startOffset": 1460,
+      "length": 4
+    },
+    "rule": {
+      "id": "ballerina/log:1",
+      "numericId": 1,
+      "description": "Potentially-sensitive configurable variables are logged",
+      "ruleKind": "VULNERABILITY"
+    },
+    "source": "BUILT_IN",
+    "fileName": "rule1/main.bal",
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+  },
+  {
+    "location": {
+      "filePath": "main.bal",
+      "startLine": 41,
+      "endLine": 41,
+      "startColumn": 36,
+      "endColumn": 44,
+      "startOffset": 1467,
+      "length": 8
+    },
+    "rule": {
+      "id": "ballerina/log:1",
+      "numericId": 1,
+      "description": "Potentially-sensitive configurable variables are logged",
+      "ruleKind": "VULNERABILITY"
+    },
+    "source": "BUILT_IN",
+    "fileName": "rule1/main.bal",
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
+  },
+  {
+    "location": {
+      "filePath": "main.bal",
+      "startLine": 46,
+      "endLine": 46,
+      "startColumn": 50,
+      "endColumn": 58,
+      "startOffset": 1637,
+      "length": 8
+    },
+    "rule": {
+      "id": "ballerina/log:1",
+      "numericId": 1,
+      "description": "Potentially-sensitive configurable variables are logged",
+      "ruleKind": "VULNERABILITY"
+    },
+    "source": "BUILT_IN",
+    "fileName": "rule1/main.bal",
+    "filePath": "module-ballerina-log/compiler-plugin-tests/src/test/resources/static_code_analyzer/ballerina_packages/rule1/main.bal"
   }
 ]

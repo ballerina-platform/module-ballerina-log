@@ -18,6 +18,8 @@
 
 package io.ballerina.stdlib.log.compiler.staticcodeanalyzer;
 
+import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.FunctionCallExpressionNode;
@@ -38,8 +40,11 @@ import java.util.Optional;
  */
 public class LogFunctionContext {
 
+    private static final String CONFIGURABLE_QUALIFIER = "CONFIGURABLE";
+
     private final Reporter reporter;
     private final Document document;
+    private final List<SemanticModel> semanticModels;
     private final String functionName;
     private final Location functionLocation;
     private final List<ExpressionNode> arguments;
@@ -48,15 +53,17 @@ public class LogFunctionContext {
     /**
      * Creates a context for the given log module function call.
      *
-     * @param reporter     the static code analysis reporter
-     * @param document     the document containing the call
-     * @param functionName the simple name of the log function being called
-     * @param functionCall the call being analyzed
+     * @param reporter       the static code analysis reporter
+     * @param document       the document containing the call
+     * @param semanticModels the semantic models of every module in the package
+     * @param functionName   the simple name of the log function being called
+     * @param functionCall   the call being analyzed
      */
-    public LogFunctionContext(Reporter reporter, Document document, String functionName,
-                              FunctionCallExpressionNode functionCall) {
+    public LogFunctionContext(Reporter reporter, Document document, List<SemanticModel> semanticModels,
+                              String functionName, FunctionCallExpressionNode functionCall) {
         this.reporter = reporter;
         this.document = document;
+        this.semanticModels = List.copyOf(semanticModels);
         this.functionName = functionName;
         this.functionLocation = functionCall.location();
         this.arguments = collectArguments(functionCall);
@@ -124,6 +131,35 @@ public class LogFunctionContext {
      */
     public Optional<ExpressionNode> getNamedArgument(String parameterName) {
         return Optional.ofNullable(this.namedArguments.get(parameterName));
+    }
+
+    /**
+     * Get every argument supplied at the call site, positional and named alike, in the order they were written.
+     * <p>
+     * A log call accepts an open set of key/value pairs through {@code *KeyValues}, so a rule that cares about
+     * every argument regardless of its parameter name needs the full list rather than a lookup by position or name.
+     *
+     * @return the call's argument expressions
+     */
+    public List<ExpressionNode> getArguments() {
+        return List.copyOf(this.arguments);
+    }
+
+    /**
+     * Check whether an expression names a {@code configurable} variable.
+     * <p>
+     * A configurable may be declared in any module of the package, so every module's semantic model is consulted.
+     *
+     * @param expression the expression to check
+     * @return true if the expression names a configurable variable
+     */
+    public boolean isConfigurable(ExpressionNode expression) {
+        return this.semanticModels.stream()
+                .map(semanticModel -> semanticModel.symbol(expression).orElse(null))
+                .filter(VariableSymbol.class::isInstance)
+                .map(VariableSymbol.class::cast)
+                .anyMatch(variableSymbol -> variableSymbol.qualifiers().stream()
+                        .anyMatch(qualifier -> CONFIGURABLE_QUALIFIER.equals(qualifier.toString())));
     }
 
     /**

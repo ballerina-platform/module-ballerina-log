@@ -108,25 +108,39 @@ public class StaticCodeAnalyzerTest {
         int index;
         switch (rule) {
             case AVOID_LOGGING_CONFIGURABLE_VARIABLES:
-                Assert.assertEquals(issues.size(), 9);
-                Assertions.assertIssue(issues, 0, "ballerina/log:1", "main.bal",
+                index = 0;
+                Assert.assertEquals(issues.size(), 13);
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         20, 20, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 1, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         21, 21, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 2, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         22, 22, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 3, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         23, 23, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 4, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         24, 24, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 5, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         25, 25, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 6, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         25, 25, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 7, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         26, 26, Source.BUILT_IN);
-                Assertions.assertIssue(issues, 8, "ballerina/log:1", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
                         26, 26, Source.BUILT_IN);
+                // printDebug was not analyzed by the pre-migration call-statement hook
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
+                        35, 35, Source.BUILT_IN);
+                // A chained concatenation ("a" + b + c): both operands of the outer "+" are now unwound,
+                // where the pre-migration rule only ever inspected one level of a BinaryExpressionNode
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
+                        41, 41, Source.BUILT_IN);
+                Assertions.assertIssue(issues, index++, "ballerina/log:1", "main.bal",
+                        41, 41, Source.BUILT_IN);
+                // A named argument holding a template expression: the pre-migration rule only unwound
+                // templates and concatenations in positional arguments, not named ones
+                Assertions.assertIssue(issues, index, "ballerina/log:1", "main.bal",
+                        46, 46, Source.BUILT_IN);
                 break;
             case AVOID_WORLD_WRITABLE_LOG_DESTINATION:
                 index = 0;

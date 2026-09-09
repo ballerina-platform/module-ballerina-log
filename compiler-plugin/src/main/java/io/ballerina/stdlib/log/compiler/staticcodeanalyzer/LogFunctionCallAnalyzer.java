@@ -18,6 +18,7 @@
 
 package io.ballerina.stdlib.log.compiler.staticcodeanalyzer;
 
+import io.ballerina.compiler.api.SemanticModel;
 import io.ballerina.compiler.syntax.tree.FunctionCallExpressionNode;
 import io.ballerina.compiler.syntax.tree.ImportDeclarationNode;
 import io.ballerina.compiler.syntax.tree.ImportOrgNameNode;
@@ -28,7 +29,9 @@ import io.ballerina.projects.plugins.AnalysisTask;
 import io.ballerina.projects.plugins.SyntaxNodeAnalysisContext;
 import io.ballerina.scan.Reporter;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -45,6 +48,7 @@ public class LogFunctionCallAnalyzer implements AnalysisTask<SyntaxNodeAnalysisC
 
     private final Reporter reporter;
     private final LogFunctionRulesEngine rulesEngine;
+    private final List<SemanticModel> semanticModels = new ArrayList<>();
 
     public LogFunctionCallAnalyzer(Reporter reporter) {
         this.reporter = reporter;
@@ -56,12 +60,19 @@ public class LogFunctionCallAnalyzer implements AnalysisTask<SyntaxNodeAnalysisC
         if (!(context.node() instanceof FunctionCallExpressionNode functionCall)) {
             return;
         }
+        // A configurable may be declared in any module of the package, so every module's model is needed
+        if (semanticModels.isEmpty()) {
+            context.currentPackage().modules()
+                    .forEach(module -> semanticModels.add(module.getCompilation().getSemanticModel()));
+        }
+
         Document document = context.currentPackage().module(context.moduleId()).document(context.documentId());
         Optional<String> functionName = getLogFunctionName(functionCall, collectLogPrefixes(document));
         if (functionName.isEmpty()) {
             return;
         }
-        rulesEngine.executeRules(new LogFunctionContext(reporter, document, functionName.get(), functionCall));
+        rulesEngine.executeRules(new LogFunctionContext(reporter, document, semanticModels, functionName.get(),
+                functionCall));
     }
 
     private Optional<String> getLogFunctionName(FunctionCallExpressionNode functionCall, Set<String> logPrefixes) {
