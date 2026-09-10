@@ -7,15 +7,11 @@
   [![GitHub Last Commit](https://img.shields.io/github/last-commit/ballerina-platform/module-ballerina-log.svg)](https://github.com/ballerina-platform/module-ballerina-log/commits/master)
   [![Github issues](https://img.shields.io/github/issues/ballerina-platform/ballerina-standard-library/module/log.svg?label=Open%20Issues)](https://github.com/ballerina-platform/ballerina-standard-library/labels/module%2Flog)
 
-This library provides APIs to log information when running applications, with support for contextual logging, configurable log levels, formats, destinations, and key-value context.
+## Overview
 
-A sample log message logged from the `foo` module would look as follows:
+This module provides APIs to log information when running applications, with support for contextual logging, configurable log levels, formats, destinations, and key-value context.
 
-```bash
-time = 2021-05-12T11:20:29.362+05:30 level = ERROR module = myorg/foo message = "Something went wrong"
-```
-
-## Log Levels
+### Log Levels
 
 The log module supports four log levels, in order of priority:
 
@@ -39,7 +35,7 @@ name = "[ORG_NAME]/[MODULE_NAME]"
 level = "[LOG_LEVEL]"
 ```
 
-## Logging API
+### Logging API
 
 Log messages at different levels using:
 
@@ -63,7 +59,7 @@ Sample output (LogFmt):
 time=2025-08-20T08:49:05.484+05:30 level=INFO module="" message="info log" id=845315 name="foo" successful=true
 ```
 
-## Log Output and Format
+### Log Output and Format
 
 By default, logs are written to the `stderr` stream in `logfmt` format. You can configure the output format and destinations in `Config.toml`:
 
@@ -89,7 +85,7 @@ Sample output (JSON):
 > - Destination types can be `stderr`, `stdout`, or `file`. File Destination must point to a path with a `.log` extension.
 > - The deprecated `log:setOutputFile()` should be avoided; use configuration instead.
 
-## Log Rotation
+### Log Rotation
 
 The log module supports automatic log rotation to manage log file growth in production environments. You can configure rotation based on file size, time, or both:
 
@@ -126,7 +122,7 @@ log:Logger logger = check log:fromConfig(
 
 When rotation occurs, backup files are created with timestamps (e.g., `app-20251209-143022.log`). Old backups beyond `maxBackupFiles` are automatically deleted.
 
-## Root Context
+### Root Context
 
 You can add a default context to all log messages:
 
@@ -135,7 +131,7 @@ You can add a default context to all log messages:
 keyValues = {env = "prod", nodeId = "delivery-svc-001"}
 ```
 
-## Contextual Logging
+### Contextual Logging
 
 The log module supports contextual logging, allowing you to create loggers with additional context or unique configurations.
 
@@ -164,7 +160,42 @@ The log module supports contextual logging, allowing you to create loggers with 
 
 For more details and advanced usage, see the module specification and API documentation.
 
-## Sensitive Data Masking
+### Runtime Log Level Modification
+
+The log module supports modifying log levels at runtime without restarting the application. All loggers created via `fromConfig` are registered in a logger registry with a unique ID and can be discovered and updated at runtime.
+
+```ballerina
+// Create a logger with an explicit ID
+log:Logger paymentLogger = check log:fromConfig(id = "payment-service", level = log:INFO);
+
+// Change the level at runtime
+check paymentLogger.setLevel(log:DEBUG);
+log:Level current = paymentLogger.getLevel(); // DEBUG
+```
+
+The logger registry provides a way to discover and manage all registered loggers:
+
+```ballerina
+log:LoggerRegistry registry = log:getLoggerRegistry();
+
+// List all registered logger IDs
+string[] ids = registry.getIds();
+// e.g., ["root", "myorg/payment:payment-service", "myorg/payment:init"]
+
+// Look up a logger by ID and update its level
+log:Logger? logger = registry.getById("myorg/payment:payment-service");
+if logger is log:Logger {
+    check logger.setLevel(log:DEBUG);
+}
+```
+
+The registry contains:
+- `"root"` — the global root logger
+- All loggers created via `fromConfig` (module-prefixed user IDs or auto-generated IDs)
+
+> **Note:** Per-module log levels configured via `[[ballerina.log.modules]]` in `Config.toml` are static — they apply at startup and cannot be changed at runtime through the registry. Child loggers (created via `withContext`) are also not registered and always inherit their level from the parent.
+
+### Sensitive Data Masking
 
 The log module provides capabilities to mask sensitive data in log messages to maintain data privacy and security when dealing with personally identifiable information (PII) or other sensitive data.
 
@@ -184,7 +215,7 @@ The log module provides capabilities to mask sensitive data in log messages to m
 > log:Logger secureLogger = log:fromConfig(secureConfig);
 > ```
 
-### Sensitive Data Annotation
+#### Sensitive Data Annotation
 
 Use the `@log:Sensitive` annotation to mark fields in records as sensitive. When such fields are logged, their values will be excluded or masked:
 
@@ -210,7 +241,7 @@ Output (with masking enabled):
 time=2025-08-20T09:15:30.123+05:30 level=INFO module="" message="user details" user={"id":"U001","name":"John Doe"}
 ```
 
-### Masking Strategies
+#### Masking Strategies
 
 Configure masking strategies using the `strategy` field:
 
@@ -242,7 +273,7 @@ type User record {
 };
 ```
 
-### Masked String Function
+#### Masked String Function
 
 Use `log:toMaskedString()` to get the masked version of a value for custom logging implementations:
 
@@ -324,7 +355,7 @@ Execute the commands below to build from source.
 
 ## Contribute to Ballerina
 
-As an open source project, Ballerina welcomes contributions from the community.
+As an open-source project, Ballerina welcomes contributions from the community.
 
 For more information, go to the [contribution guidelines](https://github.com/ballerina-platform/ballerina-lang/blob/master/CONTRIBUTING.md).
 
