@@ -94,6 +94,14 @@ release {
     }
 }
 
-task build {
-    dependsOn('log-ballerina:build')
+if (tasks.names.contains('build')) {
+    tasks.named('build') {
+        dependsOn('log-ballerina:build')
+
+    }
+} else {
+    tasks.register('build') {
+        dependsOn('log-ballerina:build')
+
+    }
 }
