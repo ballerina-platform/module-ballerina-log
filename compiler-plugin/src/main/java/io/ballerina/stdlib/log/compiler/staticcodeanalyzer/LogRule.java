@@ -29,9 +29,9 @@ import static io.ballerina.stdlib.log.compiler.staticcodeanalyzer.RuleFactory.cr
  */
 public enum LogRule {
     AVOID_LOGGING_CONFIGURABLE_VARIABLES(createRule(1,
-            "Potentially-sensitive configurable variables are logged", VULNERABILITY)),
+            "A configurable value that may hold a secret is written to the log.", VULNERABILITY)),
     AVOID_WORLD_WRITABLE_LOG_DESTINATION(createRule(2,
-            "Avoid writing log files to world-writable directories", VULNERABILITY));
+            "A log file is written to a directory that any local user can write to.", VULNERABILITY));
 
     private final Rule rule;
 
