@@ -2,7 +2,7 @@
 
 This module provides APIs to log information when running applications, with support for contextual logging, configurable log levels, formats, destinations, and key-value context.
 
-## Key Features
+### Key Features
 
 - Configurable log levels (ERROR, WARN, INFO, DEBUG), globally or per module
 - LogFmt and JSON output formats, with configurable destinations
