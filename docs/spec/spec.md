@@ -763,23 +763,32 @@ Log a value that identifies the configuration rather than the configuration itse
 **Non-compliant code:**
 
 ```ballerina
-configurable string password = ?;
+import ballerina/log;
+
+configurable string apiKey = ?;
 
 public function main() {
-    log:printInfo(password);
-    log:printError(string `Failed with ${password}`);
-    log:printWarn("Connection failed", password = password);
+    log:printInfo(apiKey);
+    log:printError(string `Failed with ${apiKey}`);
+    log:printWarn("Connection failed", apiKey = apiKey);
 }
 ```
 
 **Compliant code:**
 
 ```ballerina
-configurable string password = ?;
-configurable string user = ?;
+import ballerina/log;
+
+configurable string apiKey = ?;
 
 public function main() {
-    log:printWarn("Connection failed", user = user);
+    log:printInfo(maskString(apiKey));
+    log:printError(string `Failed with ${maskString(apiKey)}`);
+    log:printWarn("Connection failed", apiKey = maskString(apiKey));
+}
+
+function maskString(string value) returns string {
+    return value.length() == 0 ? "" : "****";
 }
 ```
 
