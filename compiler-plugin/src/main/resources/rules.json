@@ -2,6 +2,47 @@
   {
     "id": 1,
     "kind": "VULNERABILITY",
-    "description": "Potentially-sensitive configurable variables are logged"
+    "name": "Potentially-sensitive configurable variables are logged",
+    "severity": "MEDIUM",
+    "description": "A configurable value that may hold a secret is written to the log.",
+    "fullDescription": "Writing a configurable value that may hold a password, token, or key to the log copies that secret into log files and any downstream aggregation system, where it is retained and readable by anyone with log access. Omit the value, or redact it before logging.",
+    "tags": [
+      "log",
+      "leak"
+    ],
+    "standards": {
+      "cwe": [
+        532
+      ],
+      "owasp": [
+        {
+          "year": 2025,
+          "categories": [9]
+        }
+      ]
+    }
+  },
+  {
+    "id": 2,
+    "kind": "VULNERABILITY",
+    "name": "Avoid writing log files to world-writable directories",
+    "severity": "MEDIUM",
+    "description": "A log file is written to a directory that any local user can write to.",
+    "fullDescription": "A world-writable directory, such as /tmp, is readable by every local account and lets another user create the log file first, so the service ends up appending to a file it does not own. That other user can then read the log as it is written or replace it outright. Write logs under a directory the service owns instead.",
+    "tags": [
+      "log",
+      "file-system"
+    ],
+    "standards": {
+      "cwe": [
+        379
+      ],
+      "owasp": [
+        {
+          "year": 2025,
+          "categories": [1]
+        }
+      ]
+    }
   }
 ]
