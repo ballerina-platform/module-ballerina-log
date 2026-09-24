@@ -166,24 +166,24 @@ isolated class RootLogger {
         self.loggerId = loggerId;
     }
 
-    public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+    public isolated function printDebug(string|PrintableRawTemplate message, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
         string moduleName = getModuleName(keyValues, 3);
-        self.print(DEBUG, moduleName, msg, 'error, stackTrace, keyValues);
+        self.print(DEBUG, moduleName, message, 'error, stackTrace, keyValues);
     }
 
-    public isolated function printError(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+    public isolated function printError(string|PrintableRawTemplate message, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
         string moduleName = getModuleName(keyValues, 3);
-        self.print(ERROR, moduleName, msg, 'error, stackTrace, keyValues);
+        self.print(ERROR, moduleName, message, 'error, stackTrace, keyValues);
     }
 
-    public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+    public isolated function printInfo(string|PrintableRawTemplate message, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
         string moduleName = getModuleName(keyValues, 3);
-        self.print(INFO, moduleName, msg, 'error, stackTrace, keyValues);
+        self.print(INFO, moduleName, message, 'error, stackTrace, keyValues);
     }
 
-    public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+    public isolated function printWarn(string|PrintableRawTemplate message, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
         string moduleName = getModuleName(keyValues, 3);
-        self.print(WARN, moduleName, msg, 'error, stackTrace, keyValues);
+        self.print(WARN, moduleName, message, 'error, stackTrace, keyValues);
     }
 
     public isolated function withContext(*KeyValues keyValues) returns Logger {
@@ -206,7 +206,7 @@ isolated class RootLogger {
         }
     }
 
-    isolated function print(string logLevel, string moduleName, string|PrintableRawTemplate msg, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+    isolated function print(string logLevel, string moduleName, string|PrintableRawTemplate message, error? err = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
         Level effectiveLevel = self.getLevel();
         if moduleName.length() > 0 {
             Level? moduleLevel = getModuleLevelNative(moduleName);
@@ -217,7 +217,7 @@ isolated class RootLogger {
         if !isLevelEnabled(effectiveLevel, logLevel) {
             return;
         }
-        printLog(logLevel, moduleName, msg, self.format, self.destinations, self.keyValues,
+        printLog(logLevel, moduleName, message, self.format, self.destinations, self.keyValues,
                 self.enableSensitiveDataMasking, err, stackTrace, keyValues);
     }
 }
@@ -233,36 +233,36 @@ isolated class ChildLogger {
         self.keyValues = keyValues;
     }
 
-    public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+    public isolated function printDebug(string|PrintableRawTemplate message, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
         KeyValues merged = self.mergeKeyValues(keyValues);
         if !merged.hasKey("module") {
              merged["module"] = getInvokedModuleName(2);
         }
-        self.parent.printDebug(msg, 'error, stackTrace, merged);
+        self.parent.printDebug(message, 'error, stackTrace, merged);
     }
 
-    public isolated function printError(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+    public isolated function printError(string|PrintableRawTemplate message, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
         KeyValues merged = self.mergeKeyValues(keyValues);
         if !merged.hasKey("module") {
              merged["module"] = getInvokedModuleName(2);
         }
-        self.parent.printError(msg, 'error, stackTrace, merged);
+        self.parent.printError(message, 'error, stackTrace, merged);
     }
 
-    public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+    public isolated function printInfo(string|PrintableRawTemplate message, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
         KeyValues merged = self.mergeKeyValues(keyValues);
         if !merged.hasKey("module") {
              merged["module"] = getInvokedModuleName(2);
         }
-        self.parent.printInfo(msg, 'error, stackTrace, merged);
+        self.parent.printInfo(message, 'error, stackTrace, merged);
     }
 
-    public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
+    public isolated function printWarn(string|PrintableRawTemplate message, error? 'error, error:StackFrame[]? stackTrace, *KeyValues keyValues) {
         KeyValues merged = self.mergeKeyValues(keyValues);
         if !merged.hasKey("module") {
              merged["module"] = getInvokedModuleName(2);
         }
-        self.parent.printWarn(msg, 'error, stackTrace, merged);
+        self.parent.printWarn(message, 'error, stackTrace, merged);
     }
 
     public isolated function withContext(*KeyValues keyValues) returns Logger {
@@ -300,7 +300,7 @@ isolated class ChildLogger {
     }
 }
 
-isolated function printLog(string logLevel, string moduleName, string|PrintableRawTemplate msg,
+isolated function printLog(string logLevel, string moduleName, string|PrintableRawTemplate message,
         LogFormat format, readonly & OutputDestination[] destinations, readonly & KeyValues contextKeyValues,
         boolean enableSensitiveDataMasking, error? err = (), error:StackFrame[]? stackTrace = (),
         KeyValues callSiteKeyValues = {}) {
@@ -308,7 +308,7 @@ isolated function printLog(string logLevel, string moduleName, string|PrintableR
         time: getCurrentTime(),
         level: logLevel,
         module: moduleName,
-        message: processMessage(msg, enableSensitiveDataMasking)
+        message: processMessage(message, enableSensitiveDataMasking)
     };
     if err is error {
         logRecord.'error = getFullErrorDetails(err);

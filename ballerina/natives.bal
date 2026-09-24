@@ -254,22 +254,22 @@ public isolated function evaluateTemplate(PrintableRawTemplate template, boolean
     return result;
 }
 
-isolated function processMessage(string|PrintableRawTemplate msg, boolean enableSensitiveDataMasking) returns string =>
-    msg !is string ? evaluateTemplate(msg, enableSensitiveDataMasking) : msg;
+isolated function processMessage(string|PrintableRawTemplate message, boolean enableSensitiveDataMasking) returns string =>
+    message !is string ? evaluateTemplate(message, enableSensitiveDataMasking) : message;
 
 # Prints debug logs.
 # ```ballerina
 # log:printDebug("debug message", id = 845315)
 # ```
 #
-# + msg - The message to be logged
+# + message - The message to be logged
 # + 'error - The error struct to be logged
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+public isolated function printDebug(string|PrintableRawTemplate message, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     // Added `stackTrace` as an optional param due to https://github.com/ballerina-platform/ballerina-lang/issues/34572
     string moduleName = getModuleName(keyValues);
-    rootLogger.print(DEBUG, moduleName, msg, 'error, stackTrace, keyValues);
+    rootLogger.print(DEBUG, moduleName, message, 'error, stackTrace, keyValues);
 }
 
 # Prints error logs.
@@ -278,13 +278,13 @@ public isolated function printDebug(string|PrintableRawTemplate msg, error? 'err
 # log:printError("error log with cause", 'error = e, id = 845315);
 # ```
 #
-# + msg - The message to be logged
+# + message - The message to be logged
 # + 'error - The error struct to be logged
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printError(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+public isolated function printError(string|PrintableRawTemplate message, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     string moduleName = getModuleName(keyValues);
-    rootLogger.print(ERROR, moduleName, msg, 'error, stackTrace, keyValues);
+    rootLogger.print(ERROR, moduleName, message, 'error, stackTrace, keyValues);
 }
 
 # Prints info logs.
@@ -292,13 +292,13 @@ public isolated function printError(string|PrintableRawTemplate msg, error? 'err
 # log:printInfo("info message", id = 845315)
 # ```
 #
-# + msg - The message to be logged
+# + message - The message to be logged
 # + 'error - The error struct to be logged
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+public isolated function printInfo(string|PrintableRawTemplate message, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     string moduleName = getModuleName(keyValues);
-    rootLogger.print(INFO, moduleName, msg, 'error, stackTrace, keyValues);
+    rootLogger.print(INFO, moduleName, message, 'error, stackTrace, keyValues);
 }
 
 # Prints warn logs.
@@ -306,13 +306,13 @@ public isolated function printInfo(string|PrintableRawTemplate msg, error? 'erro
 # log:printWarn("warn message", id = 845315)
 # ```
 #
-# + msg - The message to be logged
+# + message - The message to be logged
 # + 'error - The error struct to be logged
 # + stackTrace - The error stack trace to be logged
 # + keyValues - The key-value pairs to be logged
-public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
+public isolated function printWarn(string|PrintableRawTemplate message, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues) {
     string moduleName = getModuleName(keyValues);
-    rootLogger.print(WARN, moduleName, msg, 'error, stackTrace, keyValues);
+    rootLogger.print(WARN, moduleName, message, 'error, stackTrace, keyValues);
 }
 
 # Sets the log output to a file. All subsequent logs of the entire application will be written to this file.

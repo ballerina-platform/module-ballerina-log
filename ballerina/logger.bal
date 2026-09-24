@@ -18,35 +18,35 @@
 public type Logger isolated object {
    # Prints debug logs.
    #
-   # + msg - The message to be logged
+   # + message - The message to be logged
    # + 'error - The error struct to be logged
    # + stackTrace - The error stack trace to be logged
    # + keyValues - The key-value pairs to be logged
-   public isolated function printDebug(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues);
+   public isolated function printDebug(string|PrintableRawTemplate message, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues);
 
    # Prints info logs.
-   # 
-   # + msg - The message to be logged
+   #
+   # + message - The message to be logged
    # + 'error - The error struct to be logged
    # + stackTrace - The error stack trace to be logged
    # + keyValues - The key-value pairs to be logged
-   public isolated function printInfo(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues);
+   public isolated function printInfo(string|PrintableRawTemplate message, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues);
 
    # Prints warn logs.
-   # 
-   # + msg - The message to be logged
+   #
+   # + message - The message to be logged
    # + 'error - The error struct to be logged
    # + stackTrace - The error stack trace to be logged
    # + keyValues - The key-value pairs to be logged
-   public isolated function printWarn(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues);
+   public isolated function printWarn(string|PrintableRawTemplate message, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues);
 
    # Prints error logs.
-   # 
-   # + msg - The message to be logged
+   #
+   # + message - The message to be logged
    # + 'error - The error struct to be logged
    # + stackTrace - The error stack trace to be logged
    # + keyValues - The key-value pairs to be logged
-   public isolated function printError(string|PrintableRawTemplate msg, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues);
+   public isolated function printError(string|PrintableRawTemplate message, error? 'error = (), error:StackFrame[]? stackTrace = (), *KeyValues keyValues);
 
    # Creates a new child/derived logger with the given key-values.
    #
