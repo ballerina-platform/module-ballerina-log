@@ -77,13 +77,16 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
      */
     private static final Set<String> TEMP_DIRECTORY_VARIABLES = Set.of("TMP", "TEMP", "TMPDIR");
 
-    private static final String OS_MODULE_PREFIX = "os";
+    private static final String BALLERINA_ORG = "ballerina";
+    private static final String OS_MODULE = "os";
     private static final String OS_GET_ENV = "getEnv";
 
     @Override
     public void analyze(LogFunctionContext context) {
         if (SET_OUTPUT_FILE.equals(context.getFunctionName())) {
-            context.getArgument(PATH_POSITION).ifPresent(path -> reportIfWorldWritable(context, path));
+            context.getNamedArgument(PATH_FIELD)
+                    .or(() -> context.getArgument(PATH_POSITION))
+                    .ifPresent(path -> reportIfWorldWritable(context, path));
             return;
         }
         analyzeConfiguredDestinations(context);
@@ -113,7 +116,7 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
     }
 
     private void reportIfWorldWritable(LogFunctionContext context, ExpressionNode path) {
-        if (isWorldWritablePath(path)) {
+        if (isWorldWritablePath(context, path)) {
             context.reportIssue(path.location(), getRuleId());
         }
     }
@@ -128,24 +131,28 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
                 .flatMap(SpecificFieldNode::valueExpr);
     }
 
-    private boolean isWorldWritablePath(ExpressionNode path) {
-        if (namesTemporaryDirectory(path)) {
+    private boolean isWorldWritablePath(LogFunctionContext context, ExpressionNode path) {
+        if (namesTemporaryDirectory(context, path)) {
             return true;
         }
         if (path instanceof BinaryExpressionNode binaryExpression
                 && binaryExpression.operator().kind() == SyntaxKind.PLUS_TOKEN
                 && binaryExpression.lhsExpr() instanceof ExpressionNode leftOperand
                 && continuesWithSeparator(binaryExpression.rhsExpr())) {
-            return isWorldWritablePath(leftOperand);
+            return isWorldWritablePath(context, leftOperand);
         }
         return getStringLiteralValue(path).map(this::isUnderWorldWritableDirectory).orElse(false);
     }
 
     /**
      * A literal suffix that does not open with a path separator lands beside the directory rather than inside it,
-     * as in {@code "/tmp" + "file.log"} producing {@code /tmpfile.log}. A suffix that cannot be resolved to a
-     * literal is assumed to carry its own separator, since every dynamic suffix in this rule's tests is written
-     * that way, such as {@code os:getEnv("TMPDIR") + "/application.log"}.
+     * as in {@code "/tmp" + "file.log"} producing {@code /tmpfile.log}, and is not reported.
+     * <p>
+     * A suffix that cannot be resolved to a literal is taken to carry its own separator. Reaching this point at all
+     * means the left operand is a bare world-writable directory written without a trailing separator, and the
+     * alternative reading of {@code "/tmp" + suffix} is a file named {@code /tmpsuffix} at the filesystem root,
+     * which nobody writes as a concatenation. Telling the two apart needs the suffix's value, so one reading has to
+     * be assumed; under-reporting a world-writable log destination is the worse of the two errors.
      */
     private boolean continuesWithSeparator(Node rhs) {
         return getStringLiteralValue(rhs)
@@ -182,12 +189,11 @@ public class AvoidWorldWritableLogDestinationRule implements LogFunctionRule {
     /**
      * Recognise {@code os:getEnv("TMPDIR")} and its variants, which resolve to the shared temporary directory.
      */
-    private boolean namesTemporaryDirectory(ExpressionNode expression) {
+    private boolean namesTemporaryDirectory(LogFunctionContext context, ExpressionNode expression) {
         if (!(expression instanceof FunctionCallExpressionNode functionCall)
                 || !(functionCall.functionName() instanceof QualifiedNameReferenceNode qualifiedName)
-                || !OS_MODULE_PREFIX.equals(qualifiedName.modulePrefix().text())
-                || !OS_GET_ENV.equals(qualifiedName.identifier().text())
-                || functionCall.arguments().isEmpty()) {
+                || functionCall.arguments().isEmpty()
+                || !context.resolvesToFunction(qualifiedName, BALLERINA_ORG, OS_MODULE, OS_GET_ENV)) {
             return false;
         }
         return getStringLiteralValue(functionCall.arguments().get(0))

@@ -168,7 +168,7 @@ public class StaticCodeAnalyzerTest {
                 break;
             case AVOID_WORLD_WRITABLE_LOG_DESTINATION:
                 index = 0;
-                Assert.assertEquals(issues.size(), 7);
+                Assert.assertEquals(issues.size(), 9);
                 Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
                         22, 22, Source.BUILT_IN);
                 Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
@@ -183,8 +183,16 @@ public class StaticCodeAnalyzerTest {
                 Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
                         87, 87, Source.BUILT_IN);
                 // A concatenation with an explicit separator still lands inside the directory
-                Assertions.assertIssue(issues, index, "ballerina/log:2", "main.bal",
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "main.bal",
                         97, 97, Source.BUILT_IN);
+                // The same module imported under an alias, resolved through the semantic model rather than
+                // matched on the prefix as written
+                Assertions.assertIssue(issues, index++, "ballerina/log:2", "named_and_aliased.bal",
+                        21, 21, Source.BUILT_IN);
+                // The path supplied by name after the write option, which a positional lookup counting named
+                // arguments would have read as the option
+                Assertions.assertIssue(issues, index, "ballerina/log:2", "named_and_aliased.bal",
+                        26, 26, Source.BUILT_IN);
                 break;
             default:
                 Assert.fail("Unhandled rule in validateIssues: " + rule);

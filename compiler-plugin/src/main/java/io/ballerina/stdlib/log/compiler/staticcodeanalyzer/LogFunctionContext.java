@@ -19,11 +19,15 @@
 package io.ballerina.stdlib.log.compiler.staticcodeanalyzer;
 
 import io.ballerina.compiler.api.SemanticModel;
+import io.ballerina.compiler.api.symbols.FunctionSymbol;
+import io.ballerina.compiler.api.symbols.ModuleSymbol;
+import io.ballerina.compiler.api.symbols.Symbol;
 import io.ballerina.compiler.api.symbols.VariableSymbol;
 import io.ballerina.compiler.syntax.tree.ExpressionNode;
 import io.ballerina.compiler.syntax.tree.FunctionArgumentNode;
 import io.ballerina.compiler.syntax.tree.FunctionCallExpressionNode;
 import io.ballerina.compiler.syntax.tree.NamedArgumentNode;
+import io.ballerina.compiler.syntax.tree.Node;
 import io.ballerina.compiler.syntax.tree.PositionalArgumentNode;
 import io.ballerina.projects.Document;
 import io.ballerina.scan.Reporter;
@@ -48,6 +52,7 @@ public class LogFunctionContext {
     private final String functionName;
     private final Location functionLocation;
     private final List<ExpressionNode> arguments;
+    private final List<ExpressionNode> positionalArguments;
     private final Map<String, ExpressionNode> namedArguments;
 
     /**
@@ -67,6 +72,7 @@ public class LogFunctionContext {
         this.functionName = functionName;
         this.functionLocation = functionCall.location();
         this.arguments = collectArguments(functionCall);
+        this.positionalArguments = collectPositionalArguments(functionCall);
         this.namedArguments = collectNamedArguments(functionCall);
     }
 
@@ -94,6 +100,16 @@ public class LogFunctionContext {
         return List.copyOf(collected);
     }
 
+    private static List<ExpressionNode> collectPositionalArguments(FunctionCallExpressionNode functionCall) {
+        List<ExpressionNode> collected = new ArrayList<>();
+        for (FunctionArgumentNode argument : functionCall.arguments()) {
+            if (argument instanceof PositionalArgumentNode positionalArgument) {
+                collected.add(positionalArgument.expression());
+            }
+        }
+        return List.copyOf(collected);
+    }
+
     /**
      * The simple name of the log function that was called, such as {@code setOutputFile}.
      *
@@ -114,13 +130,18 @@ public class LogFunctionContext {
 
     /**
      * Get an argument by position.
+     * <p>
+     * Only positional arguments are counted. A named argument identifies its parameter by name and may be written
+     * in any order, so letting one occupy a position would hand a rule the wrong argument: in
+     * {@code log:setOutputFile(option = log:OVERWRITE, path = "/tmp/app.log")} position zero is the write option,
+     * not the path.
      *
-     * @param position the zero-based argument position
-     * @return the argument expression if supplied, empty otherwise
+     * @param position the zero-based position among the positional arguments
+     * @return the argument expression if supplied positionally, empty otherwise
      */
     public Optional<ExpressionNode> getArgument(int position) {
-        return position >= 0 && position < this.arguments.size()
-                ? Optional.of(this.arguments.get(position)) : Optional.empty();
+        return position >= 0 && position < this.positionalArguments.size()
+                ? Optional.of(this.positionalArguments.get(position)) : Optional.empty();
     }
 
     /**
@@ -160,6 +181,43 @@ public class LogFunctionContext {
                 .map(VariableSymbol.class::cast)
                 .anyMatch(variableSymbol -> variableSymbol.qualifiers().stream()
                         .anyMatch(qualifier -> CONFIGURABLE_QUALIFIER.equals(qualifier.toString())));
+    }
+
+    /**
+     * Check whether a reference resolves to the given function of the given module.
+     * <p>
+     * Matching the module prefix as written would read the alias rather than the module, so {@code os:getEnv} would
+     * be recognised while {@code env:getEnv} from {@code import ballerina/os as env} would not, and a {@code getEnv}
+     * from an unrelated module imported under the prefix {@code os} would be recognised wrongly. Resolving the
+     * symbol answers which module the function actually belongs to.
+     *
+     * @param reference    the reference to resolve
+     * @param orgName      the organization the module belongs to
+     * @param moduleName   the module's name
+     * @param functionName the function's name
+     * @return true if the reference resolves to that function
+     */
+    public boolean resolvesToFunction(Node reference, String orgName, String moduleName, String functionName) {
+        return this.semanticModels.stream()
+                .map(semanticModel -> resolveSymbol(semanticModel, reference))
+                .filter(FunctionSymbol.class::isInstance)
+                .map(FunctionSymbol.class::cast)
+                .anyMatch(function -> function.getName().filter(functionName::equals).isPresent()
+                        && function.getModule().map(ModuleSymbol::id)
+                                .filter(id -> orgName.equals(id.orgName()) && moduleName.equals(id.moduleName()))
+                                .isPresent());
+    }
+
+    /**
+     * A model built for another module of the package rejects a node it does not own, which is expected while
+     * searching for the one model that does.
+     */
+    private static Symbol resolveSymbol(SemanticModel semanticModel, Node reference) {
+        try {
+            return semanticModel.symbol(reference).orElse(null);
+        } catch (IllegalArgumentException rejected) {
+            return null;
+        }
     }
 
     /**
