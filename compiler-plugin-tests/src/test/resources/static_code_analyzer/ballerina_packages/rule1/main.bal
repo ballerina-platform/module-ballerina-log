@@ -31,5 +31,21 @@ function log() {
     log:printInfo("Info");
 }
 
+// printDebug was not analyzed before the migration to the shared rules engine
+function logDebug() {
+    log:printDebug(password);
+}
+
+// A three-way concatenation: the left operand is itself a BinaryExpressionNode, and both
+// configurables must still be found, not just the one nearest the top of the tree
+function logChainedConcatenation() {
+    log:printError("user=" + user + password);
+}
+
+// A named argument whose value is a template, not a bare reference
+function logNamedTemplateArgument() {
+    log:printWarn("Warning", password = string `${password}`);
+}
+
 configurable string password = ?;
 configurable string user = ?;
