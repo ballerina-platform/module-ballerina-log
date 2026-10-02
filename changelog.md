@@ -3,6 +3,8 @@ This file contains all the notable changes done to the Ballerina Log package thr
 
 ## [Unreleased]
 
+## [2.17.1] -2026-10-02
+
 ### Changed
 - [[#9108] Update Keywords and Reformat README for Connector Store Discoverability](https://github.com/ballerina-platform/ballerina-library/issues/9108)
 
